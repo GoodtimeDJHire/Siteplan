@@ -1,0 +1,3 @@
+[[edge_functions]]
+  function = "inject-v60"
+  path = "/*"
