@@ -28,6 +28,10 @@ openTender=function(){oldOpenTender();ensureTenderEventNote(null)};
 const oldEditTender=editTender;
 editTender=function(id){oldEditTender(id);const t=tenders.find(x=>x.id===id);ensureTenderEventNote(t)};
 
+// The original app bound the New Tender button to the old function reference before V63 loaded.
+// Rebind it so Create Tender uses the enhanced wrapper above.
+if(byId('newTenderBtn'))byId('newTenderBtn').onclick=openTender;
+
 publishTender=async function(){
  if(!siteplanCloudUser){openAuthModal();authMsg('Sign in before saving a tender.');return}
  const eventId=currentEventId;const evt=(events||[]).find(e=>e.id===eventId)||activeEvent();
