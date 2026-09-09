@@ -48,14 +48,24 @@ function score(supplier: any, tender: any) {
 
 async function supabaseGet(path: string, jwt: string) {
   const response = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, {
-    headers: {
-      apikey: SUPABASE_KEY,
-      Authorization: `Bearer ${jwt}`,
-      Accept: "application/json"
-    }
+    headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${jwt}`, Accept: "application/json" }
   });
   if (!response.ok) throw new Error(`Database request failed (${response.status})`);
   return response.json();
+}
+
+async function supabaseInsert(path: string, rows: any[], jwt: string) {
+  const response = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, {
+    method: "POST",
+    headers: {
+      apikey: SUPABASE_KEY,
+      Authorization: `Bearer ${jwt}`,
+      "Content-Type": "application/json",
+      Prefer: "return=minimal"
+    },
+    body: JSON.stringify(rows)
+  });
+  if (!response.ok) throw new Error(`Database insert failed (${response.status}): ${await response.text()}`);
 }
 
 export default async (req: Request, _context: Context) => {
@@ -124,6 +134,10 @@ export default async (req: Request, _context: Context) => {
         subject,
         text,
         html,
+        tags: [
+          { name: "siteplan_tender", value: String(tender.id) },
+          { name: "siteplan_supplier", value: String(s.id) }
+        ],
         ...(replyTo ? { reply_to: replyTo } : {})
       };
     });
@@ -139,10 +153,28 @@ export default async (req: Request, _context: Context) => {
       return Response.json({ error: sendData?.message || "Email delivery request failed." }, { status: 502 });
     }
 
+    const resendRows = Array.isArray(sendData?.data) ? sendData.data : [];
+    const trackingRows = recipients.map((s: any, i: number) => ({
+      tender_id: tender.id,
+      owner_id: user.id,
+      supplier_id: s.id || null,
+      company_name: s.company_name || "Supplier",
+      recipient_email: s.email,
+      resend_email_id: resendRows[i]?.id || null,
+      status: "sent",
+      sent_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    }));
+    try {
+      await supabaseInsert("tender_email_deliveries", trackingRows, jwt);
+    } catch (trackingError) {
+      console.error("Tender delivery tracking insert failed", trackingError);
+    }
+
     return Response.json({
       ok: true,
       sent: recipients.length,
-      recipients: recipients.map((s: any) => ({ company: s.company_name, email: s.email }))
+      recipients: recipients.map((s: any, i: number) => ({ company: s.company_name, email: s.email, deliveryId: resendRows[i]?.id || null }))
     });
   } catch (error: any) {
     console.error("send-tender", error);
