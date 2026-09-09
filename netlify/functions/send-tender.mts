@@ -74,7 +74,11 @@ export default async (req: Request, _context: Context) => {
 
     const body = await req.json().catch(() => ({}));
     const tenderId = String(body.tenderId || "").trim();
+    const selectedSupplierIds = Array.isArray(body.supplierIds)
+      ? body.supplierIds.map((id: any) => String(id || "").trim()).filter(Boolean)
+      : [];
     if (!tenderId) return Response.json({ error: "Tender ID is required." }, { status: 400 });
+    if (!selectedSupplierIds.length) return Response.json({ error: "Select at least one supplier to receive this tender." }, { status: 400 });
 
     const tenderRows = await supabaseGet(`tenders?id=eq.${encodeURIComponent(tenderId)}&select=*`, jwt);
     const tender = tenderRows?.[0];
@@ -91,7 +95,9 @@ export default async (req: Request, _context: Context) => {
       return s.notifications === "high" ? match >= 85 : match >= 60;
     });
 
-    if (!matched.length) return Response.json({ error: "No matching suppliers have email notifications enabled." }, { status: 400 });
+    const selected = new Set(selectedSupplierIds);
+    const recipients = matched.filter((s: any) => selected.has(String(s.id)));
+    if (!recipients.length) return Response.json({ error: "None of the selected suppliers are eligible matching recipients with an email address." }, { status: 400 });
 
     let eventName = "your event";
     if (tender.event_id) {
@@ -108,7 +114,7 @@ export default async (req: Request, _context: Context) => {
     const subject = `Tender invitation: ${tender.title}`;
     const replyTo = user.email ? [user.email] : undefined;
 
-    const emails = matched.map((s: any) => {
+    const emails = recipients.map((s: any) => {
       const greeting = s.contact_name ? `Hi ${s.contact_name},` : "Hi,";
       const text = `${greeting}\n\nYou're invited to submit a quote for ${tender.title} for ${eventName}.\n\nCategory: ${tender.category || "Supplier"}\nRegion: ${tender.region || "Not specified"}\nQuote due: ${due}\n\nView the tender and submit your private quote here:\n${link}\n\nReplies to this email go directly to the event organiser.\n\nThanks,\nSitePlan`;
       const html = `<!doctype html><html><body style="margin:0;background:#f3f5f1;font-family:Arial,Helvetica,sans-serif;color:#151719"><table width="100%" cellpadding="0" cellspacing="0" border="0"><tr><td style="padding:24px"><table width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:600px;margin:0 auto;background:#ffffff;border:1px solid #dfe3dc;border-radius:14px"><tr><td style="padding:28px"><div style="font-size:12px;font-weight:700;letter-spacing:.08em;color:#6c746a">SITEPLAN · PRIVATE TENDER</div><h1 style="font-size:26px;line-height:1.15;margin:10px 0 16px;color:#151719">${String(tender.title || "Tender").replace(/[<>&]/g, "")}</h1><p style="font-size:15px;line-height:1.6;color:#4e5850">${greeting}</p><p style="font-size:15px;line-height:1.6;color:#4e5850">You're invited to submit a quote for <strong>${String(eventName).replace(/[<>&]/g, "")}</strong>.</p><table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:18px 0"><tr><td style="padding:8px 0;font-size:14px;color:#6c746a">Category</td><td style="padding:8px 0;font-size:14px;color:#151719;text-align:right;font-weight:700">${String(tender.category || "Supplier").replace(/[<>&]/g, "")}</td></tr><tr><td style="padding:8px 0;font-size:14px;color:#6c746a">Region</td><td style="padding:8px 0;font-size:14px;color:#151719;text-align:right;font-weight:700">${String(tender.region || "Not specified").replace(/[<>&]/g, "")}</td></tr><tr><td style="padding:8px 0;font-size:14px;color:#6c746a">Quote due</td><td style="padding:8px 0;font-size:14px;color:#151719;text-align:right;font-weight:700">${due}</td></tr></table><table cellpadding="0" cellspacing="0" border="0"><tr><td bgcolor="#a8ff35" style="background:#a8ff35;border-radius:10px"><a href="${link}" style="display:inline-block;padding:13px 18px;color:#0b0d10;text-decoration:none;font-size:14px;font-weight:700">View tender & submit quote</a></td></tr></table><p style="font-size:12px;line-height:1.5;color:#7b847c;margin-top:24px">Your quote is private and is only visible to the event organiser. Reply to this email to contact them directly.</p></td></tr></table></td></tr></table></body></html>`;
@@ -135,8 +141,8 @@ export default async (req: Request, _context: Context) => {
 
     return Response.json({
       ok: true,
-      sent: matched.length,
-      recipients: matched.map((s: any) => ({ company: s.company_name, email: s.email }))
+      sent: recipients.length,
+      recipients: recipients.map((s: any) => ({ company: s.company_name, email: s.email }))
     });
   } catch (error: any) {
     console.error("send-tender", error);
