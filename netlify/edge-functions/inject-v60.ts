@@ -6,15 +6,13 @@ export default async (_request: Request, context: Context) => {
   if (!type.includes("text/html")) return response;
 
   const html = await response.text();
-  if (html.includes('src="/v60.js"')) {
-    return new Response(html, { status: response.status, headers: response.headers });
-  }
-
-  const enhanced = html.replace("</body>", '<script src="/v60.js"></script></body>');
+  const scripts = `${html.includes('src="/v60.js"') ? '' : '<script src="/v60.js"></script>'}${html.includes('src="/v61.js"') ? '' : '<script src="/v61.js"></script>'}`;
+  if (!scripts) return new Response(html, { status: response.status, headers: response.headers });
+  const enhanced = html.replace("</body>", scripts + "</body>");
   return new Response(enhanced, { status: response.status, headers: response.headers });
 };
 
 export const config: Config = {
   path: "/*",
-  excludedPath: "/v60.js"
+  excludedPath: ["/v60.js", "/v61.js"]
 };
