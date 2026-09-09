@@ -1,62 +1,9 @@
-// SitePlan V62 automatic tender sharing + supplier checkbox alignment
+// SitePlan V62 automatic tender sharing + aligned supplier checkboxes
 (()=>{
-const style=document.createElement('style');
-style.textContent=`
-  #supplierCategories .check-card,
-  #supplierRegions .check-card{
-    display:flex!important;
-    align-items:center!important;
-    justify-content:space-between!important;
-    gap:12px!important;
-    min-height:38px!important;
-    width:100%!important;
-    padding:8px 10px!important;
-    box-sizing:border-box!important;
-  }
-  #supplierCategories .check-card span,
-  #supplierRegions .check-card span{
-    flex:1 1 auto!important;
-    min-width:0!important;
-    line-height:1.25!important;
-  }
-  #supplierCategories .check-card input[type="checkbox"],
-  #supplierRegions .check-card input[type="checkbox"]{
-    order:2!important;
-    flex:0 0 auto!important;
-    margin:0!important;
-    align-self:center!important;
-  }
-`;
-document.head.appendChild(style);
-
-shareTenderToAll=async function(id){
-  const t=tenders.find(x=>x.id===id);if(!t)return;
-  if(!siteplanCloudUser){openAuthModal();toast('Sign in before sending tenders');return}
-  const matches=matchingSuppliers(t);
-  if(!matches.length){toast('No matching suppliers for this category and region');return}
-
-  const preview=matches.map(s=>`• ${s.company} — ${s.email}`).join('\n');
-  const ok=confirm(`Send this tender to ${matches.length} matching supplier${matches.length===1?'':'s'}?\n\n${preview}`);
-  if(!ok)return;
-
-  let session;
-  try{session=(await siteplanCloud.auth.getSession()).data?.session}catch(e){}
-  const token=session?.access_token;
-  if(!token){toast('Your session expired. Please sign in again.');return}
-
-  toast(`Sending tender to ${matches.length} supplier${matches.length===1?'':'s'}…`);
-  try{
-    const r=await fetch('/api/send-tender',{
-      method:'POST',
-      headers:{'Content-Type':'application/json','Authorization':`Bearer ${token}`},
-      body:JSON.stringify({tenderId:t.id})
-    });
-    const d=await r.json().catch(()=>({}));
-    if(!r.ok)throw new Error(d.error||'Tender email could not be sent');
-    toast(`Tender sent successfully to ${d.sent} supplier${d.sent===1?'':'s'}`);
-  }catch(e){
-    console.error('Tender email',e);
-    toast(e.message||'Tender email could not be sent');
-  }
-};
+const style=document.createElement('style');style.textContent=`
+#supplierCategories .check-card,#supplierRegions .check-card{display:flex!important;align-items:center!important;justify-content:space-between!important;gap:12px!important;min-height:38px!important;width:100%!important;padding:8px 10px!important;box-sizing:border-box!important}#supplierCategories .check-card span,#supplierRegions .check-card span{flex:1;line-height:1.25!important}#supplierCategories .check-card input,#supplierRegions .check-card input{order:2!important;flex:none!important;margin:0!important}
+.sp-send-bg{position:fixed;inset:0;background:rgba(3,8,12,.8);backdrop-filter:blur(4px);z-index:99999;display:flex;align-items:center;justify-content:center;padding:20px}.sp-send{width:min(820px,96vw);max-height:90vh;overflow:auto;background:#0d161d;color:#f5f7f8;border:1px solid #344653;border-radius:18px;box-shadow:0 30px 90px #0009}.sp-head{display:flex;gap:16px;align-items:flex-start;padding:26px 28px 18px}.sp-icon{width:48px;height:48px;display:grid;place-items:center;border-radius:11px;background:#a8ff3520;color:#a8ff35;font-size:24px}.sp-title{font-size:24px;font-weight:800;margin-bottom:6px}.sp-sub,.sp-note{color:#aeb9c1;font-size:13px;line-height:1.5}.sp-x{margin-left:auto;border:0;background:none;color:#aeb9c1;font-size:27px;cursor:pointer}.sp-body{padding:0 28px 26px}.sp-box{background:#111d25;border:1px solid #2c3d48;border-radius:12px;padding:16px;margin-bottom:20px}.sp-box b{font-size:17px}.sp-meta{margin-top:7px;color:#aeb9c1;font-size:13px}.sp-label{font-size:16px;font-weight:800;margin-bottom:4px}.sp-list{border:1px solid #2c3d48;border-radius:12px;overflow:hidden;margin:10px 0 20px}.sp-row{display:grid;grid-template-columns:26px 1fr 1.2fr 1fr;gap:10px;align-items:center;padding:12px 14px;border-bottom:1px solid #25343e;font-size:13px}.sp-row:last-child{border-bottom:0}.sp-row input{width:17px;height:17px;accent-color:#a8ff35}.sp-muted{color:#aeb9c1}.sp-preview{font-size:13px;line-height:1.6}.sp-actions{display:flex;justify-content:space-between;gap:12px;margin-top:22px}.sp-btn{padding:12px 17px;border-radius:10px;border:1px solid #344653;background:#15222b;color:#fff;font-weight:750;cursor:pointer}.sp-btn.primary{background:#a8ff35;border-color:#a8ff35;color:#091015}.sp-btn:disabled{opacity:.55}@media(max-width:650px){.sp-head,.sp-body{padding-left:17px;padding-right:17px}.sp-row{grid-template-columns:25px 1fr}.sp-row .hide-mobile{display:none}.sp-title{font-size:20px}}
+`;document.head.appendChild(style);
+const due=t=>{const v=t.dueAt||t.due_at||t.due;if(!v)return'Not specified';try{return new Date(v).toLocaleDateString('en-NZ',{day:'numeric',month:'short',year:'numeric'})}catch(e){return String(v)}};
+shareTenderToAll=async function(id){const t=tenders.find(x=>x.id===id);if(!t)return;if(!siteplanCloudUser){openAuthModal();toast('Sign in before sending tenders');return}const matches=matchingSuppliers(t);if(!matches.length){toast('No matching suppliers for this category and region');return}const ev=(events||[]).find(e=>e.id===(t.eventId||t.event_id));const eventName=ev?.name||'Event';const bg=document.createElement('div');bg.className='sp-send-bg';bg.innerHTML=`<div class="sp-send"><div class="sp-head"><div class="sp-icon">✉</div><div><div class="sp-title">Send Tender to Suppliers</div><div class="sp-sub">Review the matching suppliers below, then send the tender directly from SitePlan.</div></div><button class="sp-x">×</button></div><div class="sp-body"><div class="sp-box"><b>${esc(t.title||'Tender')}</b><div class="sp-meta">Event: ${esc(eventName)} &nbsp; | &nbsp; Category: ${esc(t.category||'Supplier')} &nbsp; | &nbsp; Response due: ${esc(due(t))}</div></div><div class="sp-label">Matched Suppliers (${matches.length})</div><div class="sp-note">Untick anyone you don't want to receive this tender.</div><div class="sp-list">${matches.map(s=>`<label class="sp-row"><input class="sp-pick" type="checkbox" value="${esc(s.id)}" checked><strong>${esc(s.company)}</strong><span class="sp-muted">${esc(s.email)}</span><span class="sp-muted hide-mobile">${esc((s.categories||[]).join(', '))}</span></label>`).join('')}</div><div class="sp-label">Email message</div><div class="sp-note">Suppliers receive the tender details and a private link to submit their quote.</div><div class="sp-box sp-preview"><b>Subject: Tender invitation: ${esc(t.title||'Tender')}</b><br><br>Hi [Supplier],<br><br>You're invited to submit a quote for <b>${esc(t.title||'this tender')}</b> for ${esc(eventName)}.<br><br>Category: ${esc(t.category||'Supplier')}<br>Region: ${esc(t.region||'Not specified')}<br>Quote due: ${esc(due(t))}<br><br><span style="color:#a8ff35;font-weight:800">View tender & submit private quote →</span><br><br><span class="sp-muted">Replies go directly to the event organiser.</span></div><div class="sp-actions"><button class="sp-btn cancel">Cancel</button><button class="sp-btn primary send">Send Tender</button></div></div></div>`;document.body.appendChild(bg);const close=()=>bg.remove();bg.querySelector('.sp-x').onclick=close;bg.querySelector('.cancel').onclick=close;bg.onclick=e=>{if(e.target===bg)close()};bg.querySelector('.send').onclick=async()=>{const selected=[...bg.querySelectorAll('.sp-pick:checked')].map(x=>x.value);if(!selected.length){toast('Select at least one supplier');return}let session;try{session=(await siteplanCloud.auth.getSession()).data?.session}catch(e){}const token=session?.access_token;if(!token){toast('Your session expired. Please sign in again.');return}const btn=bg.querySelector('.send');btn.disabled=true;btn.textContent='Sending…';try{const r=await fetch('/api/send-tender',{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${token}`},body:JSON.stringify({tenderId:t.id,supplierIds:selected})});const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.error||'Tender email could not be sent');close();toast(`Tender sent successfully to ${d.sent} supplier${d.sent===1?'':'s'}`)}catch(e){btn.disabled=false;btn.textContent='Send Tender';toast(e.message||'Tender email could not be sent')}}};
 })();
