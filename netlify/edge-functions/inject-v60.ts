@@ -6,7 +6,7 @@ export default async (_request: Request, context: Context) => {
   if (!type.includes("text/html")) return response;
 
   const html = await response.text();
-  const scripts = `${html.includes('src="/v60.js"') ? '' : '<script src="/v60.js"></script>'}${html.includes('src="/v61.js"') ? '' : '<script src="/v61.js"></script>'}${html.includes('src="/v62.js"') ? '' : '<script src="/v62.js"></script>'}${html.includes('/v63.js') ? '' : '<script src="/v63.js?v=20260909-1319"></script>'}${html.includes('/v64.js') ? '' : '<script src="/v64.js?v=20260909-suppliers"></script>'}${html.includes('/v65.js') ? '' : '<script src="/v65.js?v=20260909-1555"></script>'}`;
+  const scripts = `${html.includes('src="/v60.js"') ? '' : '<script src="/v60.js"></script>'}${html.includes('src="/v61.js"') ? '' : '<script src="/v61.js"></script>'}${html.includes('src="/v62.js"') ? '' : '<script src="/v62.js"></script>'}${html.includes('/v63.js') ? '' : '<script src="/v63.js?v=20260909-1319"></script>'}${html.includes('/v64.js') ? '' : '<script src="/v64.js?v=20260909-suppliers"></script>'}${html.includes('/v65.js') ? '' : '<script src="/v65.js?v=20260909-1555"></script>'}${html.includes('/v66.js') ? '' : '<script src="/v66.js?v=20260909-1648"></script>'}`;
   if (!scripts) return new Response(html, { status: response.status, headers: response.headers });
   const enhanced = html.replace("</body>", scripts + "</body>");
   return new Response(enhanced, { status: response.status, headers: response.headers });
@@ -14,5 +14,5 @@ export default async (_request: Request, context: Context) => {
 
 export const config: Config = {
   path: "/*",
-  excludedPath: ["/v60.js", "/v61.js", "/v62.js", "/v63.js", "/v64.js", "/v65.js", "/api/*"]
+  excludedPath: ["/v60.js", "/v61.js", "/v62.js", "/v63.js", "/v64.js", "/v65.js", "/v66.js", "/api/*"]
 };
