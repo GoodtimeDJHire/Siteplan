@@ -6,9 +6,13 @@ const BASE_ADDITIONS=['Furniture'];
 function savedCustomCategories(){
  try{return JSON.parse(localStorage.getItem(CUSTOM_CATEGORY_KEY)||'[]').filter(Boolean)}catch{return []}
 }
-function allCustomCategories(){return [...new Set([...BASE_ADDITIONS,...savedCustomCategories()])];}
+function saveCustomCategories(items){localStorage.setItem(CUSTOM_CATEGORY_KEY,JSON.stringify([...new Set(items.filter(Boolean))]))}
+function categoriesFromSuppliers(){return [...new Set((suppliers||[]).flatMap(s=>s.categories||[]).filter(Boolean))]}
+function allCustomCategories(){return [...new Set([...BASE_ADDITIONS,...savedCustomCategories(),...categoriesFromSuppliers()])];}
 function ensureCategories(){
- allCustomCategories().forEach(c=>{if(!SUPPLIER_CATEGORIES.includes(c))SUPPLIER_CATEGORIES.splice(Math.max(0,SUPPLIER_CATEGORIES.indexOf('Other')),0,c)});
+ const custom=allCustomCategories();
+ custom.forEach(c=>{if(!SUPPLIER_CATEGORIES.includes(c))SUPPLIER_CATEGORIES.splice(Math.max(0,SUPPLIER_CATEGORIES.indexOf('Other')),0,c)});
+ saveCustomCategories(custom.filter(c=>!BASE_ADDITIONS.includes(c)&&c!=='Other'));
  syncCategoryControls();
 }
 function syncSelect(select,includeAll=false){
@@ -21,17 +25,14 @@ function syncSelect(select,includeAll=false){
  SUPPLIER_CATEGORIES.forEach(c=>{if(![...select.options].some(o=>o.value===c))select.add(new Option(c,c))});
  if(current&&[...select.options].some(o=>o.value===current))select.value=current;
 }
-function syncCategoryControls(){
- syncSelect(byId('tCategory'));
- syncSelect(byId('supplierCategoryFilter'),true);
-}
+function syncCategoryControls(){syncSelect(byId('tCategory'));syncSelect(byId('supplierCategoryFilter'),true)}
 function addCustomCategory(raw,selectAfter=true){
  const name=String(raw||'').trim().replace(/\s+/g,' ');
  if(!name){toast('Enter a service type');return ''}
  const existing=SUPPLIER_CATEGORIES.find(c=>c.toLowerCase()===name.toLowerCase());
  const finalName=existing||name;
  if(!existing){
-   const custom=savedCustomCategories();custom.push(finalName);localStorage.setItem(CUSTOM_CATEGORY_KEY,JSON.stringify([...new Set(custom)]));
+   const custom=savedCustomCategories();custom.push(finalName);saveCustomCategories(custom);
    const otherIndex=SUPPLIER_CATEGORIES.indexOf('Other');SUPPLIER_CATEGORIES.splice(otherIndex>=0?otherIndex:SUPPLIER_CATEGORIES.length,0,finalName);
  }
  syncCategoryControls();
@@ -71,6 +72,9 @@ function enhanceTenderCategoryField(){
 }
 
 enhanceSupplierCategoryField();enhanceTenderCategoryField();
+
+const previousRenderSuppliers=renderSuppliers;
+renderSuppliers=function(){ensureCategories();return previousRenderSuppliers.apply(this,arguments)};
 
 const previousOpenSupplierModal=openSupplierModal;
 openSupplierModal=function(){ensureCategories();const result=previousOpenSupplierModal.apply(this,arguments);enhanceSupplierCategoryField();return result};
