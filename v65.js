@@ -10,21 +10,23 @@ function relabelTenderHistory(){
 const style=document.createElement('style');
 style.textContent=`
 #quoteModal .modal-card{width:min(1180px,96vw)!important}
-#quoteModal .quote-table-wrap{overflow:visible!important}
+#quoteModal .quote-table-wrap{overflow:hidden!important}
 #quoteModal .quote-table{width:100%!important;min-width:0!important;table-layout:fixed}
-#quoteModal .quote-table th,#quoteModal .quote-table td{white-space:normal!important;overflow-wrap:anywhere;vertical-align:top}
-#quoteModal .quote-table th:nth-child(1),#quoteModal .quote-table td:nth-child(1){width:24%}
-#quoteModal .quote-table th:nth-child(2),#quoteModal .quote-table td:nth-child(2){width:16%}
-#quoteModal .quote-table th:nth-child(3),#quoteModal .quote-table td:nth-child(3){width:9%}
-#quoteModal .quote-table th:nth-child(4),#quoteModal .quote-table td:nth-child(4){width:9%}
-#quoteModal .quote-table th:nth-child(5),#quoteModal .quote-table td:nth-child(5){width:10%}
-#quoteModal .quote-table th:nth-child(6),#quoteModal .quote-table td:nth-child(6){width:20%}
-#quoteModal .quote-table th:nth-child(7),#quoteModal .quote-table td:nth-child(7){width:12%}
+#quoteModal .quote-table th,#quoteModal .quote-table td{white-space:normal!important;overflow-wrap:normal;word-break:normal;vertical-align:top}
+#quoteModal .quote-table th:nth-child(1),#quoteModal .quote-table td:nth-child(1){width:22%}
+#quoteModal .quote-table th:nth-child(2),#quoteModal .quote-table td:nth-child(2){width:14%}
+#quoteModal .quote-table th:nth-child(3),#quoteModal .quote-table td:nth-child(3){width:8%}
+#quoteModal .quote-table th:nth-child(4),#quoteModal .quote-table td:nth-child(4){width:8%}
+#quoteModal .quote-table th:nth-child(5),#quoteModal .quote-table td:nth-child(5){width:9%}
+#quoteModal .quote-table th:nth-child(6),#quoteModal .quote-table td:nth-child(6){width:18%}
+#quoteModal .quote-table th:nth-child(7),#quoteModal .quote-table td:nth-child(7){width:11%}
+#quoteModal .quote-table th:nth-child(8),#quoteModal .quote-table td:nth-child(8){width:10%}
+#quoteModal .quote-table td:nth-child(1) small{overflow-wrap:anywhere}
 #quoteModal .quote-status-actions{display:flex;flex-direction:column;gap:5px;min-width:0}
-#quoteModal .quote-status-actions .btn{padding:7px 8px;font-size:11px;width:100%}
+#quoteModal .quote-status-actions .btn{padding:7px 6px;font-size:10px;width:100%;white-space:nowrap}
 @media(max-width:760px){
  #quoteModal .modal-card{width:96vw!important;padding:14px}
- #quoteModal .quote-table-wrap{border:0!important}
+ #quoteModal .quote-table-wrap{border:0!important;overflow:visible!important}
  #quoteModal .quote-table,#quoteModal .quote-table tbody,#quoteModal .quote-table tr,#quoteModal .quote-table td{display:block;width:100%!important}
  #quoteModal .quote-table>tbody>tr:first-child{display:none}
  #quoteModal .quote-table tr{border:1px solid var(--line);border-radius:12px;margin:0 0 12px;padding:10px;background:#0d1116}
@@ -48,9 +50,6 @@ relabelTenderHistory();
 const oldRenderTenders=renderTenders;
 renderTenders=function(){const result=oldRenderTenders.apply(this,arguments);relabelTenderHistory();return result};
 
-// Replace the public quote submit handler so a successful submission also triggers
-// a private organiser email via Netlify/Resend. The DB write remains the source of truth;
-// email failure never discards a successfully submitted quote.
 submitDemoQuote=async function(id){
  const t=tenders.find(x=>x.id===id);if(!t)return;const btn=byId('publicSubmitBtn');
  const company=byId('qCompany')?.value.trim(),email=byId('qEmail')?.value.trim();if(!company||!email){toast('Company and email are required');return}
