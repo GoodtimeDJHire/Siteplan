@@ -8,6 +8,22 @@
   function mapCategory(v){const all=typeof SUPPLIER_CATEGORIES!=='undefined'?SUPPLIER_CATEGORIES:[];const direct=split(v).filter(x=>all.includes(x));if(direct.length)return [...new Set(direct)];const s=String(v||'').toLowerCase();if(/food|truck|cater|coffee|ice cream|dessert|vendor/.test(s))return ['Food Vendor'];if(/bar|beverage|drink/.test(s))return ['Bars & Beverage'];return []}
   function mapRegion(v){const all=typeof SUPPLIER_REGIONS!=='undefined'?SUPPLIER_REGIONS:[];const out=[];split(v).forEach(x=>{let r=x;if(/hamilton|cambridge|te awamutu|matamata|morrinsville|waikato/i.test(r))r='Waikato';if(!all.length||all.includes(r))out.push(r)});return [...new Set(out)]}
   function esc2(v){return typeof esc==='function'?esc(String(v??'')):String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
+  async function importRows(){
+    const rows=window.__siteplanSupplierImport||[];if(!rows.length)return;
+    if(typeof siteplanCloudUser==='undefined'||!siteplanCloudUser){if(typeof openAuthModal==='function')openAuthModal();return}
+    const btn=document.getElementById('confirmSupplierImport');if(btn){btn.disabled=true;btn.textContent='Importing…'}
+    try{
+      const payload=rows.map(x=>({owner_id:siteplanCloudUser.id,company_name:x.company,contact_name:x.contact||null,email:x.email||null,phone:x.phone||null,website:x.website||null,categories:x.categories,regions:x.regions,minimum:x.minimum,event_size:x.eventSize,capabilities:x.capabilities||null,insurance:x.insurance,notifications:x.notifications,active:true,is_global:false}));
+      const {data,error}=await siteplanCloud.from('suppliers').insert(payload).select('*');
+      if(error)throw error;
+      const added=(data||[]).map(s=>typeof cloudSupplierToLocal==='function'?cloudSupplierToLocal(s):s);
+      if(typeof suppliers!=='undefined')suppliers=[...added,...suppliers];
+      try{localStorage.setItem('siteplan_suppliers',JSON.stringify(suppliers))}catch(e){}
+      document.getElementById('importSupplierModal')?.classList.add('hidden');
+      if(typeof renderSuppliers==='function')renderSuppliers();if(typeof renderTenders==='function')renderTenders();if(typeof renderSupplierDashboard==='function')renderSupplierDashboard();if(typeof toast==='function')toast(`${added.length} suppliers imported`);
+    }catch(e){console.error(e);if(btn){btn.disabled=false;btn.textContent='Try import again'}if(typeof toast==='function')toast(e?.message||'Supplier import failed')}
+  }
+  window.siteplanImportSupplierRows=importRows;
   function preview(matrix,fileName){
     const modal=document.getElementById('importSupplierModal'),body=document.getElementById('supplierImportBody');if(!modal||!body)return;modal.classList.remove('hidden');
     if(!Array.isArray(matrix)||!matrix.length){body.innerHTML='<div class="empty-state">No supplier rows found.</div>';return}
@@ -16,11 +32,10 @@
     matrix.slice(hi+1).forEach((row,n)=>{const x={};headers.forEach((h,i)=>{if(h)x[h]=row?.[i]??''});const company=String(val(x,'company')).trim(),email=String(val(x,'email')).trim();if(!company&&!email)return;let categories=mapCategory(val(x,'category')),regions=mapRegion(val(x,'region'));const context=(String(fileName||'')+' '+company+' '+String(val(x,'category'))).toLowerCase();if(!categories.length&&/food.?truck|food.?vendor|cater/.test(context))categories=['Food Vendor'];if(!regions.length&&/waikato|hamilton|cambridge|te.?awamutu|matamata|morrinsville/.test(context))regions=['Waikato'];const duplicate=existing.has(company.toLowerCase()+'|'+email.toLowerCase());const errors=[];if(!company)errors.push('Company missing');if(!categories.length)errors.push('Category missing/unknown');if(!regions.length)errors.push('Region missing/unknown');if(duplicate)dupes++;if(errors.length)invalid++;parsed.push({line:hi+n+2,company,email,phone:String(val(x,'phone')).trim(),website:String(val(x,'website')).trim(),contact:String(val(x,'contact')).trim(),categories,regions,minimum:Number(val(x,'minimum')||0)||0,eventSize:Number(val(x,'eventSize')||0)||0,capabilities:String(val(x,'capabilities')).trim(),insurance:String(val(x,'insurance')||'TBD').trim()||'TBD',notifications:String(val(x,'notifications')||'all').trim()||'all',duplicate,errors})});
     const ready=parsed.filter(x=>!x.duplicate&&!x.errors.length);window.__siteplanSupplierImport=ready;
     body.innerHTML=`<div style="color:var(--muted);font-size:12px">${esc2(fileName)}</div><div class="import-summary"><div class="import-stat"><small>Rows found</small><b>${parsed.length}</b></div><div class="import-stat"><small>Ready</small><b class="import-good">${ready.length}</b></div><div class="import-stat"><small>Duplicates</small><b>${dupes}</b></div><div class="import-stat"><small>Needs attention</small><b class="${invalid?'import-bad':''}">${invalid}</b></div></div><div class="import-table-wrap"><table class="import-table"><thead><tr><th>Company</th><th>Category</th><th>Region</th><th>Status</th></tr></thead><tbody>${parsed.slice(0,200).map(x=>`<tr><td>${esc2(x.company||'—')}</td><td>${esc2(x.categories.join(', ')||'—')}</td><td>${esc2(x.regions.join(', ')||'—')}</td><td>${x.duplicate?'Duplicate':x.errors.length?`<span class="import-bad">${esc2(x.errors.join(', '))}</span>`:'<span class="import-good">Ready</span>'}</td></tr>`).join('')}</tbody></table></div><div style="display:flex;gap:8px;justify-content:flex-end;margin-top:14px"><button class="btn" id="cancelSupplierImport">Cancel</button><button class="btn primary" id="confirmSupplierImport" ${ready.length?'':'disabled'}>Import ${ready.length} suppliers</button></div>`;
-    document.getElementById('cancelSupplierImport').onclick=()=>modal.classList.add('hidden');document.getElementById('confirmSupplierImport').onclick=()=>typeof importSupplierRows==='function'&&importSupplierRows();
+    document.getElementById('cancelSupplierImport').onclick=()=>modal.classList.add('hidden');document.getElementById('confirmSupplierImport').onclick=importRows;
   }
   window.previewSupplierImport=preview;
   async function readFile(file){try{let matrix=[];if(/\.xlsx?$/i.test(file.name)){if(!window.XLSX)await new Promise((resolve,reject)=>{const s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js';s.onload=resolve;s.onerror=reject;document.head.appendChild(s)});const ab=await file.arrayBuffer(),book=XLSX.read(ab,{type:'array'}),sheet=book.Sheets[book.SheetNames[0]];matrix=XLSX.utils.sheet_to_json(sheet,{header:1,defval:'',blankrows:true})}else{const text=await file.text();matrix=text.split(/\r?\n/).map(line=>line.split(','))}preview(matrix,file.name)}catch(e){console.error(e);if(typeof toast==='function')toast('Could not read supplier file')}}
-  // V64's original reader is closed over its own parser, so replace the actual file input handler.
   function hook(){const input=document.getElementById('supplierImportFile');if(!input)return false;input.onchange=()=>{const f=input.files?.[0];if(f)readFile(f)};return true}
   if(!hook()){let tries=0;const t=setInterval(()=>{if(hook()||++tries>40)clearInterval(t)},100)}
 })();
