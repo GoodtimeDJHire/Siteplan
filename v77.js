@@ -1,4 +1,4 @@
-// SitePlan V77: live tender email delivery summary inside tender view
+// SitePlan V77: live tender email delivery summary + sent counts
 (()=>{
 const style=document.createElement('style');
 style.textContent=`
@@ -13,23 +13,25 @@ function label(s){return ({sent:'Sent',delivered:'Delivered',delivery_delayed:'D
 function effectiveStatus(s){return s==='clicked'||s==='opened'?'delivered':s}
 function supplierName(email){try{const x=(suppliers||[]).find(s=>String(s.email||'').toLowerCase()===String(email||'').toLowerCase());return x?.company||x?.company_name||'Supplier'}catch{return 'Supplier'}}
 function newestPerEmail(rows){const map=new Map();(rows||[]).forEach(r=>{const k=String(r.recipient_email||'').toLowerCase();if(!k)return;const old=map.get(k);if(!old||new Date(r.updated_at||r.sent_at||0)>new Date(old.updated_at||old.sent_at||0))map.set(k,r)});return [...map.values()]}
-
+async function getTenderRecipients(tenderId){
+ const session=(await siteplanCloud.auth.getSession()).data?.session;const token=session?.access_token;if(!token)return [];
+ const r=await fetch(`/api/tender-recipients?tenderId=${encodeURIComponent(tenderId)}`,{headers:{Authorization:`Bearer ${token}`}});const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.error||'Could not load delivery status');return newestPerEmail(d.recipients||[]);
+}
 async function renderLiveTenderDelivery(tenderId){
- const host=document.getElementById('tenderDeliveryStatus');if(!host)return;
- host.innerHTML='<div class="empty">Checking live delivery status…</div>';
- try{
-  const session=(await siteplanCloud.auth.getSession()).data?.session;const token=session?.access_token;if(!token){host.innerHTML='<div class="empty">Sign in to view delivery status.</div>';return}
-  const r=await fetch(`/api/tender-recipients?tenderId=${encodeURIComponent(tenderId)}`,{headers:{Authorization:`Bearer ${token}`}});const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.error||'Could not load delivery status');
-  const rows=newestPerEmail(d.recipients||[]);
-  if(!rows.length){host.innerHTML='<div class="empty">No recorded tender emails yet.</div>';return}
+ const host=document.getElementById('tenderDeliveryStatus');if(!host)return;host.innerHTML='<div class="empty">Checking live delivery status…</div>';
+ try{const rows=await getTenderRecipients(tenderId);if(!rows.length){host.innerHTML='<div class="empty">No recorded tender emails yet.</div>';return}
   const counts={delivered:0,bounced:0,suppressed:0,other:0};rows.forEach(x=>{const s=effectiveStatus(x.status);if(s==='delivered')counts.delivered++;else if(s==='bounced')counts.bounced++;else if(s==='suppressed'||s==='complained'||s==='failed')counts.suppressed++;else counts.other++});
   host.innerHTML=`<div class="delivery-summary"><div class="delivery-summary-card"><span>Sent</span><b>${rows.length}</b></div><div class="delivery-summary-card good"><span>Delivered</span><b>${counts.delivered}</b></div><div class="delivery-summary-card bad"><span>Bounced</span><b>${counts.bounced}</b></div><div class="delivery-summary-card bad"><span>Suppressed / failed</span><b>${counts.suppressed}</b></div></div><div class="delivery-live-note">Live status from the email provider. Delivered means the recipient mail server accepted the message; it may still be filtered into junk.</div><div class="delivery-live-list">${rows.map(x=>{const when=x.updated_at||x.sent_at;const time=when?new Date(when).toLocaleString('en-NZ',{dateStyle:'medium',timeStyle:'short'}):'';const s=effectiveStatus(x.status);return `<div class="delivery-live-row"><div><b>${esc(supplierName(x.recipient_email))}</b><small>${esc(x.recipient_email||'')}</small></div><div class="delivery-live-time">${esc(time)}</div><span class="delivery-badge ${esc(s)}">${esc(label(x.status))}</span></div>`}).join('')}</div>`;
  }catch(e){console.warn('Live tender delivery',e);host.innerHTML=`<div class="empty">Delivery status could not be loaded. ${esc(e?.message||'')}</div>`}
 }
-
-const oldOpen=window.openTenderView;
-if(typeof oldOpen==='function'){
- window.openTenderView=function(id){const out=oldOpen.apply(this,arguments);setTimeout(()=>renderLiveTenderDelivery(id),0);return out};
+async function refreshSentCounts(){
+ const host=document.getElementById('tenderList');if(!host)return;
+ const cards=[...host.querySelectorAll('.tender')];
+ await Promise.all(cards.map(async card=>{const view=[...card.querySelectorAll('button')].find(b=>(b.textContent||'').trim()==='View');const m=(view?.getAttribute('onclick')||'').match(/openTenderView\(['\"]([^'\"]+)['\"]\)/);if(!m)return;const sent=[...card.querySelectorAll('button')].find(b=>b.classList.contains('sent-to-btn')||(b.textContent||'').trim().startsWith('Sent to'));if(!sent)return;try{const rows=await getTenderRecipients(m[1]);sent.textContent=`Sent to ${rows.length}`}catch{sent.textContent='Sent to'}}));
 }
+const oldOpen=window.openTenderView;if(typeof oldOpen==='function')window.openTenderView=function(id){const out=oldOpen.apply(this,arguments);setTimeout(()=>renderLiveTenderDelivery(id),0);return out};
+const oldRender=window.renderTenders;if(typeof oldRender==='function')window.renderTenders=function(){const out=oldRender.apply(this,arguments);setTimeout(refreshSentCounts,0);return out};
+setTimeout(refreshSentCounts,250);
 window.refreshTenderDelivery=renderLiveTenderDelivery;
+window.refreshTenderSentCounts=refreshSentCounts;
 })();
