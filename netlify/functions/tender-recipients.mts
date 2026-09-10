@@ -11,6 +11,13 @@ async function supabaseGet(path: string, jwt: string) {
   return response.json();
 }
 
+function subjectMatches(subject: string, title: string) {
+  const s = String(subject || "").trim();
+  const t = String(title || "").trim();
+  if (!s || !t) return false;
+  return s === `Tender invitation: ${t}` || s.endsWith(` – ${t}`) || s.endsWith(` - ${t}`);
+}
+
 export default async (req: Request, _context: Context) => {
   if (req.method !== "GET") return new Response("Method not allowed", { status: 405 });
   try {
@@ -30,7 +37,6 @@ export default async (req: Request, _context: Context) => {
     const apiKey = Netlify.env.get("RESEND_API_KEY");
     if (!apiKey) return Response.json({ error: "Email history is not configured." }, { status: 503 });
 
-    const subject = `Tender invitation: ${tender.title}`;
     const found: any[] = [];
     let after = "";
     for (let page = 0; page < 8; page++) {
@@ -39,7 +45,7 @@ export default async (req: Request, _context: Context) => {
       const payload = await resend.json().catch(() => ({}));
       if (!resend.ok) return Response.json({ error: payload?.message || "Could not load email history." }, { status: 502 });
       const emails = Array.isArray(payload?.data) ? payload.data : [];
-      found.push(...emails.filter((e: any) => String(e.subject || "") === subject));
+      found.push(...emails.filter((e: any) => subjectMatches(String(e.subject || ""), String(tender.title || ""))));
       if (!payload?.has_more || !emails.length) break;
       after = String(emails[emails.length - 1]?.id || "");
       if (!after) break;
@@ -47,7 +53,15 @@ export default async (req: Request, _context: Context) => {
 
     const rows = found.flatMap((e: any) => {
       const tos = Array.isArray(e.to) ? e.to : (e.to ? [e.to] : []);
-      return tos.map((email: string) => ({ company_name: "Supplier", recipient_email: email, status: e.last_event || e.status || "sent", sent_at: e.created_at || null, updated_at: e.created_at || null, resend_email_id: e.id || null, source: "resend" }));
+      return tos.map((email: string) => ({
+        company_name: "Supplier",
+        recipient_email: email,
+        status: e.last_event || e.status || "sent",
+        sent_at: e.created_at || null,
+        updated_at: e.updated_at || e.created_at || null,
+        resend_email_id: e.id || null,
+        source: "resend"
+      }));
     });
     return Response.json({ ok: true, recipients: rows });
   } catch (error: any) {
