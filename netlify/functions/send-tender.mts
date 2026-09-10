@@ -3,185 +3,35 @@ import type { Context, Config } from "@netlify/functions";
 const SUPABASE_URL = "https://qkvkemcqfnbmaktbxddg.supabase.co";
 const SUPABASE_KEY = "sb_publishable_tiPl-Y7wvfrpB7RzNzOBVA_CMIGBTwA";
 
-const aliases: Record<string, string[]> = {
-  "Catering / Bar": ["Food Vendor", "Bars & Beverage"],
-  "Generators": ["Power & Generators"],
-  "Toilets": ["Toilets & Sanitation"],
-  "Marquees": ["Marquees & Structures"],
-  "Sound & Lighting": ["Production / AV"],
-  "Staging": ["Production / AV"],
-  "Custom": ["Other"]
+const aliases: Record<string, string[]> = {"Catering / Bar":["Food Vendor","Bars & Beverage"],"Generators":["Power & Generators"],"Toilets":["Toilets & Sanitation"],"Marquees":["Marquees & Structures"],"Sound & Lighting":["Production / AV"],"Staging":["Production / AV"],"Custom":["Other"]};
+const regionAliases: Record<string,string>={"New Plymouth":"Taranaki","Manawatu":"Manawatu-Whanganui","Kapiti Coast":"Wellington","Wairarapa":"Wellington"};
+const clean=(v:any)=>String(v??"").replace(/[<>&]/g,"");
+function normalizeRegion(v:any){const x=String(v||"");return regionAliases[x]||x}
+function categoryMatches(s:any,t:any){const wanted=aliases[t.category]||[t.category];return(s.categories||[]).some((c:string)=>wanted.includes(c))}
+function regionMatches(s:any,t:any){const wanted=normalizeRegion(t.region||"Wellington"),covered=(s.regions||[]).map(normalizeRegion);return covered.includes("Nationwide")||covered.includes(wanted)}
+function score(s:any,t:any){let n=0;if(categoryMatches(s,t))n+=60;if(regionMatches(s,t))n+=25;if(s.insurance==="Yes")n+=5;if(!Number(s.minimum)||!Number(t.estimated_value)||Number(t.estimated_value)>=Number(s.minimum))n+=5;if(!Number(s.event_size)||!Number(t.attendance)||Number(t.attendance)<=Number(s.event_size))n+=5;return n}
+async function supabaseGet(path:string,jwt:string){const r=await fetch(`${SUPABASE_URL}/rest/v1/${path}`,{headers:{apikey:SUPABASE_KEY,Authorization:`Bearer ${jwt}`,Accept:"application/json"}});if(!r.ok)throw new Error(`Database request failed (${r.status})`);return r.json()}
+async function supabaseInsert(path:string,rows:any[],jwt:string){const r=await fetch(`${SUPABASE_URL}/rest/v1/${path}`,{method:"POST",headers:{apikey:SUPABASE_KEY,Authorization:`Bearer ${jwt}`,"Content-Type":"application/json",Prefer:"return=minimal"},body:JSON.stringify(rows)});if(!r.ok)throw new Error(`Database insert failed (${r.status}): ${await r.text()}`)}
+
+export default async(req:Request,_context:Context)=>{
+ if(req.method!=="POST")return new Response("Method not allowed",{status:405});
+ try{
+  const jwt=(req.headers.get("authorization")||"").replace(/^Bearer\s+/i,"").trim();if(!jwt)return Response.json({error:"Sign in before sending a tender."},{status:401});
+  const ur=await fetch(`${SUPABASE_URL}/auth/v1/user`,{headers:{apikey:SUPABASE_KEY,Authorization:`Bearer ${jwt}`}});if(!ur.ok)return Response.json({error:"Your SitePlan session has expired. Please sign in again."},{status:401});const user=await ur.json();
+  const body=await req.json().catch(()=>({})),tenderId=String(body.tenderId||"").trim(),ids=Array.isArray(body.supplierIds)?body.supplierIds.map((x:any)=>String(x||"").trim()).filter(Boolean):[];if(!tenderId)return Response.json({error:"Tender ID is required."},{status:400});if(!ids.length)return Response.json({error:"Select at least one supplier to receive this tender."},{status:400});
+  const tr=await supabaseGet(`tenders?id=eq.${encodeURIComponent(tenderId)}&select=*`,jwt),t=tr?.[0];if(!t)return Response.json({error:"Tender not found or you do not have access."},{status:404});if(!["published","draft"].includes(String(t.status||"")))return Response.json({error:"Only draft or open tenders can be emailed."},{status:400});
+  const suppliers=await supabaseGet("suppliers?select=*&active=eq.true",jwt),matched=(suppliers||[]).filter((s:any)=>s.email&&s.notifications!=="off"&&categoryMatches(s,t)&&regionMatches(s,t)&&(s.notifications!=="high"||score(s,t)>=85));const selected=new Set(ids),recipients=matched.filter((s:any)=>selected.has(String(s.id)));if(!recipients.length)return Response.json({error:"None of the selected suppliers are eligible matching recipients with an email address."},{status:400});
+  let eventName="your event";if(t.event_id){const er=await supabaseGet(`events?id=eq.${encodeURIComponent(t.event_id)}&select=name`,jwt);if(er?.[0]?.name)eventName=er[0].name}
+  const apiKey=Netlify.env.get("RESEND_API_KEY");if(!apiKey)return Response.json({error:"Tender email sending is not configured yet."},{status:503});
+  const origin=new URL(req.url).origin,link=`${origin}/#tender=${encodeURIComponent(t.public_token)}`,due=t.due_at?new Date(t.due_at).toLocaleDateString("en-NZ",{day:"numeric",month:"long",year:"numeric",timeZone:"Pacific/Auckland"}):"Not specified";
+  const organiserName=clean(user.user_metadata?.full_name||user.user_metadata?.name||user.email?.split('@')[0]||"Event organiser");
+  const subject=`${clean(eventName)} – ${clean(t.title)}`;
+  const emails=recipients.map((s:any)=>{const greeting=s.contact_name?`Hi ${clean(s.contact_name)},`:"Hi,";const intro=`${organiserName} is inviting you to provide a quote for ${clean(t.title)} for ${clean(eventName)}.`;const text=`${greeting}\n\n${intro}\n\n${t.category?`Service: ${clean(t.category)}\n`:""}${t.region?`Location/region: ${clean(t.region)}\n`:""}Quote due: ${due}\n\nTender details and quote submission:\n${link}\n\nIf you'd rather reply by email, just reply to this message and it will go directly to ${organiserName}.\n\nRegards,\n${organiserName}\nSent via SitePlan`;
+   const html=`<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta http-equiv="X-UA-Compatible" content="IE=edge"></head><body style="margin:0;background-color:#ffffff;font-family:Arial,Helvetica,sans-serif;color:#202124"><table width="100%" cellpadding="0" cellspacing="0" border="0"><tr><td bgcolor="#ffffff" style="background-color:#ffffff;padding-top:24px;padding-right:16px;padding-bottom:24px;padding-left:16px"><table width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:600px;margin-left:auto;margin-right:auto"><tr><td style="font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:24px;color:#202124">${greeting}<br><br>${intro}<br><br><strong style="font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:24px;color:#202124">Quote due:</strong> ${due}<br><br><a href="${link}" style="font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:24px;color:#1769aa;text-decoration:underline">View tender details and submit a quote</a><br><br>If you'd rather reply by email, just reply to this message and it will go directly to ${organiserName}.<br><br>Regards,<br>${organiserName}<br><span style="font-family:Arial,Helvetica,sans-serif;font-size:12px;line-height:18px;color:#6b7280">Sent via SitePlan</span></td></tr></table></td></tr></table></body></html>`;
+   return{from:"SitePlan <tenders@goodtimedjhire.co.nz>",to:[s.email],subject,text,html,tags:[{name:"siteplan_tender",value:String(t.id)},{name:"siteplan_supplier",value:String(s.id)}],...(user.email?{reply_to:[user.email]}:{})}});
+  const sr=await fetch("https://api.resend.com/emails/batch",{method:"POST",headers:{Authorization:`Bearer ${apiKey}`,"Content-Type":"application/json"},body:JSON.stringify(emails)}),sd=await sr.json().catch(()=>({}));if(!sr.ok){console.error("Resend error",sd);return Response.json({error:sd?.message||"Email delivery request failed."},{status:502})}
+  const rr=Array.isArray(sd?.data)?sd.data:[],now=new Date().toISOString(),tracking=recipients.map((s:any,i:number)=>({tender_id:t.id,owner_id:user.id,supplier_id:s.id||null,company_name:s.company_name||"Supplier",recipient_email:s.email,resend_email_id:rr[i]?.id||null,status:"sent",sent_at:now,updated_at:now}));try{await supabaseInsert("tender_email_deliveries",tracking,jwt)}catch(e){console.error("Tender delivery tracking insert failed",e)}
+  return Response.json({ok:true,sent:recipients.length,recipients:recipients.map((s:any,i:number)=>({company:s.company_name,email:s.email,deliveryId:rr[i]?.id||null}))});
+ }catch(error:any){console.error("send-tender",error);return Response.json({error:error?.message||"Tender email could not be sent."},{status:500})}
 };
-
-const regionAliases: Record<string, string> = {
-  "New Plymouth": "Taranaki",
-  "Manawatu": "Manawatu-Whanganui",
-  "Kapiti Coast": "Wellington",
-  "Wairarapa": "Wellington"
-};
-
-function normalizeRegion(value: string | null | undefined) {
-  const v = String(value || "");
-  return regionAliases[v] || v;
-}
-
-function categoryMatches(supplier: any, tender: any) {
-  const wanted = aliases[tender.category] || [tender.category];
-  return (supplier.categories || []).some((c: string) => wanted.includes(c));
-}
-
-function regionMatches(supplier: any, tender: any) {
-  const wanted = normalizeRegion(tender.region || "Wellington");
-  const covered = (supplier.regions || []).map(normalizeRegion);
-  return covered.includes("Nationwide") || covered.includes(wanted);
-}
-
-function score(supplier: any, tender: any) {
-  let n = 0;
-  if (categoryMatches(supplier, tender)) n += 60;
-  if (regionMatches(supplier, tender)) n += 25;
-  if (supplier.insurance === "Yes") n += 5;
-  if (!Number(supplier.minimum) || !Number(tender.estimated_value) || Number(tender.estimated_value) >= Number(supplier.minimum)) n += 5;
-  if (!Number(supplier.event_size) || !Number(tender.attendance) || Number(tender.attendance) <= Number(supplier.event_size)) n += 5;
-  return n;
-}
-
-async function supabaseGet(path: string, jwt: string) {
-  const response = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, {
-    headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${jwt}`, Accept: "application/json" }
-  });
-  if (!response.ok) throw new Error(`Database request failed (${response.status})`);
-  return response.json();
-}
-
-async function supabaseInsert(path: string, rows: any[], jwt: string) {
-  const response = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, {
-    method: "POST",
-    headers: {
-      apikey: SUPABASE_KEY,
-      Authorization: `Bearer ${jwt}`,
-      "Content-Type": "application/json",
-      Prefer: "return=minimal"
-    },
-    body: JSON.stringify(rows)
-  });
-  if (!response.ok) throw new Error(`Database insert failed (${response.status}): ${await response.text()}`);
-}
-
-export default async (req: Request, _context: Context) => {
-  if (req.method !== "POST") return new Response("Method not allowed", { status: 405 });
-
-  try {
-    const auth = req.headers.get("authorization") || "";
-    const jwt = auth.replace(/^Bearer\s+/i, "").trim();
-    if (!jwt) return Response.json({ error: "Sign in before sending a tender." }, { status: 401 });
-
-    const userResponse = await fetch(`${SUPABASE_URL}/auth/v1/user`, {
-      headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${jwt}` }
-    });
-    if (!userResponse.ok) return Response.json({ error: "Your SitePlan session has expired. Please sign in again." }, { status: 401 });
-    const user = await userResponse.json();
-
-    const body = await req.json().catch(() => ({}));
-    const tenderId = String(body.tenderId || "").trim();
-    const selectedSupplierIds = Array.isArray(body.supplierIds)
-      ? body.supplierIds.map((id: any) => String(id || "").trim()).filter(Boolean)
-      : [];
-    if (!tenderId) return Response.json({ error: "Tender ID is required." }, { status: 400 });
-    if (!selectedSupplierIds.length) return Response.json({ error: "Select at least one supplier to receive this tender." }, { status: 400 });
-
-    const tenderRows = await supabaseGet(`tenders?id=eq.${encodeURIComponent(tenderId)}&select=*`, jwt);
-    const tender = tenderRows?.[0];
-    if (!tender) return Response.json({ error: "Tender not found or you do not have access." }, { status: 404 });
-    if (!["published", "draft"].includes(String(tender.status || ""))) {
-      return Response.json({ error: "Only draft or open tenders can be emailed." }, { status: 400 });
-    }
-
-    const suppliers = await supabaseGet("suppliers?select=*&active=eq.true", jwt);
-    const matched = (suppliers || []).filter((s: any) => {
-      if (!s.email || s.notifications === "off") return false;
-      if (!categoryMatches(s, tender) || !regionMatches(s, tender)) return false;
-      const match = score(s, tender);
-      return s.notifications === "high" ? match >= 85 : match >= 60;
-    });
-
-    const selected = new Set(selectedSupplierIds);
-    const recipients = matched.filter((s: any) => selected.has(String(s.id)));
-    if (!recipients.length) return Response.json({ error: "None of the selected suppliers are eligible matching recipients with an email address." }, { status: 400 });
-
-    let eventName = "your event";
-    if (tender.event_id) {
-      const events = await supabaseGet(`events?id=eq.${encodeURIComponent(tender.event_id)}&select=name`, jwt);
-      if (events?.[0]?.name) eventName = events[0].name;
-    }
-
-    const apiKey = Netlify.env.get("RESEND_API_KEY");
-    if (!apiKey) return Response.json({ error: "Tender email sending is not configured yet." }, { status: 503 });
-
-    const origin = new URL(req.url).origin;
-    const link = `${origin}/#tender=${encodeURIComponent(tender.public_token)}`;
-    const due = tender.due_at ? new Date(tender.due_at).toLocaleDateString("en-NZ", { day: "numeric", month: "short", year: "numeric", timeZone: "Pacific/Auckland" }) : "Not specified";
-    const subject = `Tender invitation: ${tender.title}`;
-    const replyTo = user.email ? [user.email] : undefined;
-
-    const emails = recipients.map((s: any) => {
-      const greeting = s.contact_name ? `Hi ${s.contact_name},` : "Hi,";
-      const text = `${greeting}\n\nYou're invited to submit a quote for ${tender.title} for ${eventName}.\n\nCategory: ${tender.category || "Supplier"}\nRegion: ${tender.region || "Not specified"}\nQuote due: ${due}\n\nView the tender and submit your private quote here:\n${link}\n\nReplies to this email go directly to the event organiser.\n\nThanks,\nSitePlan`;
-      const html = `<!doctype html><html><body style="margin:0;background:#f3f5f1;font-family:Arial,Helvetica,sans-serif;color:#151719"><table width="100%" cellpadding="0" cellspacing="0" border="0"><tr><td style="padding:24px"><table width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:600px;margin:0 auto;background:#ffffff;border:1px solid #dfe3dc;border-radius:14px"><tr><td style="padding:28px"><div style="font-size:12px;font-weight:700;letter-spacing:.08em;color:#6c746a">SITEPLAN · PRIVATE TENDER</div><h1 style="font-size:26px;line-height:1.15;margin:10px 0 16px;color:#151719">${String(tender.title || "Tender").replace(/[<>&]/g, "")}</h1><p style="font-size:15px;line-height:1.6;color:#4e5850">${greeting}</p><p style="font-size:15px;line-height:1.6;color:#4e5850">You're invited to submit a quote for <strong>${String(eventName).replace(/[<>&]/g, "")}</strong>.</p><table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:18px 0"><tr><td style="padding:8px 0;font-size:14px;color:#6c746a">Category</td><td style="padding:8px 0;font-size:14px;color:#151719;text-align:right;font-weight:700">${String(tender.category || "Supplier").replace(/[<>&]/g, "")}</td></tr><tr><td style="padding:8px 0;font-size:14px;color:#6c746a">Region</td><td style="padding:8px 0;font-size:14px;color:#151719;text-align:right;font-weight:700">${String(tender.region || "Not specified").replace(/[<>&]/g, "")}</td></tr><tr><td style="padding:8px 0;font-size:14px;color:#6c746a">Quote due</td><td style="padding:8px 0;font-size:14px;color:#151719;text-align:right;font-weight:700">${due}</td></tr></table><table cellpadding="0" cellspacing="0" border="0"><tr><td bgcolor="#a8ff35" style="background:#a8ff35;border-radius:10px"><a href="${link}" style="display:inline-block;padding:13px 18px;color:#0b0d10;text-decoration:none;font-size:14px;font-weight:700">View tender & submit quote</a></td></tr></table><p style="font-size:12px;line-height:1.5;color:#7b847c;margin-top:24px">Your quote is private and is only visible to the event organiser. Reply to this email to contact them directly.</p></td></tr></table></td></tr></table></body></html>`;
-      return {
-        from: "SitePlan <tenders@goodtimedjhire.co.nz>",
-        to: [s.email],
-        subject,
-        text,
-        html,
-        tags: [
-          { name: "siteplan_tender", value: String(tender.id) },
-          { name: "siteplan_supplier", value: String(s.id) }
-        ],
-        ...(replyTo ? { reply_to: replyTo } : {})
-      };
-    });
-
-    const sendResponse = await fetch("https://api.resend.com/emails/batch", {
-      method: "POST",
-      headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
-      body: JSON.stringify(emails)
-    });
-    const sendData = await sendResponse.json().catch(() => ({}));
-    if (!sendResponse.ok) {
-      console.error("Resend error", sendData);
-      return Response.json({ error: sendData?.message || "Email delivery request failed." }, { status: 502 });
-    }
-
-    const resendRows = Array.isArray(sendData?.data) ? sendData.data : [];
-    const trackingRows = recipients.map((s: any, i: number) => ({
-      tender_id: tender.id,
-      owner_id: user.id,
-      supplier_id: s.id || null,
-      company_name: s.company_name || "Supplier",
-      recipient_email: s.email,
-      resend_email_id: resendRows[i]?.id || null,
-      status: "sent",
-      sent_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
-    }));
-    try {
-      await supabaseInsert("tender_email_deliveries", trackingRows, jwt);
-    } catch (trackingError) {
-      console.error("Tender delivery tracking insert failed", trackingError);
-    }
-
-    return Response.json({
-      ok: true,
-      sent: recipients.length,
-      recipients: recipients.map((s: any, i: number) => ({ company: s.company_name, email: s.email, deliveryId: resendRows[i]?.id || null }))
-    });
-  } catch (error: any) {
-    console.error("send-tender", error);
-    return Response.json({ error: error?.message || "Tender email could not be sent." }, { status: 500 });
-  }
-};
-
-export const config: Config = {
-  path: "/api/send-tender"
-};
+export const config:Config={path:"/api/send-tender"};
