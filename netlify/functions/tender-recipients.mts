@@ -18,6 +18,40 @@ function subjectMatches(subject: string, title: string) {
   return s === `Tender invitation: ${t}` || s.endsWith(` – ${t}`) || s.endsWith(` - ${t}`);
 }
 
+function newestPerEmail(rows: any[]) {
+  const map = new Map<string, any>();
+  for (const row of rows || []) {
+    const key = String(row.recipient_email || "").trim().toLowerCase();
+    if (!key) continue;
+    const old = map.get(key);
+    const a = Date.parse(row.updated_at || row.sent_at || "") || 0;
+    const b = Date.parse(old?.updated_at || old?.sent_at || "") || 0;
+    if (!old || a >= b) map.set(key, row);
+  }
+  return [...map.values()];
+}
+
+async function enrichExactStatuses(rows: any[], apiKey: string) {
+  return Promise.all((rows || []).map(async row => {
+    if (!row.resend_email_id) return row;
+    try {
+      const r = await fetch(`https://api.resend.com/emails/${encodeURIComponent(row.resend_email_id)}`, {
+        headers: { Authorization: `Bearer ${apiKey}`, Accept: "application/json" }
+      });
+      if (!r.ok) return row;
+      const e: any = await r.json();
+      return {
+        ...row,
+        status: e.last_event || e.status || row.status || "sent",
+        updated_at: e.updated_at || e.created_at || row.updated_at || row.sent_at,
+        source: "database+resend"
+      };
+    } catch {
+      return row;
+    }
+  }));
+}
+
 export default async (req: Request, _context: Context) => {
   if (req.method !== "GET") return new Response("Method not allowed", { status: 405 });
   try {
@@ -35,8 +69,24 @@ export default async (req: Request, _context: Context) => {
     if (!tender) return Response.json({ error: "Tender not found or you do not have access." }, { status: 404 });
 
     const apiKey = Netlify.env.get("RESEND_API_KEY");
-    if (!apiKey) return Response.json({ error: "Email history is not configured." }, { status: 503 });
 
+    // Primary source: SitePlan's own durable send records. These are written at send time
+    // and survive browser changes, subject changes and Resend history pagination.
+    let tracked: any[] = [];
+    try {
+      tracked = await supabaseGet(`tender_email_deliveries?tender_id=eq.${encodeURIComponent(tenderId)}&select=*&order=sent_at.desc`, jwt);
+    } catch (e) {
+      console.warn("Could not read tender delivery table", e);
+    }
+
+    if (tracked?.length) {
+      let rows = newestPerEmail(tracked.map((r: any) => ({ ...r, source: "database" })));
+      if (apiKey) rows = newestPerEmail(await enrichExactStatuses(rows, apiKey));
+      return Response.json({ ok: true, recipients: rows, source: "database" });
+    }
+
+    // Legacy fallback for tenders sent before durable tracking existed.
+    if (!apiKey) return Response.json({ ok: true, recipients: [], source: "database" });
     const found: any[] = [];
     let after = "";
     for (let page = 0; page < 8; page++) {
@@ -51,7 +101,7 @@ export default async (req: Request, _context: Context) => {
       if (!after) break;
     }
 
-    const rows = found.flatMap((e: any) => {
+    const rows = newestPerEmail(found.flatMap((e: any) => {
       const tos = Array.isArray(e.to) ? e.to : (e.to ? [e.to] : []);
       return tos.map((email: string) => ({
         company_name: "Supplier",
@@ -60,10 +110,10 @@ export default async (req: Request, _context: Context) => {
         sent_at: e.created_at || null,
         updated_at: e.updated_at || e.created_at || null,
         resend_email_id: e.id || null,
-        source: "resend"
+        source: "resend-legacy"
       }));
-    });
-    return Response.json({ ok: true, recipients: rows });
+    }));
+    return Response.json({ ok: true, recipients: rows, source: "resend-legacy" });
   } catch (error: any) {
     console.error("tender-recipients", error);
     return Response.json({ error: error?.message || "Could not load sent suppliers." }, { status: 500 });
