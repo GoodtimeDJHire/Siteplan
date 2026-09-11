@@ -24,14 +24,14 @@ create policy "Owners can view tender email deliveries"
 on public.tender_email_deliveries
 for select
 to authenticated
-using (owner_id = auth.uid());
+using (owner_id = (select auth.uid()));
 
 drop policy if exists "Owners can insert tender email deliveries" on public.tender_email_deliveries;
 create policy "Owners can insert tender email deliveries"
 on public.tender_email_deliveries
 for insert
 to authenticated
-with check (owner_id = auth.uid());
+with check (owner_id = (select auth.uid()));
 
 create or replace function public.record_tender_email_event(
   p_resend_email_id text,
@@ -57,4 +57,5 @@ begin
 end;
 $$;
 
+revoke all on function public.record_tender_email_event(text,text,text,jsonb) from public;
 grant execute on function public.record_tender_email_event(text,text,text,jsonb) to anon, authenticated;
