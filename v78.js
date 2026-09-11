@@ -11,12 +11,30 @@ function tenderId(card){const view=[...card.querySelectorAll('button')].find(b=>
 function sentButton(card){return [...card.querySelectorAll('button')].find(b=>b.classList.contains('sent-to-btn')||(b.textContent||'').trim().startsWith('Sent to'))}
 function renderCount(btn,id,n){if(!btn||!id||!Number.isFinite(n)||n<1)return;const best=Math.max(n,memoryCounts.get(id)||0);memoryCounts.set(id,best);btn.textContent=`Sent to ${best}`}
 function applyKnownCounts(){document.querySelectorAll('#tenderList .tender').forEach(card=>{const id=tenderId(card),btn=sentButton(card);if(!id||!btn)return;const n=Math.max(localCount(id),memoryCounts.get(id)||0);if(n>0)renderCount(btn,id,n)})}
-async function enrichCounts(){applyKnownCounts();try{if(typeof siteplanCloud==='undefined')return;const session=(await siteplanCloud.auth.getSession()).data?.session,token=session?.access_token;if(!token)return;await Promise.all([...document.querySelectorAll('#tenderList .tender')].map(async card=>{const id=tenderId(card),btn=sentButton(card);if(!id||!btn)return;try{const r=await fetch(`/api/tender-recipients?tenderId=${encodeURIComponent(id)}`,{headers:{Authorization:`Bearer ${token}`},cache:'no-store'}),d=await r.json();if(!r.ok)return;const emails=new Set((d.recipients||[]).map(x=>String(x.recipient_email||'').trim().toLowerCase()).filter(Boolean));const n=Math.max(localCount(id),emails.size,memoryCounts.get(id)||0);if(n>0)renderCount(btn,id,n)}catch{}}))}catch{}}
+async function enrichCounts(){
+ applyKnownCounts();
+ try{
+  if(typeof siteplanCloud==='undefined'||typeof siteplanCloudUser==='undefined'||!siteplanCloudUser)return;
+  const {data,error}=await siteplanCloud.from('tender_email_deliveries').select('tender_id,recipient_email');
+  if(error){console.warn('Tender sent counts',error);return}
+  const counts=new Map();
+  (data||[]).forEach(row=>{
+   const id=String(row.tender_id||''),email=String(row.recipient_email||'').trim().toLowerCase();
+   if(!id||!email)return;
+   if(!counts.has(id))counts.set(id,new Set());
+   counts.get(id).add(email);
+  });
+  document.querySelectorAll('#tenderList .tender').forEach(card=>{
+   const id=tenderId(card),btn=sentButton(card);if(!id||!btn)return;
+   renderCount(btn,id,Math.max(localCount(id),counts.get(id)?.size||0));
+  });
+ }catch(error){console.warn('Tender sent counts',error)}
+}
 function eventName(){const input=document.getElementById('eventName');if(input?.value?.trim())return input.value.trim();try{if(typeof currentEventId!=='undefined'&&typeof events!=='undefined'){const e=(events||[]).find(x=>String(x.id)===String(currentEventId));return String(e?.name||e?.eventName||'').trim()}}catch{}return ''}
 function showEventTitle(){const list=document.getElementById('tenderList');if(!list)return;let root=list.closest('section')||list.parentElement?.parentElement||document;const heading=[...root.querySelectorAll('h1,h2')].find(h=>(h.textContent||'').includes('Tenders & Quotes'))||[...document.querySelectorAll('h1,h2')].find(h=>(h.textContent||'').includes('Tenders & Quotes'));if(!heading)return;let badge=heading.querySelector('.tenders-active-event');if(!badge){badge=document.createElement('span');badge.className='tenders-active-event';heading.appendChild(badge)}const name=eventName();badge.textContent=name?`Event: ${name}`:''}
-let timer=0;function refresh(){clearTimeout(timer);timer=setTimeout(()=>{showEventTitle();enrichCounts()},100)}
-const host=document.getElementById('tenderList');if(host)new MutationObserver(mutations=>{if(mutations.some(m=>m.type==='childList'&&[...m.addedNodes].some(n=>n.nodeType===1)))refresh()}).observe(host,{childList:true,subtree:true});
-document.addEventListener('click',e=>{if(e.target.closest('[data-module="tenders"],#navTenders,.mobile-nav-tenders'))setTimeout(refresh,80)},true);
-window.addEventListener('storage',e=>{if(e.key===HISTORY_KEY)refresh()});
-setTimeout(refresh,150);setTimeout(refresh,900);
+let refreshPromise=null;
+function refreshOnce(){showEventTitle();applyKnownCounts();if(!refreshPromise)refreshPromise=enrichCounts().finally(()=>{refreshPromise=null})}
+document.addEventListener('click',e=>{if(e.target.closest('[data-module="tenders"],#navTenders,.mobile-nav-tenders'))setTimeout(refreshOnce,80)},true);
+window.addEventListener('storage',e=>{if(e.key===HISTORY_KEY)applyKnownCounts()});
+setTimeout(()=>{showEventTitle();applyKnownCounts()},150);
 })();
