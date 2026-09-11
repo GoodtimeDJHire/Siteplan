@@ -2,8 +2,7 @@
 (()=>{
 'use strict';
 const esc=v=>String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
-const wait=ms=>new Promise(r=>setTimeout(r,ms));
-async function withRetry(task){try{return await task()}catch(err){if(!(err instanceof TypeError)&&!/failed to fetch|network/i.test(String(err?.message||err||'')))throw err;await wait(500);return task();}}
+async function sendWithTimeout(url,init,timeoutMs=25000){const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),timeoutMs);try{return await fetch(url,{...init,signal:controller.signal})}catch(error){if(error?.name==='AbortError')throw new Error('Sending timed out. The email may have been accepted—check Sent suppliers before trying again.');throw error}finally{clearTimeout(timer)}}
 function dueText(t){if(!t?.due)return'Not specified';try{return new Date(t.due+'T12:00:00').toLocaleDateString('en-NZ',{day:'numeric',month:'long',year:'numeric'})}catch{return String(t.due)}}
 function organiserName(){const u=siteplanCloudUser||{};return String(u.user_metadata?.full_name||u.user_metadata?.name||u.email?.split('@')[0]||'Event organiser').trim()}
 function tenderLink(t){const token=t?.publicToken||t?.public_token||'';return token?`${location.origin}/#tender=${encodeURIComponent(token)}`:''}
@@ -54,7 +53,8 @@ window.shareTenderToAll=async function(id){
   const btn=bg.querySelector('.send');btn.disabled=true;btn.textContent='Sending…';
   try{
    const session=(await siteplanCloud.auth.getSession()).data?.session;if(!session)throw new Error('Your session expired. Please sign in again.');
-   const r=await withRetry(()=>fetch('/api/send-tender',{method:'POST',headers:{'Content-Type':'application/json',Authorization:`Bearer ${session.access_token}`},body:JSON.stringify({tenderId:t.id,supplierIds:selected,subject,message})}));
+   const requestId=crypto.randomUUID();
+   const r=await sendWithTimeout('/api/send-tender',{method:'POST',headers:{'Content-Type':'application/json',Authorization:`Bearer ${session.access_token}`},body:JSON.stringify({tenderId:t.id,supplierIds:selected,subject,message,requestId})});
    const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.error||'Tender email could not be sent');
    saveHistory(t.id,d.recipients||[]);close();toast(`Tender sent to ${d.sent} supplier${d.sent===1?'':'s'}`);setTimeout(()=>renderTenders(),50);
   }catch(err){console.error('shareTenderToAll',err);btn.disabled=false;btn.textContent='Send tender';toast(err?.message||'Tender email could not be sent');}
