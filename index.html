@@ -3057,6 +3057,13 @@ function setAuthMode(mode='signin'){
 }
 function openAuthModalMode(mode='signin'){ setAuthMode(mode); openAuthModal(); }
 
+function siteplanAuthTimeout(promise,action,ms=20000){
+ let timer;
+ return Promise.race([
+   promise,
+   new Promise((_,reject)=>{timer=setTimeout(()=>reject(new Error(`${action} timed out. Check your connection and try again.`)),ms)})
+ ]).finally(()=>clearTimeout(timer));
+}
 async function siteplanAuthInit(){
  const accountBtn=byId('accountBtn');
  if(accountBtn) accountBtn.onclick=()=>openAuthModalMode('signin');
@@ -3071,57 +3078,70 @@ async function siteplanAuthInit(){
 
  const signIn=byId('authSignIn');
  if(signIn) signIn.onclick=async()=>{
+   const label=signIn.textContent;signIn.disabled=true;signIn.textContent='Signing in…';
    try{
      authMsg('Signing in…');
      const email=byId('authEmail').value.trim(), password=byId('authPassword').value;
      if(!email||!password) throw new Error('Enter your email and password.');
-     const{data,error}=await siteplanCloud.auth.signInWithPassword({email,password});
+     const{data,error}=await siteplanAuthTimeout(siteplanCloud.auth.signInWithPassword({email,password}),'Sign in');
      if(error)throw error;
-     siteplanCloudUser=data.user;
-     cloudStatus('Cloud',true);
+     siteplanCloudUser=data?.user||data?.session?.user||null;
+     if(!siteplanCloudUser)throw new Error('Sign in completed without a user session. Please try again.');
+     cloudStatus('Cloud synced',true);
      closeAuthModal();
      await launchSitePlanFromHome();
-     await cloudLoadAll();
-   }catch(e){authMsg(e.message)}
+     cloudLoadAll().catch(error=>{console.error('Cloud load after sign in',error);toast('Signed in, but cloud data is still loading')});
+   }catch(e){console.error('SitePlan sign in',e);authMsg(e?.message||'Could not sign in')}
+   finally{signIn.disabled=false;signIn.textContent=label}
  };
 
  const signUp=byId('authSignUp');
  if(signUp) signUp.onclick=async()=>{
+   const label=signUp.textContent;signUp.disabled=true;signUp.textContent='Creating…';
    try{
      authMsg('Creating account…');
      const email=byId('authEmail').value.trim(), password=byId('authPassword').value;
      if(!email) throw new Error('Enter your email.');
      if(!password||password.length<6) throw new Error('Password must be at least 6 characters.');
-     const{data,error}=await siteplanCloud.auth.signUp({email,password});
+     const{data,error}=await siteplanAuthTimeout(siteplanCloud.auth.signUp({email,password}),'Account creation');
      if(error)throw error;
      if(data.session){
        siteplanCloudUser=data.user;
-       cloudStatus('Cloud',true);
+       cloudStatus('Cloud synced',true);
        closeAuthModal();
        await launchSitePlanFromHome();
-       await cloudLoadAll();
+       cloudLoadAll().catch(error=>console.error('Cloud load after sign up',error));
      }else authMsg('Account created. Check your email to confirm it, then sign in.');
-   }catch(e){authMsg(e.message)}
+   }catch(e){console.error('SitePlan sign up',e);authMsg(e?.message||'Could not create account')}
+   finally{signUp.disabled=false;signUp.textContent=label}
  };
 
  const signOut=byId('authSignOut');
  if(signOut) signOut.onclick=async()=>{
-   await siteplanCloud.auth.signOut();
-   siteplanCloudUser=null;
-   closeAuthModal();
-   cloudStatus('Local');
-   toast('Signed out');
+   const label=signOut.textContent;signOut.disabled=true;signOut.textContent='Signing out…';
+   try{
+     const{error}=await siteplanAuthTimeout(siteplanCloud.auth.signOut({scope:'local'}),'Sign out');
+     if(error)throw error;
+     siteplanCloudUser=null;
+     closeAuthModal();
+     cloudStatus('Sign in');
+     toast('Signed out');
+   }catch(e){console.error('SitePlan sign out',e);authMsg(e?.message||'Could not sign out')}
+   finally{signOut.disabled=false;signOut.textContent=label}
  };
 
- const{data}=await siteplanCloud.auth.getSession();
- siteplanCloudUser=data.session?.user||null;
- if(siteplanCloudUser){cloudStatus('Cloud synced',true);await launchSitePlanFromHome();await cloudLoadAll()}else cloudStatus('Sign in');
+ try{
+   const{data,error}=await siteplanCloud.auth.getSession();
+   if(error)throw error;
+   siteplanCloudUser=data.session?.user||null;
+   if(siteplanCloudUser){cloudStatus('Cloud synced',true);await launchSitePlanFromHome();cloudLoadAll().catch(error=>console.error('Initial cloud load',error))}
+   else cloudStatus('Sign in');
+ }catch(error){console.error('SitePlan auth session',error);siteplanCloudUser=null;cloudStatus('Sign in');authMsg(error?.message||'Could not check your session')}
  siteplanCloud.auth.onAuthStateChange((_event,session)=>{
    siteplanCloudUser=session?.user||null;
    cloudStatus(siteplanCloudUser?'Cloud synced':'Sign in',!!siteplanCloudUser);
    setAuthMode('signin');
  });
-
 }
 
 </script>
