@@ -14,12 +14,6 @@ function score(s:any,t:any){let n=0;if(categoryMatches(s,t))n+=60;if(regionMatch
 async function supabaseGet(path:string,jwt:string){const r=await fetch(`${SUPABASE_URL}/rest/v1/${path}`,{headers:{apikey:SUPABASE_KEY,Authorization:`Bearer ${jwt}`,Accept:"application/json"}});if(!r.ok)throw new Error(`Database request failed (${r.status})`);return r.json()}
 async function supabaseInsert(path:string,rows:any[],jwt:string){const r=await fetch(`${SUPABASE_URL}/rest/v1/${path}`,{method:"POST",headers:{apikey:SUPABASE_KEY,Authorization:`Bearer ${jwt}`,"Content-Type":"application/json",Prefer:"return=minimal"},body:JSON.stringify(rows)});if(!r.ok)throw new Error(`Database insert failed (${r.status}): ${await r.text()}`)}
 
-function applyTemplate(template:string, values:Record<string,string>){
- let out=String(template||"");
- for(const [key,value] of Object.entries(values)) out=out.split(`[${key}]`).join(value||"");
- return out;
-}
-
 export default async(req:Request,_context:Context)=>{
  if(req.method!=="POST")return new Response("Method not allowed",{status:405});
  try{
@@ -35,11 +29,10 @@ export default async(req:Request,_context:Context)=>{
   const customSubject=String(body.subject||"").trim().slice(0,180);
   const customMessage=String(body.message||"").trim().slice(0,12000);
   const defaultSubject=`${clean(eventName)} – ${clean(t.title)}`;
-  const defaultMessage=`Hi [Supplier],\n\n[Organiser] is inviting you to provide a quote for [Tender] for [Event].\n\nService: [Category]\nLocation/region: [Region]\nQuote due: [Due Date]\n\nTender details and quote submission:\n[Tender Link]\n\nIf you'd rather reply by email, just reply to this message and it will go directly to [Organiser].\n\nRegards,\n[Organiser]\nSent via SitePlan`;
+  const defaultMessage=`Hi,\n\n${organiserName} is inviting you to provide a quote for ${clean(t.title)} for ${clean(eventName)}.\n\nService: ${clean(t.category||"Supplier")}\nLocation/region: ${clean(t.region||"Not specified")}\nQuote due: ${due}\n\nTender details and quote submission:\n${link}\n\nIf you'd rather reply by email, just reply to this message and it will go directly to ${organiserName}.\n\nRegards,\n${organiserName}\nSent via SitePlan`;
+  const subject=customSubject||defaultSubject;
+  const text=customMessage||defaultMessage;
   const emails=recipients.map((s:any)=>{
-   const values={Supplier:clean(s.contact_name||s.company_name||"there"),Organiser:organiserName,Tender:clean(t.title),Event:clean(eventName),Category:clean(t.category||"Supplier"),Region:clean(t.region||"Not specified"),"Due Date":due,"Tender Link":link};
-   const subject=applyTemplate(customSubject||defaultSubject,values);
-   const text=applyTemplate(customMessage||defaultMessage,values);
    const html=`<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body style="margin:0;background:#fff;font-family:Arial,Helvetica,sans-serif;color:#202124"><table width="100%" cellpadding="0" cellspacing="0" border="0"><tr><td style="padding:24px 16px"><table width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:600px;margin:0 auto"><tr><td style="font-size:15px;line-height:24px;color:#202124;white-space:pre-wrap">${escapeHtml(text).replace(/\n/g,"<br>")}</td></tr></table></td></tr></table></body></html>`;
    return{from:"SitePlan <tenders@goodtimedjhire.co.nz>",to:[s.email],subject,text,html,tags:[{name:"siteplan_tender",value:String(t.id)},{name:"siteplan_supplier",value:String(s.id)}],...(user.email?{reply_to:[user.email]}:{})}
   });
