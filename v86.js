@@ -8,7 +8,10 @@ function saveToken(eventId,token){const x=savedTokens();if(token)x[eventId]=toke
 async function sessionToken(){try{return (await siteplanCloud.auth.getSession()).data?.session?.access_token||''}catch{return ''}}
 async function shareRequest(method,eventId){
  const token=await sessionToken();if(!token)throw new Error('Sign in before sharing a map.');
- const r=await fetch('/api/public-map-share',{method,headers:{'Content-Type':'application/json','Authorization':`Bearer ${token}`},body:JSON.stringify({eventId})});
+ const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),20000);let r;
+ try{r=await fetch('/api/public-map-share',{method,headers:{'Content-Type':'application/json','Authorization':`Bearer ${token}`},body:JSON.stringify({eventId}),signal:controller.signal})}
+ catch(error){if(error?.name==='AbortError')throw new Error('Map sharing timed out. Please try again.');throw error}
+ finally{clearTimeout(timer)}
  const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.error||'Could not update map sharing.');return d;
 }
 function shareButton(){
