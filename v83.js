@@ -1,4 +1,4 @@
-// SitePlan V83: reliable supplier create/edit through backend endpoint
+// SitePlan V83: reliable supplier create/edit with direct Supabase diagnostics
 (()=>{
 'use strict';
 let editingSupplierId='';
@@ -31,9 +31,18 @@ window.addSupplier=async function(){
  try{
   const session=(await siteplanCloud.auth.getSession()).data?.session;if(!session){if(typeof openAuthModal==='function')openAuthModal();throw new Error('Please sign in first.');}
   const editId=cleanSupplierId(editingSupplierId);
-  const r=await fetch('/api/save-supplier',{method:'POST',headers:{'Content-Type':'application/json',Authorization:`Bearer ${session.access_token}`},body:JSON.stringify({id:editId,row})});
-  const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.error||'Supplier could not be saved.');
-  const saved=supplierFromCloud(d.supplier);
+  const payload={...row,owner_id:session.user.id};
+  const query=editId
+   ? siteplanCloud.from('suppliers').update(payload).eq('id',editId).eq('owner_id',session.user.id).select().single()
+   : siteplanCloud.from('suppliers').insert(payload).select().single();
+  const {data,error,status,statusText}=await query;
+  if(error){
+   console.error('Supplier Supabase request failed',{operation:editId?'update':'insert',status,statusText,code:error.code,message:error.message,details:error.details,hint:error.hint});
+   const detail=[error.message,error.details,error.hint,error.code?`Code ${error.code}`:''].filter(Boolean).join(' · ');
+   throw new Error(detail||`Supplier save failed (${status||'database error'}).`);
+  }
+  if(!data)throw new Error('Supabase returned no supplier after saving.');
+  const saved=supplierFromCloud(data);
   if(editId){suppliers=suppliers.map(s=>String(s.id)===editId?saved:s);editingSupplierId='';}else{suppliers.unshift(saved);}
   localStorage.setItem('siteplan_suppliers',JSON.stringify(suppliers));by('supplierModal')?.classList.add('hidden');renderSuppliers();renderTenders();renderSupplierDashboard();toast(editId?'Supplier updated':'Supplier saved');
  }catch(error){console.error('Supplier save failed',error);toast(error?.message||'Supplier could not be saved.');}
