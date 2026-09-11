@@ -6,12 +6,19 @@ const SUPABASE_KEY = "sb_publishable_tiPl-Y7wvfrpB7RzNzOBVA_CMIGBTwA";
 const aliases: Record<string, string[]> = {"Catering / Bar":["Food Vendor","Bars & Beverage"],"Generators":["Power & Generators"],"Toilets":["Toilets & Sanitation"],"Marquees":["Marquees & Structures"],"Sound & Lighting":["Production / AV"],"Staging":["Production / AV"],"Custom":["Other"]};
 const regionAliases: Record<string,string>={"New Plymouth":"Taranaki","Manawatu":"Manawatu-Whanganui","Kapiti Coast":"Wellington","Wairarapa":"Wellington"};
 const clean=(v:any)=>String(v??"").replace(/[<>&]/g,"");
+const escapeHtml=(v:any)=>String(v??"").replace(/[&<>\"']/g,(m)=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[m]||m));
 function normalizeRegion(v:any){const x=String(v||"");return regionAliases[x]||x}
 function categoryMatches(s:any,t:any){const wanted=aliases[t.category]||[t.category];return(s.categories||[]).some((c:string)=>wanted.includes(c))}
 function regionMatches(s:any,t:any){const wanted=normalizeRegion(t.region||"Wellington"),covered=(s.regions||[]).map(normalizeRegion);return covered.includes("Nationwide")||covered.includes(wanted)}
 function score(s:any,t:any){let n=0;if(categoryMatches(s,t))n+=60;if(regionMatches(s,t))n+=25;if(s.insurance==="Yes")n+=5;if(!Number(s.minimum)||!Number(t.estimated_value)||Number(t.estimated_value)>=Number(s.minimum))n+=5;if(!Number(s.event_size)||!Number(t.attendance)||Number(t.attendance)<=Number(s.event_size))n+=5;return n}
 async function supabaseGet(path:string,jwt:string){const r=await fetch(`${SUPABASE_URL}/rest/v1/${path}`,{headers:{apikey:SUPABASE_KEY,Authorization:`Bearer ${jwt}`,Accept:"application/json"}});if(!r.ok)throw new Error(`Database request failed (${r.status})`);return r.json()}
 async function supabaseInsert(path:string,rows:any[],jwt:string){const r=await fetch(`${SUPABASE_URL}/rest/v1/${path}`,{method:"POST",headers:{apikey:SUPABASE_KEY,Authorization:`Bearer ${jwt}`,"Content-Type":"application/json",Prefer:"return=minimal"},body:JSON.stringify(rows)});if(!r.ok)throw new Error(`Database insert failed (${r.status}): ${await r.text()}`)}
+
+function applyTemplate(template:string, values:Record<string,string>){
+ let out=String(template||"");
+ for(const [key,value] of Object.entries(values)) out=out.split(`[${key}]`).join(value||"");
+ return out;
+}
 
 export default async(req:Request,_context:Context)=>{
  if(req.method!=="POST")return new Response("Method not allowed",{status:405});
@@ -25,10 +32,17 @@ export default async(req:Request,_context:Context)=>{
   const apiKey=Netlify.env.get("RESEND_API_KEY");if(!apiKey)return Response.json({error:"Tender email sending is not configured yet."},{status:503});
   const origin=new URL(req.url).origin,link=`${origin}/#tender=${encodeURIComponent(t.public_token)}`,due=t.due_at?new Date(t.due_at).toLocaleDateString("en-NZ",{day:"numeric",month:"long",year:"numeric",timeZone:"Pacific/Auckland"}):"Not specified";
   const organiserName=clean(user.user_metadata?.full_name||user.user_metadata?.name||user.email?.split('@')[0]||"Event organiser");
-  const subject=`${clean(eventName)} – ${clean(t.title)}`;
-  const emails=recipients.map((s:any)=>{const greeting=s.contact_name?`Hi ${clean(s.contact_name)},`:"Hi,";const intro=`${organiserName} is inviting you to provide a quote for ${clean(t.title)} for ${clean(eventName)}.`;const text=`${greeting}\n\n${intro}\n\n${t.category?`Service: ${clean(t.category)}\n`:""}${t.region?`Location/region: ${clean(t.region)}\n`:""}Quote due: ${due}\n\nTender details and quote submission:\n${link}\n\nIf you'd rather reply by email, just reply to this message and it will go directly to ${organiserName}.\n\nRegards,\n${organiserName}\nSent via SitePlan`;
-   const html=`<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta http-equiv="X-UA-Compatible" content="IE=edge"></head><body style="margin:0;background-color:#ffffff;font-family:Arial,Helvetica,sans-serif;color:#202124"><table width="100%" cellpadding="0" cellspacing="0" border="0"><tr><td bgcolor="#ffffff" style="background-color:#ffffff;padding-top:24px;padding-right:16px;padding-bottom:24px;padding-left:16px"><table width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:600px;margin-left:auto;margin-right:auto"><tr><td style="font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:24px;color:#202124">${greeting}<br><br>${intro}<br><br><strong style="font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:24px;color:#202124">Quote due:</strong> ${due}<br><br><a href="${link}" style="font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:24px;color:#1769aa;text-decoration:underline">View tender details and submit a quote</a><br><br>If you'd rather reply by email, just reply to this message and it will go directly to ${organiserName}.<br><br>Regards,<br>${organiserName}<br><span style="font-family:Arial,Helvetica,sans-serif;font-size:12px;line-height:18px;color:#6b7280">Sent via SitePlan</span></td></tr></table></td></tr></table></body></html>`;
-   return{from:"SitePlan <tenders@goodtimedjhire.co.nz>",to:[s.email],subject,text,html,tags:[{name:"siteplan_tender",value:String(t.id)},{name:"siteplan_supplier",value:String(s.id)}],...(user.email?{reply_to:[user.email]}:{})}});
+  const customSubject=String(body.subject||"").trim().slice(0,180);
+  const customMessage=String(body.message||"").trim().slice(0,12000);
+  const defaultSubject=`${clean(eventName)} – ${clean(t.title)}`;
+  const defaultMessage=`Hi [Supplier],\n\n[Organiser] is inviting you to provide a quote for [Tender] for [Event].\n\nService: [Category]\nLocation/region: [Region]\nQuote due: [Due Date]\n\nTender details and quote submission:\n[Tender Link]\n\nIf you'd rather reply by email, just reply to this message and it will go directly to [Organiser].\n\nRegards,\n[Organiser]\nSent via SitePlan`;
+  const emails=recipients.map((s:any)=>{
+   const values={Supplier:clean(s.contact_name||s.company_name||"there"),Organiser:organiserName,Tender:clean(t.title),Event:clean(eventName),Category:clean(t.category||"Supplier"),Region:clean(t.region||"Not specified"),"Due Date":due,"Tender Link":link};
+   const subject=applyTemplate(customSubject||defaultSubject,values);
+   const text=applyTemplate(customMessage||defaultMessage,values);
+   const html=`<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body style="margin:0;background:#fff;font-family:Arial,Helvetica,sans-serif;color:#202124"><table width="100%" cellpadding="0" cellspacing="0" border="0"><tr><td style="padding:24px 16px"><table width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:600px;margin:0 auto"><tr><td style="font-size:15px;line-height:24px;color:#202124;white-space:pre-wrap">${escapeHtml(text).replace(/\n/g,"<br>")}</td></tr></table></td></tr></table></body></html>`;
+   return{from:"SitePlan <tenders@goodtimedjhire.co.nz>",to:[s.email],subject,text,html,tags:[{name:"siteplan_tender",value:String(t.id)},{name:"siteplan_supplier",value:String(s.id)}],...(user.email?{reply_to:[user.email]}:{})}
+  });
   const sr=await fetch("https://api.resend.com/emails/batch",{method:"POST",headers:{Authorization:`Bearer ${apiKey}`,"Content-Type":"application/json"},body:JSON.stringify(emails)}),sd=await sr.json().catch(()=>({}));if(!sr.ok){console.error("Resend error",sd);return Response.json({error:sd?.message||"Email delivery request failed."},{status:502})}
   const rr=Array.isArray(sd?.data)?sd.data:[],now=new Date().toISOString(),tracking=recipients.map((s:any,i:number)=>({tender_id:t.id,owner_id:user.id,supplier_id:s.id||null,company_name:s.company_name||"Supplier",recipient_email:s.email,resend_email_id:rr[i]?.id||null,status:"sent",sent_at:now,updated_at:now}));try{await supabaseInsert("tender_email_deliveries",tracking,jwt)}catch(e){console.error("Tender delivery tracking insert failed",e)}
   return Response.json({ok:true,sent:recipients.length,recipients:recipients.map((s:any,i:number)=>({company:s.company_name,email:s.email,deliveryId:rr[i]?.id||null}))});
