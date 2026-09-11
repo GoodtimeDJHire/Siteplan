@@ -30,8 +30,8 @@ async function refreshSentCounts(){
  await Promise.all(cards.map(async card=>{const view=[...card.querySelectorAll('button')].find(b=>(b.textContent||'').trim()==='View');const m=(view?.getAttribute('onclick')||'').match(/openTenderView\(['\"]([^'\"]+)['\"]\)/);if(!m)return;const sent=[...card.querySelectorAll('button')].find(b=>b.classList.contains('sent-to-btn')||(b.textContent||'').trim().startsWith('Sent to'));if(!sent)return;try{const rows=await getTenderRecipients(m[1]);sent.textContent=`Sent to ${rows.length}`}catch{sent.textContent='Sent to'}}));
 }
 const oldOpen=window.openTenderView;if(typeof oldOpen==='function')window.openTenderView=function(id){const out=oldOpen.apply(this,arguments);setTimeout(()=>renderLiveTenderDelivery(id),0);return out};
-const oldRender=window.renderTenders;if(typeof oldRender==='function')window.renderTenders=function(){const out=oldRender.apply(this,arguments);setTimeout(refreshSentCounts,0);return out};
-setTimeout(refreshSentCounts,250);
+// Delivery status is loaded only when a tender is opened. Do not refresh every
+// tender card automatically: that previously created a request storm.
 window.refreshTenderDelivery=renderLiveTenderDelivery;
 window.refreshTenderSentCounts=refreshSentCounts;
 })();
