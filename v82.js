@@ -3,6 +3,7 @@
 'use strict';
 const $=id=>document.getElementById(id);
 const safe=v=>String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+async function timedFetch(url,init,timeoutMs=25000){const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),timeoutMs);try{return await fetch(url,{...init,signal:controller.signal})}catch(error){if(error?.name==='AbortError')throw new Error('Sending timed out. Please check whether the email was received before trying again.');throw error}finally{clearTimeout(timer)}}
 
 const css=document.createElement('style');
 css.textContent=`
@@ -51,7 +52,7 @@ function openBriefModal(){
     send.disabled=true;send.textContent='Sending…';
     try{
       const session=(await siteplanCloud.auth.getSession()).data?.session;if(!session)throw new Error('Sign in before emailing suppliers.');
-      const r=await fetch('/api/send-event-brief',{method:'POST',headers:{'Content-Type':'application/json',Authorization:`Bearer ${session.access_token}`},body:JSON.stringify({eventName,eventDate:$('spBriefDate')?.value||date,location:$('spBriefLocation')?.value||location,subject:$('spBriefSubject')?.value||`${eventName} – final event brief`,message:$('spBriefMessage')?.value||'',recipients:chosen})});
+      const r=await timedFetch('/api/send-event-brief',{method:'POST',headers:{'Content-Type':'application/json',Authorization:`Bearer ${session.access_token}`},body:JSON.stringify({eventName,eventDate:$('spBriefDate')?.value||date,location:$('spBriefLocation')?.value||location,subject:$('spBriefSubject')?.value||`${eventName} – final event brief`,message:$('spBriefMessage')?.value||'',recipients:chosen})});
       const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.error||'Could not send event brief');
       toast(`Brief emailed to ${d.sent} supplier${d.sent===1?'':'s'}`);bg.remove();
     }catch(e){toast(e.message||'Could not send event brief');send.disabled=false;send.textContent='Email selected suppliers'}
