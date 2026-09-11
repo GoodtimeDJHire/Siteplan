@@ -33,6 +33,13 @@ for insert
 to authenticated
 with check (owner_id = (select auth.uid()));
 
+drop policy if exists "Owners can delete tender email deliveries" on public.tender_email_deliveries;
+create policy "Owners can delete tender email deliveries"
+on public.tender_email_deliveries
+for delete
+to authenticated
+using (owner_id = (select auth.uid()));
+
 create or replace function public.record_tender_email_event(
   p_resend_email_id text,
   p_status text,
