@@ -3,7 +3,11 @@
 const SUPABASE_URL='https://qkvkemcqfnbmaktbxddg.supabase.co';
 const SUPABASE_KEY='sb_publishable_tiPl-Y7wvfrpB7RzNzOBVA_CMIGBTwA';
 if(!window.supabase?.createClient)return;
-const cloud=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
+// Reuse the app's primary client so auth storage and SIGNED_IN/SIGNED_OUT state
+// cannot diverge between two clients in the same browser tab.
+const cloud=typeof siteplanCloud!=='undefined'
+  ? siteplanCloud
+  : window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
 let user=null,syncing=false,saveTimer=null,allowEmptyOnce=false,ready=false;
 const clone=v=>JSON.parse(JSON.stringify(v));
 const parse=(k,d)=>{try{return JSON.parse(localStorage.getItem(k)||JSON.stringify(d))}catch(e){return d}};
