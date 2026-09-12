@@ -3020,11 +3020,21 @@ submitDemoQuote=async function(id){
  try{
   const d=await publicTenderRequest(t.publicToken||t.id,'POST',{company_name:company,contact_name:byId('qContact').value.trim(),email,phone:byId('qPhone').value.trim(),price:byId('qPrice').value||null,gst_included:byId('qGST').checked,availability:byId('qAvailability').value.trim(),notes:byId('qNotes').value.trim(),inclusions:byId('qInclusions').value.trim(),exclusions:'',answers:{net:Number(byId('qNet')?.value)||0,gst_amount:Number(byId('qGstAmount')?.value)||0}});
   const f=byId('qFile')?.files?.[0];
+  let attachmentUrl='',attachmentName='';
   if(f){
     const fd=new FormData();fd.append('upload_token',d.upload_token);fd.append('file',f);
     const r=await fetch(`${SITEPLAN_SUPABASE_URL}/functions/v1/tender-file-upload`,{method:'POST',headers:{'Authorization':`Bearer ${SITEPLAN_EDGE_ANON}`,'apikey':SITEPLAN_EDGE_ANON},body:fd});
     const u=await r.json().catch(()=>({}));if(!r.ok)throw new Error(u.error||'Quote submitted but file upload failed');
+    attachmentUrl=String(u.signed_url||'');attachmentName=String(u.file_name||f.name||'');
   }
+  try{
+    const nr=await fetch('/api/notify-quote',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({
+      token:t.publicToken||t.id,company,contact:byId('qContact').value.trim(),email,
+      net:Number(byId('qNet')?.value)||0,gst:Number(byId('qGstAmount')?.value)||0,total:Number(byId('qPrice')?.value)||0,
+      inclusions:byId('qInclusions').value.trim(),notes:byId('qNotes').value.trim(),attachmentUrl,attachmentName
+    })});
+    if(!nr.ok)console.warn('Quote notification email failed',await nr.text());
+  }catch(notificationError){console.warn('Quote notification email failed',notificationError)}
   byId('quoteModalContent').innerHTML=`<div class="public-card" style="text-align:center;padding:42px"><div style="font-size:38px">✓</div><h2>Quote submitted</h2><p class="muted">Your private response has been sent to the event organiser.</p></div>`;toast('Private quote submitted');
  }catch(e){toast(e.message);btn.disabled=false;btn.textContent='Submit Private Quote'}
 };
