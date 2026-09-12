@@ -6,6 +6,9 @@ const SUPABASE_KEY = "sb_publishable_tiPl-Y7wvfrpB7RzNzOBVA_CMIGBTwA";
 function clean(v: unknown, max = 500) {
   return String(v ?? "").trim().slice(0, max);
 }
+function escapeHtml(v: unknown) {
+  return String(v ?? "").replace(/[&<>"']/g, (m) => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m] || m));
+}
 
 export default async (req: Request, _context: Context) => {
   if (req.method !== "POST") return new Response("Method not allowed", { status: 405 });
@@ -40,10 +43,15 @@ export default async (req: Request, _context: Context) => {
     const total = Number(body.total) || 0;
     const inclusions = clean(body.inclusions, 1200);
     const notes = clean(body.notes, 1200);
+    const requestedAttachmentUrl = clean(body.attachmentUrl, 2200);
+    const attachmentName = clean(body.attachmentName, 240);
+    const signedPrefix = `${SUPABASE_URL}/storage/v1/object/sign/tender-files/`;
+    const attachmentUrl = requestedAttachmentUrl.startsWith(signedPrefix) ? requestedAttachmentUrl : "";
+    const attachmentText = attachmentUrl ? `\n\nAttachment: ${attachmentName || "Supplier quote"}\n${attachmentUrl}\nThis secure link expires after 7 days.` : "";
     const money = (n: number) => new Intl.NumberFormat("en-NZ", { style: "currency", currency: "NZD" }).format(n);
     const dashboard = new URL(req.url).origin;
     const subject = `New quote: ${target.tender_title || "SitePlan tender"} — ${company}`;
-    const text = `A new supplier quote has been submitted in SitePlan.\n\nTender: ${target.tender_title || "Tender"}\nEvent: ${target.event_name || "Event"}\nSupplier: ${company}\nContact: ${contact || "Not supplied"}\nEmail: ${supplierEmail || "Not supplied"}\nNet: ${money(net)}\nGST: ${money(gst)}\nTotal: ${money(total)}\n\nIncludes: ${inclusions || "Not supplied"}\nNotes: ${notes || "Not supplied"}\n\nOpen SitePlan to review the quote:\n${dashboard}`;
+    const text = `A new supplier quote has been submitted in SitePlan.\n\nTender: ${target.tender_title || "Tender"}\nEvent: ${target.event_name || "Event"}\nSupplier: ${company}\nContact: ${contact || "Not supplied"}\nEmail: ${supplierEmail || "Not supplied"}\nNet: ${money(net)}\nGST: ${money(gst)}\nTotal: ${money(total)}\n\nIncludes: ${inclusions || "Not supplied"}\nNotes: ${notes || "Not supplied"}${attachmentText}\n\nOpen SitePlan to review the quote:\n${dashboard}`;
 
     const send = await fetch("https://api.resend.com/emails", {
       method: "POST",
@@ -53,7 +61,7 @@ export default async (req: Request, _context: Context) => {
         to: [target.organizer_email],
         subject,
         text,
-        html: `<!doctype html><html><body style="margin:0;background:#f3f5f1;font-family:Arial,Helvetica,sans-serif;color:#151719"><table width="100%"><tr><td style="padding:24px"><table width="100%" style="max-width:620px;margin:auto;background:#fff;border:1px solid #dfe3dc;border-radius:14px"><tr><td style="padding:28px"><div style="font-size:12px;font-weight:700;letter-spacing:.08em;color:#6c746a">SITEPLAN · NEW QUOTE</div><h1 style="font-size:24px;margin:10px 0 8px">${clean(target.tender_title, 180)}</h1><p style="color:#4e5850;margin:0 0 20px">${clean(target.event_name, 180)}</p><p><strong>${company}</strong>${contact ? ` · ${contact}` : ""}<br>${supplierEmail}</p><table width="100%" style="margin:18px 0"><tr><td style="padding:7px 0;color:#6c746a">Net</td><td style="text-align:right;font-weight:700">${money(net)}</td></tr><tr><td style="padding:7px 0;color:#6c746a">GST</td><td style="text-align:right;font-weight:700">${money(gst)}</td></tr><tr><td style="padding:9px 0;color:#151719;font-weight:700;border-top:1px solid #e5e7e3">Total</td><td style="text-align:right;font-size:20px;font-weight:800;border-top:1px solid #e5e7e3">${money(total)}</td></tr></table><p><strong>Includes:</strong> ${inclusions || "Not supplied"}</p><p><strong>Notes:</strong> ${notes || "Not supplied"}</p><p style="margin-top:24px"><a href="${dashboard}" style="display:inline-block;background:#a8ff35;color:#0b0d10;text-decoration:none;padding:13px 18px;border-radius:10px;font-weight:700">Review quote in SitePlan</a></p></td></tr></table></td></tr></table></body></html>`
+        html: `<!doctype html><html><body style="margin:0;background:#f3f5f1;font-family:Arial,Helvetica,sans-serif;color:#151719"><table width="100%"><tr><td style="padding:24px"><table width="100%" style="max-width:620px;margin:auto;background:#fff;border:1px solid #dfe3dc;border-radius:14px"><tr><td style="padding:28px"><div style="font-size:12px;font-weight:700;letter-spacing:.08em;color:#6c746a">SITEPLAN · NEW QUOTE</div><h1 style="font-size:24px;margin:10px 0 8px">${escapeHtml(clean(target.tender_title, 180))}</h1><p style="color:#4e5850;margin:0 0 20px">${escapeHtml(clean(target.event_name, 180))}</p><p><strong>${escapeHtml(company)}</strong>${contact ? ` · ${escapeHtml(contact)}` : ""}<br>${escapeHtml(supplierEmail)}</p><table width="100%" style="margin:18px 0"><tr><td style="padding:7px 0;color:#6c746a">Net</td><td style="text-align:right;font-weight:700">${money(net)}</td></tr><tr><td style="padding:7px 0;color:#6c746a">GST</td><td style="text-align:right;font-weight:700">${money(gst)}</td></tr><tr><td style="padding:9px 0;color:#151719;font-weight:700;border-top:1px solid #e5e7e3">Total</td><td style="text-align:right;font-size:20px;font-weight:800;border-top:1px solid #e5e7e3">${money(total)}</td></tr></table><p><strong>Includes:</strong> ${escapeHtml(inclusions || "Not supplied")}</p><p><strong>Notes:</strong> ${escapeHtml(notes || "Not supplied")}</p>${attachmentUrl ? `<p style="margin-top:24px"><a href="${escapeHtml(attachmentUrl)}" style="display:inline-block;background:#151719;color:#fff;text-decoration:none;padding:13px 18px;border-radius:10px;font-weight:700">Open ${escapeHtml(attachmentName || "quote attachment")}</a></p><p style="font-size:12px;color:#6c746a">Secure attachment link · expires after 7 days</p>` : ""}<p style="margin-top:24px"><a href="${dashboard}" style="display:inline-block;background:#a8ff35;color:#0b0d10;text-decoration:none;padding:13px 18px;border-radius:10px;font-weight:700">Review quote in SitePlan</a></p></td></tr></table></td></tr></table></body></html>`
       })
     });
     const data = await send.json().catch(() => ({}));
