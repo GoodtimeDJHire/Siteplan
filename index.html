@@ -3000,7 +3000,9 @@ openTenderView=function(id){
 async function setCloudQuoteStatus(tenderId,quoteId,status){
  const {error}=await siteplanCloud.from('tender_submissions').update({status}).eq('id',quoteId);if(error){toast(error.message);return}
  if(status==='awarded'){await siteplanCloud.from('tender_submissions').update({status:'declined'}).eq('tender_id',tenderId).neq('id',quoteId).in('status',['submitted','shortlisted']);await siteplanCloud.from('tenders').update({status:'awarded'}).eq('id',tenderId)}
- await refreshCloudTenders();openTenderView(tenderId);toast(status==='awarded'?'Supplier awarded':'Quote '+status);
+ let emailSent=false,emailError='';
+ if(['awarded','shortlisted','declined'].includes(status))try{const {data:{session}}=await siteplanCloud.auth.getSession();const response=await fetch('/api/notify-quote-status',{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${session?.access_token||''}`},body:JSON.stringify({tenderId,quoteId,status})});const result=await response.json().catch(()=>({}));if(!response.ok)throw new Error(result.error||'Supplier email failed');emailSent=true}catch(e){console.error('Quote status email',e);emailError=e.message||'Supplier email failed'}
+ await refreshCloudTenders();openTenderView(tenderId);toast(emailSent?(status==='awarded'?'Supplier awarded and emailed':`Quote ${status} · supplier emailed`):(emailError?`Quote ${status}, but email failed: ${emailError}`:(status==='awarded'?'Supplier awarded':'Quote '+status)));
 }
 deleteTender=async function(id){if(!confirm('Delete this tender and its supplier submissions?'))return;if(siteplanCloudUser){const{error}=await siteplanCloud.from('tenders').delete().eq('id',id);if(error){toast(error.message);return}}tenders=tenders.filter(x=>x.id!==id);localStorage.setItem('siteplan_tenders',JSON.stringify(tenders));byId('quoteModal').classList.add('hidden');renderTenders();renderEvents()};
 
