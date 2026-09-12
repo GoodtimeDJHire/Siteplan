@@ -11,7 +11,10 @@ function prepareCards(tender){
  const cards=[...document.querySelectorAll('#quoteModalContent .quote-card')];
  cards.forEach((card,i)=>{
   const quote=tender?.quotes?.[i];
-  card.dataset.submissionId=String(quote?.id||'');
+  const action=card.querySelector('[onclick*="setCloudQuoteStatus"]')?.getAttribute('onclick')||'';
+  const ids=action.match(/setCloudQuoteStatus\('([^']+)'\s*,\s*'([^']+)'/);
+  card.dataset.tenderId=String(ids?.[1]||tender?.id||'');
+  card.dataset.submissionId=String(ids?.[2]||quote?.id||'');
   const supplier=card.querySelector('.quote-supplier');
   if(supplier&&!supplier.querySelector('.quote-file-inline'))supplier.insertAdjacentHTML('beforeend','<div class="quote-file-inline"><span class="quote-file-state">Loading quote file…</span></div>');
  });
@@ -40,12 +43,22 @@ async function loadCardFiles(tenderId,cards){
  }catch(error){console.error('Load quote files',error);cards.forEach(card=>{const host=card.querySelector('.quote-file-inline');if(host)host.innerHTML=`<span class="quote-file-error">${safe(error?.message||'Could not load quote file')}</span>`})}
 }
 
+function enrichVisibleCards(tender){
+ const cards=prepareCards(tender).filter(card=>card.dataset.tenderId&&card.dataset.submissionId&&card.dataset.quoteFilesState!=='loading'&&card.dataset.quoteFilesState!=='done');
+ if(!cards.length)return;
+ const groups=new Map();cards.forEach(card=>{card.dataset.quoteFilesState='loading';const id=card.dataset.tenderId;if(!groups.has(id))groups.set(id,[]);groups.get(id).push(card)});
+ groups.forEach((group,id)=>loadCardFiles(id,group).finally(()=>group.forEach(card=>card.dataset.quoteFilesState='done')));
+}
+
 const originalOpen=window.openTenderView;
 if(typeof originalOpen==='function')window.openTenderView=function(id){
  const out=originalOpen.apply(this,arguments);
  const tender=(typeof tenders!=='undefined'?(tenders||[]):[]).find(x=>String(x.id)===String(id));
- const cards=prepareCards(tender);if(cards.length)loadCardFiles(id,cards);return out;
+ enrichVisibleCards(tender);return out;
 };
+
+const quoteHost=document.getElementById('quoteModalContent');
+if(quoteHost)new MutationObserver(()=>enrichVisibleCards()).observe(quoteHost,{childList:true,subtree:true});
 
 // V65 replaced the newer submitter, so keep the upload result and pass its secure URL to the email function.
 window.submitDemoQuote=async function(id){
