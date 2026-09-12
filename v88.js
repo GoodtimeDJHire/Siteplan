@@ -1,36 +1,66 @@
-// SitePlan V88: inline supplier quote files with visible loading and error states
+// SitePlan V88: quote-card attachments and attachment links in organiser emails
 (()=>{
 'use strict';
-const esc=v=>String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
-const css=document.createElement('style');css.textContent='.quote-file-cell{min-width:145px}.quote-file-state{font-size:11px;color:var(--muted)}.quote-file-link{display:inline-flex;align-items:center;gap:5px;padding:7px 9px;border-radius:8px;background:#202a31;border:1px solid #3b4a54;color:#dfffb8;text-decoration:none;font-size:11px;font-weight:850;max-width:190px}.quote-file-link span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.quote-file-link:hover{border-color:#a8ff35}.quote-file-error{color:#ff8c98;font-size:11px}';document.head.appendChild(css);
-function prepareCells(tender){
- const table=document.querySelector('#quoteModalContent .quote-table');if(!table)return[];
- const rows=[...table.querySelectorAll('tr')];if(!rows.length)return[];
- const head=document.createElement('th');head.textContent='Quote file';rows[0].appendChild(head);
- return rows.slice(1).map((row,i)=>{const cell=document.createElement('td');cell.className='quote-file-cell';cell.dataset.submissionId=String(tender?.quotes?.[i]?.id||'');cell.innerHTML='<span class="quote-file-state">Loading…</span>';row.appendChild(cell);return cell});
+const safe=v=>String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+const css=document.createElement('style');css.textContent=`
+.quote-file-inline{margin-top:10px}.quote-file-state{font-size:11px;color:var(--muted)}
+.quote-file-links{display:flex;flex-wrap:wrap;gap:6px}.quote-file-link{display:inline-flex;align-items:center;gap:6px;max-width:100%;padding:7px 9px;border-radius:8px;background:#202a31;border:1px solid #3b4a54;color:#dfffb8;text-decoration:none;font-size:11px;font-weight:850}.quote-file-link span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.quote-file-link:hover{border-color:#a8ff35}.quote-file-error{color:#ff8c98;font-size:11px}
+`;document.head.appendChild(css);
+
+function prepareCards(tender){
+ const cards=[...document.querySelectorAll('#quoteModalContent .quote-card')];
+ cards.forEach((card,i)=>{
+  const quote=tender?.quotes?.[i];
+  card.dataset.submissionId=String(quote?.id||'');
+  const supplier=card.querySelector('.quote-supplier');
+  if(supplier&&!supplier.querySelector('.quote-file-inline'))supplier.insertAdjacentHTML('beforeend','<div class="quote-file-inline"><span class="quote-file-state">Loading quote file…</span></div>');
+ });
+ const oldList=document.getElementById('tenderAttachments');
+ if(oldList){oldList.style.display='none';const heading=oldList.previousElementSibling;if(heading?.classList.contains('section-title'))heading.style.display='none'}
+ return cards;
 }
-async function loadFiles(tenderId,tender,cells){
+
+async function loadCardFiles(tenderId,cards){
  try{
-  if(typeof siteplanCloud==='undefined'||!siteplanCloudUser)throw new Error('Sign in again to view files');
-  const {data:files,error}=await siteplanCloud.from('tender_files').select('id,submission_id,storage_path,file_name,content_type,size_bytes').eq('tender_id',tenderId).order('created_at',{ascending:true});
+  if(typeof siteplanCloud==='undefined'||!siteplanCloudUser)throw new Error('Sign in again to view quote files');
+  const {data:files,error}=await siteplanCloud.from('tender_files').select('submission_id,storage_path,file_name').eq('tender_id',tenderId).order('created_at',{ascending:true});
   if(error)throw error;
-  for(const cell of cells){
-   const matches=(files||[]).filter(f=>String(f.submission_id)===cell.dataset.submissionId);
-   if(!matches.length){cell.innerHTML='<span class="quote-file-state">No attachment</span>';continue}
+  for(const card of cards){
+   const host=card.querySelector('.quote-file-inline');if(!host)continue;
+   const matches=(files||[]).filter(f=>String(f.submission_id)===card.dataset.submissionId);
+   if(!matches.length){host.innerHTML='<span class="quote-file-state">No quote file attached</span>';continue}
    const links=[];
    for(const f of matches){
     const {data,error}=await siteplanCloud.storage.from('tender-files').createSignedUrl(f.storage_path,3600,{download:f.file_name});
     if(error)throw error;
-    if(data?.signedUrl)links.push(`<a class="quote-file-link" href="${esc(data.signedUrl)}" target="_blank" rel="noopener" title="${esc(f.file_name)}">📎 <span>${esc(f.file_name||'Open attachment')}</span></a>`);
+    if(data?.signedUrl)links.push(`<a class="quote-file-link" href="${safe(data.signedUrl)}" target="_blank" rel="noopener"><span>📎 ${safe(f.file_name||'Open quote PDF')}</span></a>`);
    }
-   cell.innerHTML=links.join(' ')||'<span class="quote-file-error">Could not create file link</span>';
+   host.innerHTML=links.length?`<div class="quote-file-links">${links.join('')}</div>`:'<span class="quote-file-error">Could not create file link</span>';
   }
- }catch(error){console.error('Load quote attachments',error);cells.forEach(cell=>cell.innerHTML=`<span class="quote-file-error">${esc(error?.message||'Could not load file')}</span>`)}
+ }catch(error){console.error('Load quote files',error);cards.forEach(card=>{const host=card.querySelector('.quote-file-inline');if(host)host.innerHTML=`<span class="quote-file-error">${safe(error?.message||'Could not load quote file')}</span>`})}
 }
-const original=window.openTenderView;
-if(typeof original==='function')window.openTenderView=function(id){
- const out=original.apply(this,arguments);
+
+const originalOpen=window.openTenderView;
+if(typeof originalOpen==='function')window.openTenderView=function(id){
+ const out=originalOpen.apply(this,arguments);
  const tender=(typeof tenders!=='undefined'?(tenders||[]):[]).find(x=>String(x.id)===String(id));
- const cells=prepareCells(tender);if(cells.length)loadFiles(id,tender,cells);return out;
+ const cards=prepareCards(tender);if(cards.length)loadCardFiles(id,cards);return out;
+};
+
+// V65 replaced the newer submitter, so keep the upload result and pass its secure URL to the email function.
+window.submitDemoQuote=async function(id){
+ const t=tenders.find(x=>x.id===id);if(!t)return;const btn=byId('publicSubmitBtn');
+ const company=byId('qCompany')?.value.trim(),email=byId('qEmail')?.value.trim();if(!company||!email){toast('Company and email are required');return}
+ const contact=byId('qContact')?.value.trim()||'',phone=byId('qPhone')?.value.trim()||'',availability=byId('qAvailability')?.value.trim()||'',notes=byId('qNotes')?.value.trim()||'',inclusions=byId('qInclusions')?.value.trim()||'';
+ const net=Number(byId('qNet')?.value)||0,gst=Number(byId('qGstAmount')?.value)||0,total=Number(byId('qPrice')?.value)||0;
+ btn.disabled=true;btn.textContent='Submitting…';
+ try{
+  const d=await publicTenderRequest(t.publicToken||t.id,'POST',{company_name:company,contact_name:contact,email,phone,price:total||null,gst_included:!!byId('qGST')?.checked,availability,notes,inclusions,exclusions:'',answers:{net,gst_amount:gst}});
+  let attachmentUrl='',attachmentName='';const f=byId('qFile')?.files?.[0];
+  if(f){const fd=new FormData();fd.append('upload_token',d.upload_token);fd.append('file',f);const r=await fetch(`${SITEPLAN_SUPABASE_URL}/functions/v1/tender-file-upload`,{method:'POST',headers:{'Authorization':`Bearer ${SITEPLAN_EDGE_ANON}`,'apikey':SITEPLAN_EDGE_ANON},body:fd});const u=await r.json().catch(()=>({}));if(!r.ok)throw new Error(u.error||'Quote submitted but file upload failed');attachmentUrl=String(u.signed_url||'');attachmentName=String(u.file_name||f.name||'')}
+  const nr=await fetch('/api/notify-quote',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:t.publicToken||t.id,company,contact,email,net,gst,total,inclusions,notes,attachmentUrl,attachmentName})});
+  if(!nr.ok){const x=await nr.json().catch(()=>({}));console.warn('Quote notification',x.error||nr.status)}
+  byId('quoteModalContent').innerHTML='<div class="public-card" style="text-align:center;padding:42px"><div style="font-size:38px">✓</div><h2>Quote submitted</h2><p class="muted">Your private response has been sent to the event organiser.</p></div>';toast('Private quote submitted');
+ }catch(e){console.error(e);toast(e.message||'Could not submit quote');btn.disabled=false;btn.textContent='Submit Private Quote'}
 };
 })();
