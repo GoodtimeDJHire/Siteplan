@@ -38,6 +38,8 @@ export default async (req: Request, _context: Context) => {
 
   const secret = Netlify.env.get("RESEND_WEBHOOK_SECRET");
   if (!secret) return new Response("Webhook not configured", { status: 503 });
+  const databaseSecret = Netlify.env.get("SITEPLAN_DB_FUNCTION_SECRET");
+  if (!databaseSecret) return new Response("Database webhook security is not configured", { status: 503 });
 
   const payload = await req.text();
   const svixId = req.headers.get("svix-id") || "";
@@ -65,7 +67,8 @@ export default async (req: Request, _context: Context) => {
       p_resend_email_id: emailId,
       p_status: status,
       p_message_id: event?.data?.message_id || null,
-      p_event: event
+      p_event: event,
+      p_secret: databaseSecret
     })
   });
   if (!response.ok) {

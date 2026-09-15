@@ -18,6 +18,10 @@ async function dbGet(path: string, jwt: string) {
   if (!response.ok) throw new Error(`Database lookup failed (${response.status})`);
   return response.json();
 }
+async function dbInsert(path: string, row: unknown, jwt: string) {
+  const response = await timedFetch(`${SUPABASE_URL}/rest/v1/${path}`, { method: "POST", headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${jwt}`, "Content-Type": "application/json", Prefer: "return=minimal" }, body: JSON.stringify(row) });
+  if (!response.ok) throw new Error(`Email tracking failed (${response.status}): ${await response.text()}`);
+}
 
 export default async (req: Request, _context: Context) => {
   if (req.method !== "POST") return new Response("Method not allowed", { status: 405 });
@@ -69,7 +73,15 @@ export default async (req: Request, _context: Context) => {
     }, 20000);
     const result = await send.json().catch(() => ({}));
     if (!send.ok) return Response.json({ error: result?.message || "Supplier status email failed." }, { status: 502 });
-    return Response.json({ ok: true, emailId: result?.id || null });
+    const now = new Date().toISOString();
+    let tracked = true;
+    try {
+      await dbInsert("tender_email_deliveries", { tender_id: tenderId, owner_id: user.id, supplier_id: null, company_name: clean(quote.company_name, 180) || "Supplier", recipient_email: quote.email, resend_email_id: result?.id || null, status: "sent", email_type: "quote_decision", sent_at: now, updated_at: now }, jwt);
+    } catch (trackingError) {
+      tracked = false;
+      console.error("Decision email sent but tracking failed", trackingError);
+    }
+    return Response.json({ ok: true, emailId: result?.id || null, tracked });
   } catch (error: any) {
     console.error("notify-quote-status", error);
     return Response.json({ error: error?.message || "Supplier status email failed." }, { status: 500 });

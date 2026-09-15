@@ -3,8 +3,10 @@ import type { Context, Config } from "@netlify/functions";
 const SUPABASE_URL = "https://qkvkemcqfnbmaktbxddg.supabase.co";
 const SUPABASE_KEY = "sb_publishable_tiPl-Y7wvfrpB7RzNzOBVA_CMIGBTwA";
 
+async function timedFetch(url:string,init:RequestInit={},timeoutMs=15000){const controller=new AbortController();const timer=setTimeout(()=>controller.abort(),timeoutMs);try{return await fetch(url,{...init,signal:controller.signal})}catch(error:any){if(error?.name==="AbortError")throw new Error("The database timed out. Please try again.");throw error}finally{clearTimeout(timer)}}
+
 async function getUser(jwt:string){
-  const r=await fetch(`${SUPABASE_URL}/auth/v1/user`,{headers:{apikey:SUPABASE_KEY,Authorization:`Bearer ${jwt}`}});
+  const r=await timedFetch(`${SUPABASE_URL}/auth/v1/user`,{headers:{apikey:SUPABASE_KEY,Authorization:`Bearer ${jwt}`}});
   if(!r.ok) return null;
   return r.json();
 }
@@ -47,7 +49,7 @@ export default async(req:Request,_context:Context)=>{
     const path=id
       ? `suppliers?id=eq.${encodeURIComponent(id)}&owner_id=eq.${encodeURIComponent(user.id)}`
       : "suppliers";
-    const r=await fetch(`${SUPABASE_URL}/rest/v1/${path}`,{
+    const r=await timedFetch(`${SUPABASE_URL}/rest/v1/${path}`,{
       method:id?"PATCH":"POST",
       headers:{apikey:SUPABASE_KEY,Authorization:`Bearer ${jwt}`,"Content-Type":"application/json",Prefer:"return=representation"},
       body:JSON.stringify(row)

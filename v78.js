@@ -15,7 +15,7 @@ async function enrichCounts(){
  applyKnownCounts();
  try{
   if(typeof siteplanCloud==='undefined'||typeof siteplanCloudUser==='undefined'||!siteplanCloudUser)return;
-  const {data,error}=await siteplanCloud.from('tender_email_deliveries').select('tender_id,recipient_email');
+  const {data,error}=await siteplanCloud.from('tender_email_deliveries').select('tender_id,recipient_email').eq('email_type','tender_invitation');
   if(error){console.warn('Tender sent counts',error);return}
   const counts=new Map();
   (data||[]).forEach(row=>{

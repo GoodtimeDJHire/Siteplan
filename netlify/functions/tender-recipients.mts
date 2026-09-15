@@ -74,7 +74,7 @@ export default async (req: Request, _context: Context) => {
     // and survive browser changes, subject changes and Resend history pagination.
     let tracked: any[] = [];
     try {
-      tracked = await supabaseGet(`tender_email_deliveries?tender_id=eq.${encodeURIComponent(tenderId)}&select=*&order=sent_at.desc`, jwt);
+      tracked = await supabaseGet(`tender_email_deliveries?tender_id=eq.${encodeURIComponent(tenderId)}&email_type=eq.tender_invitation&select=*&order=sent_at.desc`, jwt);
     } catch (e) {
       console.warn("Could not read tender delivery table", e);
     }

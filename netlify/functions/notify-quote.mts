@@ -16,7 +16,10 @@ export default async (req: Request, _context: Context) => {
   try {
     const body = await req.json().catch(() => ({}));
     const token = clean(body.token, 80);
-    if (!/^[0-9a-f-]{36}$/i.test(token)) return Response.json({ error: "Invalid tender token." }, { status: 400 });
+    const submissionId = clean(body.submissionId, 80);
+    if (!/^[0-9a-f-]{36}$/i.test(token) || !/^[0-9a-f-]{36}$/i.test(submissionId)) return Response.json({ error: "Invalid tender submission." }, { status: 400 });
+    const databaseSecret = Netlify.env.get("SITEPLAN_DB_FUNCTION_SECRET");
+    if (!databaseSecret) return Response.json({ error: "Quote notification security is not configured." }, { status: 503 });
 
     const targetResponse = await fetch(`${SUPABASE_URL}/rest/v1/rpc/get_tender_notification_target`, {
       method: "POST",
@@ -25,7 +28,7 @@ export default async (req: Request, _context: Context) => {
         Authorization: `Bearer ${SUPABASE_KEY}`,
         "Content-Type": "application/json"
       },
-      body: JSON.stringify({ p_token: token })
+      body: JSON.stringify({ p_token: token, p_submission_id: submissionId, p_secret: databaseSecret })
     });
     const targetData = await targetResponse.json().catch(() => ([]));
     if (!targetResponse.ok) return Response.json({ error: "Tender notification lookup is not configured." }, { status: 503 });
@@ -35,14 +38,16 @@ export default async (req: Request, _context: Context) => {
     const apiKey = Netlify.env.get("RESEND_API_KEY");
     if (!apiKey) return Response.json({ error: "Quote email notifications are not configured." }, { status: 503 });
 
-    const company = clean(body.company, 160) || "A supplier";
-    const contact = clean(body.contact, 160);
-    const supplierEmail = clean(body.email, 254);
-    const net = Number(body.net) || 0;
-    const gst = Number(body.gst) || 0;
-    const total = Number(body.total) || 0;
-    const inclusions = clean(body.inclusions, 1200);
-    const notes = clean(body.notes, 1200);
+    const company = clean(target.company_name, 160) || "A supplier";
+    const contact = clean(target.contact_name, 160);
+    const supplierEmail = clean(target.supplier_email, 254);
+    const total = Number(target.price) || 0;
+    const netFromAnswers = Number(target.answers?.net);
+    const gstFromAnswers = Number(target.answers?.gst_amount);
+    const net = Number.isFinite(netFromAnswers) ? netFromAnswers : (target.gst_included ? total / 1.15 : total);
+    const gst = Number.isFinite(gstFromAnswers) ? gstFromAnswers : (target.gst_included ? total - net : total * .15);
+    const inclusions = clean(target.inclusions, 1200);
+    const notes = clean(target.notes, 1200);
     const requestedAttachmentUrl = clean(body.attachmentUrl, 2200);
     const attachmentName = clean(body.attachmentName, 240);
     const signedPrefix = `${SUPABASE_URL}/storage/v1/object/sign/tender-files/`;

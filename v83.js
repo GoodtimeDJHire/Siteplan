@@ -3,6 +3,7 @@
 'use strict';
 let editingSupplierId='';
 const by=id=>document.getElementById(id);
+async function supplierRequest(body,token){const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),20000);try{const r=await fetch('/api/save-supplier',{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${token}`},body:JSON.stringify(body),signal:controller.signal});const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.error||`Supplier save failed (${r.status})`);return d.supplier}catch(error){if(error?.name==='AbortError')throw new Error('Supplier save timed out. Nothing was confirmed saved—please try again.');throw error}finally{clearTimeout(timer)}}
 function fillChecks(hostId,values){const host=by(hostId);if(!host)return;[...host.querySelectorAll('input[type="checkbox"]')].forEach(x=>x.checked=(values||[]).includes(x.value));}
 function cleanSupplierId(value){if(typeof value!=='string')return '';const id=value.trim();return id&&id!=='[object Object]'&&id!=='[object PointerEvent]'&&id!=='[object MouseEvent]'?id:'';}
 
@@ -31,16 +32,7 @@ window.addSupplier=async function(){
  try{
   const session=(await siteplanCloud.auth.getSession()).data?.session;if(!session){if(typeof openAuthModal==='function')openAuthModal();throw new Error('Please sign in first.');}
   const editId=cleanSupplierId(editingSupplierId);
-  const payload={...row,owner_id:session.user.id};
-  const query=editId
-   ? siteplanCloud.from('suppliers').update(payload).eq('id',editId).eq('owner_id',session.user.id).select().single()
-   : siteplanCloud.from('suppliers').insert(payload).select().single();
-  const {data,error,status,statusText}=await query;
-  if(error){
-   console.error('Supplier Supabase request failed',{operation:editId?'update':'insert',status,statusText,code:error.code,message:error.message,details:error.details,hint:error.hint});
-   const detail=[error.message,error.details,error.hint,error.code?`Code ${error.code}`:''].filter(Boolean).join(' · ');
-   throw new Error(detail||`Supplier save failed (${status||'database error'}).`);
-  }
+  const data=await supplierRequest({id:editId||null,row},session.access_token);
   if(!data)throw new Error('Supabase returned no supplier after saving.');
   const saved=supplierFromCloud(data);
   if(editId){suppliers=suppliers.map(s=>String(s.id)===editId?saved:s);editingSupplierId='';}else{suppliers.unshift(saved);}
