@@ -7,7 +7,7 @@ async function timedFetch(url,init,timeoutMs=25000){const controller=new AbortCo
 
 const css=document.createElement('style');
 css.textContent=`
-.sp-brief-btn{white-space:nowrap}.sp-brief-bg{position:fixed;inset:0;background:rgba(0,0,0,.76);z-index:1500;display:grid;place-items:center;padding:18px}.sp-brief-card{width:min(820px,100%);max-height:92vh;overflow:auto;background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:22px;box-shadow:var(--shadow)}.sp-brief-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}.sp-brief-head h2{margin:0 0 4px}.sp-brief-head p{margin:0;color:var(--muted);font-size:12px}.sp-brief-tools{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:16px 0 10px;flex-wrap:wrap}.sp-approved-list{display:grid;gap:8px;margin-bottom:16px}.sp-approved-row{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;border:1px solid var(--line);border-radius:12px;padding:12px;background:#0e1318}.sp-approved-row b{display:block}.sp-approved-row small{display:block;color:var(--muted);margin-top:2px;overflow-wrap:anywhere}.sp-approved-row .pill{justify-self:end}.sp-brief-fields{display:grid;grid-template-columns:1fr 1fr;gap:12px}.sp-brief-fields .full{grid-column:1/-1}.sp-brief-fields textarea{width:100%;min-height:130px;background:var(--panel2);border:1px solid var(--line);color:var(--text);border-radius:9px;padding:10px;resize:vertical}.sp-brief-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:16px}.sp-brief-empty{border:1px dashed var(--line);border-radius:12px;padding:18px;color:var(--muted)}
+.sp-tender-head-actions{display:flex;align-items:center;justify-content:flex-end;gap:8px;flex-wrap:wrap}.sp-brief-btn{white-space:nowrap}.sp-brief-bg{position:fixed;inset:0;background:rgba(0,0,0,.76);z-index:1500;display:grid;place-items:center;padding:18px}.sp-brief-card{width:min(820px,100%);max-height:92vh;overflow:auto;background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:22px;box-shadow:var(--shadow)}.sp-brief-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}.sp-brief-head h2{margin:0 0 4px}.sp-brief-head p{margin:0;color:var(--muted);font-size:12px}.sp-brief-tools{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:16px 0 10px;flex-wrap:wrap}.sp-approved-list{display:grid;gap:8px;margin-bottom:16px}.sp-approved-row{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;border:1px solid var(--line);border-radius:12px;padding:12px;background:#0e1318}.sp-approved-row b{display:block}.sp-approved-row small{display:block;color:var(--muted);margin-top:2px;overflow-wrap:anywhere}.sp-approved-row .pill{justify-self:end}.sp-brief-fields{display:grid;grid-template-columns:1fr 1fr;gap:12px}.sp-brief-fields .full{grid-column:1/-1}.sp-brief-fields textarea{width:100%;min-height:130px;background:var(--panel2);border:1px solid var(--line);color:var(--text);border-radius:9px;padding:10px;resize:vertical}.sp-brief-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:16px}.sp-brief-empty{border:1px dashed var(--line);border-radius:12px;padding:18px;color:var(--muted)}
 @media(max-width:620px){.sp-brief-bg{padding:8px;align-items:start;overflow:auto}.sp-brief-card{max-height:none;padding:15px;border-radius:15px}.sp-approved-row{grid-template-columns:auto 1fr}.sp-approved-row .pill{grid-column:2}.sp-brief-fields{grid-template-columns:1fr}.sp-brief-fields .full{grid-column:auto}.sp-brief-actions{display:grid;grid-template-columns:1fr}.sp-brief-actions .btn{width:100%}}
 `;
 document.head.appendChild(css);
@@ -30,9 +30,17 @@ function awardedRecipients(){
 }
 function installButton(){
   const module=$('tendersModule');if(!module)return;
-  const head=module.querySelector('.page-head');if(!head||head.querySelector('[data-event-brief]'))return;
+  const head=module.querySelector('.page-head');if(!head)return;
+  const newTender=$('newTenderBtn');
+  let actions=head.querySelector('.sp-tender-head-actions');
+  if(!actions){
+    actions=document.createElement('div');actions.className='sp-tender-head-actions';
+    if(newTender&&newTender.parentElement===head){head.insertBefore(actions,newTender);actions.appendChild(newTender)}else head.appendChild(actions);
+  }
+  const existing=head.querySelector('[data-event-brief]');
+  if(existing){if(existing.parentElement!==actions)actions.appendChild(existing);return}
   const btn=document.createElement('button');btn.className='btn primary sp-brief-btn';btn.dataset.eventBrief='1';btn.textContent='Email approved suppliers';btn.onclick=openBriefModal;
-  const actions=head.lastElementChild; if(actions&&actions!==head.firstElementChild) actions.appendChild(btn); else head.appendChild(btn);
+  actions.appendChild(btn);
 }
 function openBriefModal(){
   const ev=currentEvent(),rows=awardedRecipients();
