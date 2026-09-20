@@ -1169,7 +1169,7 @@ async function timedFetch(url,init,timeoutMs=25000){const controller=new AbortCo
 
 const css=document.createElement('style');
 css.textContent=`
-.sp-brief-btn{white-space:nowrap}.sp-brief-bg{position:fixed;inset:0;background:rgba(0,0,0,.76);z-index:1500;display:grid;place-items:center;padding:18px}.sp-brief-card{width:min(820px,100%);max-height:92vh;overflow:auto;background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:22px;box-shadow:var(--shadow)}.sp-brief-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}.sp-brief-head h2{margin:0 0 4px}.sp-brief-head p{margin:0;color:var(--muted);font-size:12px}.sp-brief-tools{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:16px 0 10px;flex-wrap:wrap}.sp-approved-list{display:grid;gap:8px;margin-bottom:16px}.sp-approved-row{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;border:1px solid var(--line);border-radius:12px;padding:12px;background:#0e1318}.sp-approved-row b{display:block}.sp-approved-row small{display:block;color:var(--muted);margin-top:2px;overflow-wrap:anywhere}.sp-approved-row .pill{justify-self:end}.sp-brief-fields{display:grid;grid-template-columns:1fr 1fr;gap:12px}.sp-brief-fields .full{grid-column:1/-1}.sp-brief-fields textarea{width:100%;min-height:130px;background:var(--panel2);border:1px solid var(--line);color:var(--text);border-radius:9px;padding:10px;resize:vertical}.sp-brief-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:16px}.sp-brief-empty{border:1px dashed var(--line);border-radius:12px;padding:18px;color:var(--muted)}
+.sp-tender-head-actions{display:flex;align-items:center;justify-content:flex-end;gap:8px;flex-wrap:wrap}.sp-brief-btn{white-space:nowrap}.sp-brief-bg{position:fixed;inset:0;background:rgba(0,0,0,.76);z-index:1500;display:grid;place-items:center;padding:18px}.sp-brief-card{width:min(820px,100%);max-height:92vh;overflow:auto;background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:22px;box-shadow:var(--shadow)}.sp-brief-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}.sp-brief-head h2{margin:0 0 4px}.sp-brief-head p{margin:0;color:var(--muted);font-size:12px}.sp-brief-tools{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:16px 0 10px;flex-wrap:wrap}.sp-approved-list{display:grid;gap:8px;margin-bottom:16px}.sp-approved-row{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;border:1px solid var(--line);border-radius:12px;padding:12px;background:#0e1318}.sp-approved-row b{display:block}.sp-approved-row small{display:block;color:var(--muted);margin-top:2px;overflow-wrap:anywhere}.sp-approved-row .pill{justify-self:end}.sp-brief-fields{display:grid;grid-template-columns:1fr 1fr;gap:12px}.sp-brief-fields .full{grid-column:1/-1}.sp-brief-fields textarea{width:100%;min-height:130px;background:var(--panel2);border:1px solid var(--line);color:var(--text);border-radius:9px;padding:10px;resize:vertical}.sp-brief-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:16px}.sp-brief-empty{border:1px dashed var(--line);border-radius:12px;padding:18px;color:var(--muted)}
 @media(max-width:620px){.sp-brief-bg{padding:8px;align-items:start;overflow:auto}.sp-brief-card{max-height:none;padding:15px;border-radius:15px}.sp-approved-row{grid-template-columns:auto 1fr}.sp-approved-row .pill{grid-column:2}.sp-brief-fields{grid-template-columns:1fr}.sp-brief-fields .full{grid-column:auto}.sp-brief-actions{display:grid;grid-template-columns:1fr}.sp-brief-actions .btn{width:100%}}
 `;
 document.head.appendChild(css);
@@ -1192,9 +1192,17 @@ function awardedRecipients(){
 }
 function installButton(){
   const module=$('tendersModule');if(!module)return;
-  const head=module.querySelector('.page-head');if(!head||head.querySelector('[data-event-brief]'))return;
+  const head=module.querySelector('.page-head');if(!head)return;
+  const newTender=$('newTenderBtn');
+  let actions=head.querySelector('.sp-tender-head-actions');
+  if(!actions){
+    actions=document.createElement('div');actions.className='sp-tender-head-actions';
+    if(newTender&&newTender.parentElement===head){head.insertBefore(actions,newTender);actions.appendChild(newTender)}else head.appendChild(actions);
+  }
+  const existing=head.querySelector('[data-event-brief]');
+  if(existing){if(existing.parentElement!==actions)actions.appendChild(existing);return}
   const btn=document.createElement('button');btn.className='btn primary sp-brief-btn';btn.dataset.eventBrief='1';btn.textContent='Email approved suppliers';btn.onclick=openBriefModal;
-  const actions=head.lastElementChild; if(actions&&actions!==head.firstElementChild) actions.appendChild(btn); else head.appendChild(btn);
+  actions.appendChild(btn);
 }
 function openBriefModal(){
   const ev=currentEvent(),rows=awardedRecipients();
@@ -1232,7 +1240,7 @@ installButton();
 'use strict';
 let editingSupplierId='';
 const by=id=>document.getElementById(id);
-async function supplierRequest(body,token){const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),20000);try{const r=await fetch('/api/save-supplier',{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${token}`},body:JSON.stringify(body),signal:controller.signal});const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.error||`Supplier save failed (${r.status})`);return d.supplier}catch(error){if(error?.name==='AbortError')throw new Error('Supplier save timed out. Nothing was confirmed saved—please try again.');throw error}finally{clearTimeout(timer)}}
+async function supplierRequest(body,token){let lastError;for(let attempt=0;attempt<2;attempt++){const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),20000);try{const r=await fetch('/api/save-supplier',{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${token}`},body:JSON.stringify(body),signal:controller.signal});const d=await r.json().catch(()=>({}));if(!r.ok){const error=new Error(d.error||`Supplier save failed (${r.status})`);error.status=r.status;throw error}return d.supplier}catch(error){lastError=error;const retryable=error?.name==='AbortError'||error?.status===429||Number(error?.status)>=500;if(!retryable||attempt===1)break;await new Promise(resolve=>setTimeout(resolve,600));}finally{clearTimeout(timer)}}if(lastError?.name==='AbortError')throw new Error('Supplier save timed out. The same supplier ID was retained, so it is safe to try again.');throw lastError}
 function fillChecks(hostId,values){const host=by(hostId);if(!host)return;[...host.querySelectorAll('input[type="checkbox"]')].forEach(x=>x.checked=(values||[]).includes(x.value));}
 function cleanSupplierId(value){if(typeof value!=='string')return '';const id=value.trim();return id&&id!=='[object Object]'&&id!=='[object PointerEvent]'&&id!=='[object MouseEvent]'?id:'';}
 
@@ -1260,8 +1268,8 @@ window.addSupplier=async function(){
  const save=by('saveSupplierBtn');if(save){save.disabled=true;save.textContent='Saving…'}
  try{
   const session=(await siteplanCloud.auth.getSession()).data?.session;if(!session){if(typeof openAuthModal==='function')openAuthModal();throw new Error('Please sign in first.');}
-  const editId=cleanSupplierId(editingSupplierId);
-  const data=await supplierRequest({id:editId||null,row},session.access_token);
+  const editId=cleanSupplierId(editingSupplierId),requestId=editId||crypto.randomUUID();
+  const data=await supplierRequest({id:requestId,create:!editId,row},session.access_token);
   if(!data)throw new Error('Supabase returned no supplier after saving.');
   const saved=supplierFromCloud(data);
   if(editId){suppliers=suppliers.map(s=>String(s.id)===editId?saved:s);editingSupplierId='';}else{suppliers.unshift(saved);}
@@ -1273,7 +1281,7 @@ const save=by('saveSupplierBtn');if(save)save.onclick=window.addSupplier;
 })();
 
 /* ---- v84.js ---- */
-// SitePlan V84: simplify tender header actions
+// SitePlan V84: keep tender header actions grouped and visible
 (()=>{
 'use strict';
 function tidyTenderHeader(){
@@ -1281,24 +1289,17 @@ function tidyTenderHeader(){
   const head=module?.querySelector('.page-head');
   if(!head)return;
 
-  // V82 could append the email button inside the existing New Tender button.
-  // If that happened, move the email button out first, then remove New Tender.
+  let actions=head.querySelector('.sp-tender-head-actions');
+  const newTender=document.getElementById('newTenderBtn');
   const brief=head.querySelector('[data-event-brief]');
-  if(brief){
-    const parent=brief.parentElement;
-    if(parent&&parent!==head&&parent.tagName==='BUTTON'){
-      head.insertBefore(brief,parent);
-      parent.remove();
-    }
-    brief.classList.add('btn','primary','sp-brief-btn');
-    brief.style.display='';
+  if(!actions){
+    actions=document.createElement('div');
+    actions.className='sp-tender-head-actions';
+    head.appendChild(actions);
   }
-
-  [...head.querySelectorAll('button')].forEach(btn=>{
-    if(btn.matches('[data-event-brief]'))return;
-    const text=String(btn.textContent||'').replace(/\s+/g,' ').trim().replace(/^\+\s*/,'');
-    if(/^New Tender$/i.test(text))btn.remove();
-  });
+  if(newTender&&newTender.parentElement!==actions)actions.appendChild(newTender);
+  if(brief&&brief.parentElement!==actions)actions.appendChild(brief);
+  if(brief){brief.classList.add('btn','primary','sp-brief-btn');brief.style.display=''}
 }
 const observer=new MutationObserver(tidyTenderHeader);
 observer.observe(document.documentElement,{childList:true,subtree:true});
@@ -1528,6 +1529,7 @@ function populatedEmail(t,ev){
  const eventName=ev?.name||t?.eventName||'Event',organiser=organiserName(),link=tenderLink(t);
  const venue=ev?.location||ev?.venue||t?.region||'Not specified';
  const subject=`${eventName} – ${t?.title||'Tender'}`;
+ const requirements=(t?.requirements||[]).length?`\n\nRequirements:\n${t.requirements.map(r=>`• ${r.name||'Requirement'} — ${r.qty||''} ${r.unit||''}`.trim()).join('\n')}`:'';
  const message=`Hi,
 
 ${organiser} is inviting you to provide a quote for ${t?.title||'this tender'} for ${eventName}.
@@ -1536,8 +1538,12 @@ Service: ${t?.category||'Supplier'}
 Event location: ${venue}
 Region: ${t?.region||'Not specified'}
 Quote due: ${dueText(t)}
+Expected attendance: ${Number(t?.attendance)||'Not specified'}
 
-Tender details and quote submission:
+Full brief:
+${t?.brief||'No additional brief supplied.'}${requirements}
+
+Tender details, site plan and quote submission:
 ${link||'Tender link unavailable — save or republish this tender first.'}
 
 If you'd rather reply by email, just reply to this message and it will go directly to ${organiser}.
