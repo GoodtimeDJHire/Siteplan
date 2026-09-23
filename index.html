@@ -1463,6 +1463,20 @@ body:has(#dashboardModule:not(.hidden)) .sp-app-nav{display:flex!important;flex-
 body:has(#dashboardModule:not(.hidden)) .sp-nav-main{margin-top:0!important;padding-top:0!important;gap:5px!important}
 body:has(#dashboardModule:not(.hidden)) .sp-app-nav .nav-tab{padding:10px 12px!important;min-height:42px!important}
 body:has(#dashboardModule:not(.hidden)) .sp-nav-secondary{margin-top:auto!important}
+</style><style id="sp-v108-quote-status">
+/* V108 status badges: out of the planner canvas */
+body:has(#plannerModule:not(.hidden)) .sp-connection{position:fixed!important;right:18px!important;top:76px!important;bottom:auto!important;z-index:30!important;display:flex!important;gap:6px!important;align-items:center!important;background:transparent!important;border:0!important;padding:0!important;box-shadow:none!important}
+body:has(#plannerModule:not(.hidden)) .sp-connection .save-state{background:#f1f2f5!important;color:#777d89!important;border:1px solid #dfe2e8!important;border-radius:999px!important;padding:7px 11px!important}
+body:has(#plannerModule:not(.hidden)) .sp-connection .cloud-state{background:#eeeaff!important;color:#6045f3!important;border:1px solid #d8d0ff!important;border-radius:999px!important;padding:7px 11px!important}
+body.public-tender-route .sp-connection{display:none!important}
+body.public-tender-route .tender-public-shell{background:#f6f7fb!important;border:1px solid #e4e6ef!important}
+body.public-tender-route .tender-public-head{padding:26px 28px!important}
+body.public-tender-route .tender-public-body{padding:24px 28px 32px!important}
+body.public-tender-route .quote-upload-primary{background:#fff;border:2px dashed #cfc7ff;border-radius:14px;padding:24px;margin:18px 0}
+body.public-tender-route .quote-upload-primary label{font-size:15px;font-weight:900;color:#181a23}
+body.public-tender-route .quote-upload-primary input{margin-top:12px}
+body.public-tender-route .quote-minimal-fields{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:620px){body.public-tender-route .quote-minimal-fields{grid-template-columns:1fr}}
 </style></head>
 <body>
 
@@ -3522,7 +3536,22 @@ openSupplierForm=function(id,supplierId='',updateHash=true){
  const token=t.publicToken||t.id;if(updateHash)history.replaceState(null,'',`#tender=${encodeURIComponent(token)}`);
  const plan=tenderPlanFor(t),hasPlan=planHasContent(plan);
  const qmc=byId('quoteModalContent');qmc.style.width='min(760px,100%)';qmc.style.maxWidth='760px';qmc.style.padding='0';qmc.style.background='transparent';
- qmc.innerHTML=`<div class="tender-public-shell"><div class="tender-public-head"><div style="display:flex;justify-content:space-between;gap:15px;align-items:start"><div><small style="font-weight:900;color:#697078">PRIVATE TENDER · ${esc(t.category||'SUPPLIER')}</small><h2>${esc(t.title)}</h2><div style="color:#697078">${esc(t.eventName||'Event')}${t.region?' · '+esc(t.region):''}${t.due?' · Quote due '+esc(t.due):''}</div></div><button class="btn" onclick="byId('quoteModal').classList.add('hidden')">×</button></div></div><div class="tender-public-body">${hasPlan?`<div class="tender-plan-link-card"><div class="tpl-copy"><div class="tpl-title">Interactive site plan</div><div class="tpl-sub">Pan, zoom and inspect the event plan without editing it.</div></div><button class="btn primary" onclick="viewTenderPlan('${t.id}','')">View Site Plan →</button></div>`:''}<div class="tender-brief-box"><b>What we need</b><div style="margin-top:8px;color:#5f675d">${esc(t.brief||'Please quote for the requirements below.')}</div></div>${(t.requirements||[]).length?`<div class="tender-requirements">${t.requirements.map(r=>`<div class="tender-requirement"><span>${esc(r.name)}</span><span>${esc(r.qty)} ${esc(r.unit)}</span></div>`).join('')}</div>`:''}<div style="font-weight:900;margin:20px 0 8px">Submit your private quote</div><div class="supplier-submit-meta"><div class="field"><label>Company *</label><input id="qCompany"></div><div class="field"><label>Contact name</label><input id="qContact"></div><div class="field"><label>Email *</label><input id="qEmail" type="email"></div><div class="field"><label>Phone</label><input id="qPhone"></div></div><div class="public-money-grid"><div class="field"><label>Net (excl. GST)</label><input id="qNet" type="number" min="0" step=".01" placeholder="0.00"></div><div class="field"><label>GST</label><input id="qGstAmount" type="number" min="0" step=".01" placeholder="0.00"></div><div class="field"><label>Total (incl. GST)</label><input id="qPrice" type="number" min="0" step=".01" placeholder="0.00"></div><div class="field"><label>Availability</label><input id="qAvailability" placeholder="Available / conditions"></div></div><label class="public-check"><input id="qGST" type="checkbox" checked> Total includes GST</label><div class="field"><label>Inclusions</label><textarea class="quote-comments" id="qInclusions"></textarea></div><div class="field"><label>Exclusions / notes</label><textarea class="quote-comments" id="qNotes"></textarea></div><div class="upload-box"><label style="display:block;font-weight:850;margin-bottom:8px">Attach proposal or quote</label><input id="qFile" type="file" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"><div style="font-size:11px;color:#747c72;margin-top:7px">PDF, Word, JPG or PNG · maximum 10 MB.</div></div><button class="btn primary" id="publicSubmitBtn" style="width:100%;padding:13px" onclick="submitDemoQuote('${t.id}','')">Submit Private Quote</button><p style="font-size:11px;color:#747c72;text-align:center">Only the event organiser can see your submission.</p></div></div>`;
+ qmc.innerHTML=`<div class="tender-public-shell">
+  <div class="tender-public-head"><small style="font-weight:900;color:#6045f3">SUPPLIER QUOTE REQUEST</small><h2>${esc(t.title)}</h2><div style="color:#697078">${esc(t.eventName||'Event')}${t.region?' · '+esc(t.region):''}${t.due?' · Quote due '+esc(t.due):''}</div></div>
+  <div class="tender-public-body">
+   ${hasPlan?`<div class="tender-plan-link-card"><div class="tpl-copy"><div class="tpl-title">Event site plan</div><div class="tpl-sub">View the event layout, access points and relevant site information.</div></div><button class="btn" onclick="viewTenderPlan('${t.id}','')">View Site Plan →</button></div>`:''}
+   <div class="tender-brief-box"><b>Quote brief</b><div style="margin-top:8px;color:#5f675d">${esc(t.brief||'Please provide a quote for the requirements below.')}</div></div>
+   ${(t.requirements||[]).length?`<div class="tender-requirements">${t.requirements.map(r=>`<div class="tender-requirement"><span>${esc(r.name)}</span><span>${esc(r.qty)} ${esc(r.unit)}</span></div>`).join('')}</div>`:''}
+   <h3 style="margin:24px 0 4px">Upload your quote</h3><p style="margin:0 0 14px;color:#737987;font-size:12px">Upload your prepared quote and add your contact details. It will be added directly to the organiser's tender dashboard.</p>
+   <div class="quote-minimal-fields"><div class="field"><label>Company *</label><input id="qCompany" autocomplete="organization"></div><div class="field"><label>Contact name</label><input id="qContact" autocomplete="name"></div><div class="field"><label>Email *</label><input id="qEmail" type="email" autocomplete="email"></div><div class="field"><label>Phone</label><input id="qPhone" autocomplete="tel"></div></div>
+   <div class="quote-upload-primary"><label>Quote / proposal file *</label><input id="qFile" type="file" accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png"><div style="font-size:11px;color:#747c72;margin-top:8px">PDF preferred · Word, Excel, JPG and PNG also accepted.</div></div>
+   <div class="field"><label>Quoted total (optional)</label><input id="qPrice" type="number" min="0" step=".01" placeholder="$0.00"></div>
+   <label class="public-check"><input id="qGST" type="checkbox" checked> Total includes GST</label>
+   <div class="field"><label>Notes / exclusions (optional)</label><textarea class="quote-comments" id="qNotes" placeholder="Anything the organiser should know…"></textarea></div>
+   <input id="qNet" type="hidden" value="0"><input id="qGstAmount" type="hidden" value="0"><input id="qAvailability" type="hidden" value=""><input id="qInclusions" type="hidden" value="">
+   <button class="btn primary" id="publicSubmitBtn" style="width:100%;padding:14px" onclick="submitDemoQuote('${t.id}','')">Upload Quote</button>
+   <p style="font-size:11px;color:#747c72;text-align:center">Private submission · only the event organiser can view it.</p>
+  </div></div>`;
  byId('quoteModal').classList.remove('hidden');
 };
 
