@@ -1119,6 +1119,40 @@
     @media(max-width:900px){#dashboardModule{padding:20px 16px}#dashboardModule .cards{grid-template-columns:repeat(2,1fr)}#dashboardModule .event-grid{grid-template-columns:1fr}}
     @media(max-width:600px){#dashboardModule .event-card{grid-template-columns:92px minmax(0,1fr)}#dashboardModule .event-thumb{width:92px}#dashboardModule .cards{gap:8px}}
 
+
+    /* V95 — unified SitePlanNZ SaaS visual system from approved mockup */
+    :root{--sp-bg:#f3f4fb;--sp-card:#fff;--sp-line:#e6e7ef;--sp-text:#171923;--sp-muted:#777b89;--sp-purple:#684cf4;--sp-purple-soft:#ebe7ff;--sp-green:#29bd79;--sp-blue:#2d8cff}
+    body{background:var(--sp-bg)}
+    header{background:#fff!important;border-bottom:1px solid var(--sp-line)!important;box-shadow:none!important;color:var(--sp-text)!important;height:64px;padding:0 20px}
+    .brand{color:var(--sp-text)!important}.brand-mark{background:var(--sp-purple)!important;color:#fff!important;border-radius:9px}.brand small{color:#9699a5!important}
+    .nav-tabs{background:transparent!important;padding:0!important;gap:3px}.nav-tab{border:0!important;background:transparent!important;color:#6f7380!important;border-radius:9px!important;padding:9px 11px}.nav-tab.active{background:var(--sp-purple-soft)!important;color:var(--sp-purple)!important}
+    .event-name,.field input,.field select,.field textarea,.supplier-directory-tools input,.supplier-directory-tools select{background:#fff!important;color:var(--sp-text)!important;border:1px solid var(--sp-line)!important;border-radius:9px!important}
+    .top-actions .btn,.btn{background:#fff!important;color:#555a68!important;border:1px solid var(--sp-line)!important;border-radius:9px!important;box-shadow:none!important}
+    .top-actions .btn.primary,.btn.primary{background:var(--sp-purple)!important;border-color:var(--sp-purple)!important;color:#fff!important}
+    .dashboard,.procure{background:var(--sp-bg)!important;padding:26px 28px!important}.dashboard-inner,.procure-inner{max-width:1320px!important}
+    .page-head{margin-bottom:20px!important;align-items:center!important}.page-head h1{color:var(--sp-text)!important;font-size:29px!important}.page-head p{color:var(--sp-muted)!important}
+    .commercial-strip{display:none!important}
+    .cards{gap:10px!important;margin-bottom:18px!important}.metric{background:#fff!important;border:1px solid var(--sp-line)!important;border-radius:13px!important;padding:15px 17px!important;box-shadow:none!important}.metric span{color:var(--sp-muted)!important;font-size:9px!important}.metric b{color:var(--sp-text)!important;font-size:24px!important}
+    .section-title{color:#6d7180!important}
+    .event-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:12px!important}.event-card{background:#fff!important;border:1px solid var(--sp-line)!important;border-radius:14px!important;box-shadow:none!important;display:grid!important;grid-template-columns:100px minmax(0,1fr)!important}.event-thumb{width:100px!important;height:100%!important;min-height:112px!important;background:#ece9ff!important;color:var(--sp-purple)!important}.event-body{padding:13px!important}.event-body h3{color:var(--sp-text)!important}.event-meta{color:var(--sp-muted)!important}.event-actions .btn{padding:7px 9px!important;font-size:10px!important}
+    .workspace{grid-template-columns:250px minmax(0,1fr) 280px!important;background:var(--sp-bg)!important}
+    .sidebar,.inspector{background:#fff!important;border-color:var(--sp-line)!important;color:var(--sp-text)!important;padding:14px!important}
+    .icon-search-wrap{background:#f7f7fb!important;border:1px solid var(--sp-line)!important;border-radius:9px!important}.icon-search{background:transparent!important;color:var(--sp-text)!important}
+    .object-grid{gap:7px!important}.object-btn{background:#fff!important;border:1px solid var(--sp-line)!important;color:#4e5360!important;border-radius:9px!important;padding:9px 7px!important}.object-btn:hover{border-color:#bdb3ff!important;transform:none!important}.object-btn .ico{background:var(--sp-purple-soft)!important;color:var(--sp-purple)!important;border-radius:7px!important}
+    .tool{background:#fff!important;border:1px solid var(--sp-line)!important;color:#555a67!important;border-radius:9px!important}.tool.active{background:var(--sp-purple-soft)!important;border-color:#c9c0ff!important;color:var(--sp-purple)!important;box-shadow:none!important}
+    .draw-options{background:#f7f7fb!important;border-color:var(--sp-line)!important}.empty{background:#f8f8fb!important;border-color:var(--sp-line)!important;color:var(--sp-muted)!important}.summary{border-color:var(--sp-line)!important}.summary-row{color:var(--sp-muted)!important}.summary-row strong{color:var(--sp-text)!important}
+    .map-wrap{margin:10px 0;border-radius:14px;overflow:hidden;border:1px solid var(--sp-line);box-shadow:0 5px 18px rgba(45,42,75,.06)}
+    .map-tip,.draw-banner,.stat{background:rgba(255,255,255,.95)!important;border:1px solid var(--sp-line)!important;color:#444956!important;box-shadow:0 4px 16px rgba(40,37,66,.1)!important}.stat b{color:var(--sp-purple)!important}
+    .tender{background:#fff!important;border:1px solid var(--sp-line)!important;border-radius:10px!important;box-shadow:none!important}.tender h3{color:var(--sp-text)!important}.tender small{color:var(--sp-muted)!important}.pill{border:0!important}.pill.open{color:#16865a!important;background:#e3f8ee!important}.pill.awarded{color:#246fbe!important;background:#e6f2ff!important}
+    .supplier-tabs{background:transparent!important;border-bottom:1px solid var(--sp-line)!important;border-radius:0!important;padding:0!important}.supplier-subtab{background:transparent!important;border:0!important;border-radius:0!important;color:#777b89!important}.supplier-subtab.active{color:var(--sp-purple)!important;border-bottom:2px solid var(--sp-purple)!important}
+    #supplierList,#budgetRows,#tenderHistoryByEvent{background:#fff;border-radius:12px}
+    .supplier-layout{gap:14px!important}.supplier-profile{background:#fff!important;border:1px solid var(--sp-line)!important;border-radius:12px!important}
+    .modal{background:rgba(30,31,44,.42)!important;backdrop-filter:blur(5px)}.modal-card{background:#fff!important;color:var(--sp-text)!important;border:1px solid var(--sp-line)!important;border-radius:16px!important;box-shadow:0 24px 60px rgba(35,33,60,.18)!important}
+    .public-card,.tender-public-shell,.tender-public-head,.tender-public-body,.tender-brief-box,.upload-box,.tender-requirement{border-color:var(--sp-line)!important}
+    .toast{background:#242532!important;border:0!important;color:#fff!important}
+    @media(max-width:1050px){.workspace{grid-template-columns:220px minmax(0,1fr)!important}.event-grid{grid-template-columns:1fr!important}}
+    @media(max-width:760px){.dashboard,.procure{padding:16px!important}.workspace{grid-template-columns:1fr!important}.sidebar{position:absolute!important}.cards{grid-template-columns:repeat(2,1fr)!important}}
+
 </style>
 
 <style>
