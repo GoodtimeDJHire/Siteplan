@@ -1634,6 +1634,15 @@ body:not(:has(#plannerModule:not(.hidden))) #eventsModule{grid-column:2!importan
 #suppliersModule .network-pill,#suppliersModule [class*="network"]{color:#6045f3!important;border-color:#cfc6ff!important;background:#f6f4ff!important}
 #suppliersModule [style*="#c8ff3d"],#suppliersModule [style*="#a8e820"],#suppliersModule [style*="lime"],#suppliersModule [style*="greenyellow"]{color:#6045f3!important;border-color:#cfc6ff!important;background:#f6f4ff!important}
 #suppliersModule .supplier-subtab.active{background:#eeeaff!important;color:#6045f3!important;border-color:#d8d0ff!important}
+</style><style id="sp-v121-public-quote-functional">
+/* Quote form interaction fixes */
+.tender-ref-upload{position:relative!important}
+.tender-ref-upload input[type=file]{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;opacity:0!important;cursor:pointer!important;pointer-events:auto!important;z-index:2!important}
+.tender-ref-upload>div{pointer-events:none!important}
+#tenderManualFields{display:block!important}
+.tender-ref-manual{display:none!important}
+#publicSubmitBtn{background:#6045f3!important;color:#fff!important;border-color:#6045f3!important;cursor:pointer!important}
+#publicSubmitBtn:disabled{opacity:.55!important;cursor:wait!important}
 </style></head>
 <body>
 
@@ -3729,8 +3738,8 @@ openSupplierForm=function(id,supplierId='',updateHash=true){
   <div class="tender-ref-chips">${t.region?`<span class="tender-ref-chip">⌖ &nbsp;${esc(t.region)}</span>`:''}<span class="tender-ref-chip">Private supplier tender</span><span class="tender-ref-chip">${req.length} requirement${req.length===1?'':'s'}</span></div></div>
   <div class="tender-ref-grid">
    <section class="tender-ref-card"><h3>Tender details</h3><div class="tender-ref-brief">${esc(t.brief||'Please provide a quote for the requirements below.')}</div>${req.length?`<div class="tender-ref-reqs"><b>Requirements</b>${req.map(r=>`<div class="tender-ref-req"><b>${esc(r.qty)} ×</b><span>${esc(r.name)}${r.unit?' · '+esc(r.unit):''}</span></div>`).join('')}</div>`:''}${hasPlan?`<button class="btn tender-ref-plan" onclick="viewTenderPlan('${t.id}','')">▱ &nbsp; View interactive site plan &nbsp; →</button>`:''}</section>
-   <section class="tender-ref-card"><h3>Upload your quote</h3><div style="margin-bottom:14px">Upload your existing quote and we'll attach the details to this tender for you.</div>
-    <label class="tender-ref-upload"><input id="qFile" type="file" accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png" onchange="const f=this.files[0];document.getElementById('quoteFileName').textContent=f?f.name:'PDF, DOCX, XLSX, JPG or PNG · Maximum 15 MB';this.closest('.tender-ref-upload').classList.toggle('quote-file-selected',!!f)"><div><div class="tender-ref-upload-icon">☁↑</div><strong>Choose quote file</strong><small id="quoteFileName">PDF, DOCX, XLSX, JPG or PNG · Maximum 15 MB</small></div></label>
+   <section class="tender-ref-card"><h3>Upload your quote</h3><div style="margin-bottom:14px">Upload your existing quote, or enter the quote details manually below.</div>
+    <label class="tender-ref-upload" for="qFile"><input id="qFile" type="file" accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png" onchange="handlePublicQuoteFile(this)"><div><div class="tender-ref-upload-icon">☁↑</div><strong>Choose quote file</strong><small id="quoteFileName">PDF, DOCX, XLSX, JPG or PNG · Maximum 15 MB</small></div></label>
     <div class="tender-ref-steps"><div class="tender-ref-step"><span>1</span>Upload</div><div class="tender-ref-step"><span>2</span>Review details</div><div class="tender-ref-step"><span>3</span>Submit</div></div>
     <div class="tender-ref-lock">▣ &nbsp; Only the event organiser can view your quote.</div>
     <div class="tender-ref-manual"><button type="button" onclick="document.getElementById('tenderManualFields').classList.toggle('open')">Prefer to enter it manually?</button></div>
@@ -3740,11 +3749,19 @@ openSupplierForm=function(id,supplierId='',updateHash=true){
  byId('quoteModal').classList.remove('hidden');
 };
 
+function handlePublicQuoteFile(input){
+ const f=input?.files?.[0],name=byId('quoteFileName'),box=input?.closest('.tender-ref-upload');
+ if(name)name.textContent=f?f.name:'PDF, DOCX, XLSX, JPG or PNG · Maximum 15 MB';
+ box?.classList.toggle('quote-file-selected',!!f);
+ const fields=byId('tenderManualFields');
+ if(fields&&f)fields.classList.add('open');
+ const step2=document.querySelector('.tender-ref-step:nth-child(2) span');
+ if(step2&&f){step2.style.background='#6045f3';step2.style.color='#fff'}
+}
 submitDemoQuote=async function(id){
  const t=tenders.find(x=>x.id===id);if(!t)return;const btn=byId('publicSubmitBtn');
  const company=byId('qCompany')?.value.trim(),email=byId('qEmail')?.value.trim(),f=byId('qFile')?.files?.[0];
- if(!f){toast('Please choose your quote file');return}
- if(f.size>15*1024*1024){toast('Quote file must be 15 MB or smaller');return}
+ if(f&&f.size>15*1024*1024){toast('Quote file must be 15 MB or smaller');return}
  if(!company||!email){toast('Company and email are required');byId('tenderManualFields')?.classList.add('open');return}
  btn.disabled=true;btn.textContent='Uploading quote…';
  try{
