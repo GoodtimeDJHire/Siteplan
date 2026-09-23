@@ -1647,6 +1647,13 @@ body:not(:has(#plannerModule:not(.hidden))) #eventsModule{grid-column:2!importan
 .quote-ai-status{margin:10px 0 4px;padding:10px 12px;border-radius:9px;background:#eeeaff;color:#6045f3;font-size:12px;font-weight:800;text-align:center}
 .quote-ai-status.done{background:#edf8f2;color:#25724a}.quote-ai-status.error{background:#fff1f2;color:#a23d4c}
 .tender-ref-upload.quote-reading{opacity:.7;pointer-events:none}
+</style><style id="sp-v123-public-tender-isolation">
+/* Public tender links must never expose the legacy app while Maps is booting */
+html.public-tender-route #marketingHome,html.public-tender-route #app,html.public-tender-route #setup{display:none!important}
+html.public-tender-route #quoteModal{display:block!important;position:fixed!important;inset:0!important;z-index:99999!important;background:#f4f5fb!important;overflow:auto!important}
+html.public-tender-route #quoteModal.hidden{display:block!important}
+html.public-tender-route #quoteModalContent{width:100%!important;max-width:none!important;min-height:100vh!important;margin:0!important;border:0!important;border-radius:0!important;background:#f4f5fb!important}
+html.public-tender-route .modal-backdrop{background:#f4f5fb!important}
 </style></head>
 <body>
 
@@ -3819,7 +3826,7 @@ async function loadPublicTenderFromHash(){
    const d=await publicTenderRequest(token,'GET');const x=d.tender;const ev=Array.isArray(x.events)?x.events[0]:x.events;
    const t={id:token,publicToken:token,cloudTenderId:x.id,eventId:x.event_id,eventName:ev?.name||'Event',title:x.title,category:x.category||'Custom',due:x.due_at?x.due_at.slice(0,10):'',region:x.region||'',brief:x.brief||'',requirements:x.requirements_json||[],planSnapshot:x.include_site_plan?(ev?.plan_data||{}):{},status:'Open',quotes:[]};
    const idx=tenders.findIndex(z=>z.id===token);if(idx>=0)tenders[idx]=t;else tenders.unshift(t);
-   const wait=()=>{if(byId('quoteModalContent')&&window.google?.maps){if(p.get('plan')==='1')viewTenderPlan(token,'',false);else openSupplierForm(token,'',false)}else setTimeout(wait,120)};wait();return true;
+   const wait=()=>{if(byId('quoteModalContent')){if(p.get('plan')==='1'){if(window.google?.maps)viewTenderPlan(token,'',false);else setTimeout(wait,120)}else openSupplierForm(token,'',false)}else setTimeout(wait,120)};wait();return true;
  }catch(e){console.error(e);setTimeout(()=>toast(e.message),800);return false}
 }
 
