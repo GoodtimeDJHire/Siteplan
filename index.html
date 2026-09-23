@@ -1598,6 +1598,17 @@ body:not(:has(#plannerModule:not(.hidden))) #eventsModule{grid-column:2!importan
 #plannerModule .planner-event-nav button.active{background:#eeeaff;color:#6045f3}
 #plannerModule{padding-top:92px!important}
 #plannerModule:before{top:16px!important}
+</style><style id="sp-v118-tender-index-match-maps">
+/* Tender event selector matches Event Maps list exactly */
+#tendersModule .sp-tender-event-grid{display:block!important;background:#fff!important;border:1px solid #e3e5ed!important;border-radius:14px!important;overflow:hidden!important;margin-top:16px!important}
+#tendersModule .sp-tender-event-card{display:grid!important;grid-template-columns:minmax(0,1fr) auto!important;align-items:center!important;min-height:116px!important;padding:22px 26px!important;border:0!important;border-bottom:1px solid #e7e8ef!important;border-radius:0!important;background:#fff!important;box-shadow:none!important;transform:none!important;cursor:default!important}
+#tendersModule .sp-tender-event-card:last-child{border-bottom:0!important}
+#tendersModule .sp-tender-event-card:hover{background:#fcfcff!important;border-color:#e7e8ef!important;box-shadow:none!important;transform:none!important}
+#tendersModule .sp-tender-event-card h3{font-size:17px!important;margin:0 0 9px!important;color:#171923!important}
+#tendersModule .sp-tender-event-meta{font-size:12px!important;color:#697184!important;margin:0!important}
+#tendersModule .sp-tender-event-stats{display:none!important}
+#tendersModule .sp-tender-event-open{border:0!important;border-radius:999px!important;background:#eaf2ff!important;color:#126be5!important;font-weight:850!important;padding:10px 17px!important;cursor:pointer!important;font-size:12px!important}
+#tendersModule .sp-tender-event-open:hover{background:#ddeaff!important}
 </style></head>
 <body>
 
@@ -3064,9 +3075,9 @@ function renderTenderEventIndex(){
  const grid=byId('tenderEventGrid');if(!grid)return;
  const available=events.filter(e=>!e.archived);
  grid.innerHTML=available.length?available.map(e=>{
-  const list=tenders.filter(t=>t.eventId===e.id),open=list.filter(t=>t.status==='Open').length,quotes=list.reduce((n,t)=>n+(t.quotes||[]).length,0);
-  const meta=[e.eventDate||e.date||'',e.location||''].filter(Boolean).join(' · ');
-  return `<article class="sp-tender-event-card" onclick="openTenderEvent('${e.id}')"><h3>${esc(e.name||'Untitled event')}</h3><div class="sp-tender-event-meta">${meta||'Event procurement'}</div><div class="sp-tender-event-stats"><span>${open} open tender${open===1?'':'s'}</span><span>${quotes} quote${quotes===1?'':'s'}</span></div></article>`;
+  const list=tenders.filter(t=>t.eventId===e.id),quotes=list.reduce((n,t)=>n+(t.quotes||[]).length,0);
+  const details=[e.eventDate||e.date||'',e.location||'',list.length+' tender'+(list.length===1?'':'s'),quotes+' quote'+(quotes===1?'':'s')].filter(Boolean).join(' · ');
+  return `<article class="sp-tender-event-card"><div class="sp-tender-event-body"><h3>${esc(e.name||'Untitled event')}</h3><div class="sp-tender-event-meta">${esc(details)}</div></div><button class="sp-tender-event-open" type="button" onclick="openTenderEvent('${e.id}')">Open →</button></article>`;
  }).join(''):'<div class="empty-state"><b>No events yet.</b><br>Create an event first, then add tenders to it.</div>';
 }
 function openTenderEvent(id){
