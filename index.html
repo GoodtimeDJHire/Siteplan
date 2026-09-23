@@ -1388,6 +1388,27 @@ body:has(#plannerModule:not(.hidden)) #plannerModule{
  #plannerModule .inspector{max-width:260px!important}
 }
 
+/* V101 clean explicit planner columns */
+body:has(#plannerModule:not(.hidden)) #plannerModule{display:grid!important;grid-template-columns:72px 300px minmax(0,1fr) 286px!important;grid-template-rows:minmax(0,1fr)!important;gap:0!important;padding:0!important;overflow:hidden!important;background:#f4f5fa!important}
+#plannerModule>.planner-tools-rail{grid-column:1;grid-row:1;background:#fff;border-right:1px solid #e7e8ef;padding:12px 7px;display:flex;flex-direction:column;gap:7px;min-width:0;overflow-y:auto}
+.planner-rail-btn{border:0;background:#fff;border-radius:10px;min-height:62px;padding:7px 3px;color:#565c6b;display:grid;place-items:center;gap:3px;font:inherit}.planner-rail-btn span{font-size:20px}.planner-rail-btn b{font-size:9px}.planner-rail-btn.active,.planner-rail-btn:hover{background:#eeeaff;color:#5d43ef}
+#plannerModule>.sidebar{grid-column:2!important;grid-row:1!important;display:block!important;position:static!important;inset:auto!important;width:auto!important;min-width:0!important;max-width:none!important;height:100%!important;max-height:none!important;padding:16px!important;margin:0!important;background:#fff!important;border:0!important;border-right:1px solid #e7e8ef!important;border-radius:0!important;box-shadow:none!important;overflow-y:auto!important;overflow-x:hidden!important;box-sizing:border-box!important}
+#plannerModule>.sidebar:before{display:none!important}#plannerModule>.sidebar>.section-title:first-child{display:block!important;padding:0!important;margin:0 0 12px!important;font-size:18px!important;letter-spacing:-.02em!important;text-transform:none!important;color:#181a23!important}#plannerModule>.sidebar>.icon-search-wrap{display:flex!important;width:100%!important;max-width:none!important;margin:0 0 14px!important;box-sizing:border-box!important}
+#plannerModule>.sidebar>.object-grid{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:8px!important;width:100%!important;max-width:none!important;max-height:none!important;margin:0 0 16px!important;padding:0!important;overflow:visible!important}
+#plannerModule>.sidebar .object-btn{width:100%!important;min-width:0!important;max-width:none!important;height:76px!important;min-height:76px!important;padding:7px 3px!important;box-sizing:border-box!important;overflow:hidden!important}#plannerModule>.sidebar .object-btn>span:last-child{display:block!important;width:100%!important;max-width:100%!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;font-size:8px!important}
+#plannerModule>.sidebar>.section-title:nth-of-type(2){display:none!important}#plannerModule>.sidebar>.tool-list{display:none!important}#plannerModule>.sidebar>.draw-options{display:block!important;width:100%!important;max-width:none!important;margin:0!important;box-sizing:border-box!important;overflow:hidden!important}#plannerModule>.sidebar>.draw-options .palette{display:flex!important;flex-wrap:wrap!important;gap:7px!important}
+#plannerModule>.map-wrap{grid-column:3!important;grid-row:1!important;position:relative!important;inset:auto!important;width:auto!important;min-width:0!important;max-width:none!important;height:auto!important;min-height:0!important;margin:10px!important;border:1px solid #e2e3eb!important;border-radius:12px!important;overflow:hidden!important;box-sizing:border-box!important}
+#plannerModule>.inspector{grid-column:4!important;grid-row:1!important;position:static!important;inset:auto!important;width:auto!important;min-width:0!important;max-width:none!important;height:auto!important;margin:10px 10px 10px 0!important;padding:16px!important;transform:none!important;opacity:1!important;pointer-events:auto!important;background:#fff!important;border:1px solid #e5e6ee!important;border-radius:12px!important;box-shadow:none!important;overflow-y:auto!important;overflow-x:hidden!important}
+@media(max-width:1200px){body:has(#plannerModule:not(.hidden)) #plannerModule{grid-template-columns:66px 250px minmax(0,1fr) 250px!important}#plannerModule>.sidebar>.object-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}}
+/* V102 compact event icon library */
+#plannerModule>.sidebar{padding:13px!important}
+#plannerModule>.sidebar>.section-title:first-child{font-size:16px!important;margin-bottom:9px!important}
+#plannerModule>.sidebar>.icon-search-wrap{height:36px!important;margin-bottom:10px!important}
+#plannerModule>.sidebar>.object-grid{grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:5px!important;margin-bottom:12px!important}
+#plannerModule>.sidebar .object-btn{height:58px!important;min-height:58px!important;padding:5px 2px!important;border-radius:8px!important}
+#plannerModule>.sidebar .object-btn .ico{width:27px!important;height:25px!important;font-size:10px!important;border-radius:6px!important}
+#plannerModule>.sidebar .object-btn>span:last-child{font-size:7px!important;line-height:1.05!important}
+@media(max-width:1200px){#plannerModule>.sidebar>.object-grid{grid-template-columns:repeat(3,minmax(0,1fr))!important}}
 </style>
 
 <style>
@@ -1533,7 +1554,7 @@ body:has(#plannerModule:not(.hidden)) #plannerModule{
  </div>
 </div></div></section>
 
-  <div class="workspace module hidden" id="plannerModule">
+  <div class="workspace module hidden" id="plannerModule"><div class="planner-tools-rail"><button class="planner-rail-btn active" type="button"><span>↖</span><b>Objects</b></button><button class="planner-rail-btn" type="button" data-tool-target="zone"><span>⬡</span><b>Zones</b></button><button class="planner-rail-btn" type="button" data-tool-target="barrier"><span>╱</span><b>Barrier</b></button><button class="planner-rail-btn" type="button" data-tool-target="route"><span>➜</span><b>Route</b></button></div>
     <aside class="sidebar" id="sidebar">
       <div class="section-title">Add to map</div>
       <div class="icon-search-wrap">
@@ -1627,7 +1648,25 @@ const OBJECT_TYPES = [
 
   ['staff','STF','Staff / Crew','#8b5cf6'],['volunteer','VOL','Volunteer','#8b5cf6'],['contractor','CON','Contractor Check-in','#8b5cf6'],
   ['storage','STO','Storage','#64748b'],['compound','CMP','Production Compound','#64748b'],['office','OFF','Site Office','#64748b'],
-  ['charging','CHG','Charging Point','#22c55e'],['wifi','WIFI','Wi-Fi','#0ea5e9'],['light','✦','Lighting','#eab308']
+  ['charging','CHG','Charging Point','#22c55e'],['wifi','WIFI','Wi-Fi','#0ea5e9'],['light','✦','Lighting','#eab308'],
+  ['gate','GATE','Gate','#22c55e'],['pedestrian','PED','Pedestrian Entry','#22c55e'],['vehicleentry','VEH','Vehicle Entry','#22c55e'],
+  ['wristband','WB','Wristband Point','#f97316'],['bagcheck','BAG','Bag Check','#7c3aed'],['scanner','SCAN','Ticket Scanner','#f97316'],
+  ['crowdbarrier','CB','Crowd Barrier','#64748b'],['heras','HF','Heras Fence','#64748b'],['bollard','●','Bollard','#64748b'],
+  ['emergencylane','EMG','Emergency Lane','#ef4444'],['evac','EVAC','Evacuation Point','#ef4444'],['fireexit','FIRE','Fire Exit','#ef4444'],
+  ['medic','MED','Medical Post','#ef4444'],['police','POL','Police','#2563eb'],['securitygate','SEC','Security Gate','#7c3aed'],
+  ['beer','BEER','Beer Bar','#f97316'],['cocktail','CKT','Cocktail Bar','#f97316'],['coffee','☕','Coffee','#92400e'],
+  ['waterstation','H2O','Water Station','#0ea5e9'],['catering','CAT','Catering','#f97316'],['vendor','VND','Vendor Site','#f97316'],
+  ['artist','ART','Artist Area','#8b5cf6'],['backstage','BACK','Backstage','#8b5cf6'],['production','PROD','Production','#111827'],
+  ['sounddesk','MIX','Sound Desk','#111827'],['lightingdesk','LX','Lighting Desk','#eab308'],['camera2','CAM','Camera Position','#111827'],
+  ['photopit','PHOTO','Photo Pit','#111827'],['press','PRESS','Media / Press','#111827'],['meetgreet','M&G','Meet & Greet','#8b5cf6'],
+  ['fencegate','FG','Fence Gate','#64748b'],['staffentry','STAFF','Staff Entry','#8b5cf6'],['crewcheck','CREW','Crew Check-in','#8b5cf6'],
+  ['portabletoilet','WC','Portable Toilet','#2563eb'],['urinal','UR','Urinals','#2563eb'],['handwash','HW','Hand Wash','#0ea5e9'],
+  ['recycling','REC','Recycling','#22c55e'],['skip','SKIP','Skip Bin','#22c55e'],['dumpster','BIN','Large Bin','#22c55e'],
+  ['cablecross','CBR','Cable Ramp','#eab308'],['distribution','DB','Power Distribution','#eab308'],['lightingmast','LM','Lighting Mast','#eab308'],
+  ['waterfill','WF','Water Fill','#0ea5e9'],['greywater','GW','Grey Water','#0ea5e9'],['septic','SEP','Waste Water','#64748b'],
+  ['camping','CAMP','Camping','#22c55e'],['glamping','GLAMP','Glamping','#22c55e'],['rides','RIDE','Ride / Attraction','#ec4899'],
+  ['kids','KIDS','Kids Area','#ec4899'],['smoking','SMK','Smoking Area','#64748b'],['quiet','QUIET','Quiet Area','#0ea5e9'],
+  ['atm','ATM','ATM / EFTPOS','#2563eb'],['charginghub','USB','Phone Charging','#22c55e'],['locker','LOCK','Lockers','#64748b']
 ];
 const DRAW_COLOURS=['#ff8a00','#ef233c','#21a7e8','#7c3aed','#22c55e','#ffd400','#ffffff','#111827','#ec4899','#06b6d4','#8b5cf6','#f97316'];
 
@@ -2789,6 +2828,7 @@ let tenders = JSON.parse(localStorage.getItem('siteplan_tenders')||'[]');
 let eventBudget = Number(localStorage.getItem('siteplan_budget')||0);
 const money=n=>new Intl.NumberFormat('en-NZ',{style:'currency',currency:'NZD',maximumFractionDigits:0}).format(Number(n)||0);
 function saveTenders(){localStorage.setItem('siteplan_tenders',JSON.stringify(tenders));renderTenders();renderBudget()}
+document.addEventListener('click',e=>{const b=e.target.closest('.planner-rail-btn');if(!b)return;document.querySelectorAll('.planner-rail-btn').forEach(x=>x.classList.remove('active'));b.classList.add('active');const target=b.dataset.toolTarget;if(target){const tool=document.querySelector('#plannerModule .tool[data-tool="'+target+'"]');if(tool)tool.click();}});
 function switchModule(name){document.querySelectorAll('.module').forEach(x=>x.classList.add('hidden'));byId(name+'Module').classList.remove('hidden');byId('newEventBtn').onclick=newEvent;document.querySelectorAll('.nav-tab').forEach(x=>x.classList.toggle('active',x.dataset.module===name));document.querySelector('.search-wrap').style.display=name==='planner'?'flex':'none';byId('eventName').style.display=name==='planner'?'':'none';byId('saveBtn').style.display=name==='planner'?'':'none';byId('clearBtn').style.display=name==='planner'?'':'none';byId('printBtn').style.display=name==='planner'?'':'none';if(name==='dashboard')renderEvents();if(name==='tenders')renderTenders();if(name==='budget')renderBudget()}
 function addReqRow(name='',qty='',unit=''){const d=document.createElement('div');d.className='req-row';d.innerHTML=`<input class="rname" placeholder="Requirement" value="${name}"><input class="rqty" placeholder="Qty" value="${qty}"><input class="runit" placeholder="Unit" value="${unit}"><button class="btn danger" type="button">×</button>`;d.querySelector('button').onclick=()=>d.remove();byId('reqRows').appendChild(d)}
 function openTender(){
