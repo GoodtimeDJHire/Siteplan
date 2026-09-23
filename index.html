@@ -3540,7 +3540,8 @@ async function launchSitePlanFromHome(){
   await startSitePlan();
 }
 ['launchSitePlanTop','launchSitePlanHero','launchSitePlanBottom'].forEach(id=>byId(id)?.addEventListener('click',launchSitePlanFromHome));
-if(location.hash.includes('tender='))launchSitePlanFromHome();
+/* Public tender routes are handled by loadPublicTenderFromHash after cloud helpers load.
+   Do not boot the full legacy/planner app for supplier quote links. */
 
 // V51 SitePlan cloud API
 const SITEPLAN_SUPABASE_URL="https://qkvkemcqfnbmaktbxddg.supabase.co";
