@@ -1004,6 +1004,68 @@
     body.public-tender-route .tender-public-head>div>.btn{display:none!important}
     body.public-tender-route .tender-public-body{padding-bottom:max(40px,env(safe-area-inset-bottom))!important}
     @media(max-width:620px){body.public-tender-route #quoteModal:not(.hidden){padding:0!important}body.public-tender-route .tender-public-shell{min-height:100vh;min-height:100dvh;border-radius:0!important;box-shadow:none!important}body.public-tender-route .supplier-submit-meta{grid-template-columns:1fr!important}body.public-tender-route input,body.public-tender-route textarea,body.public-tender-route select{font-size:16px!important}}
+
+    /* V91 — SitePlan product UI rebuild (visual only) */
+    :root{
+      --bg:#f4f0e7;--panel:#ffffff;--panel2:#f7f3ea;--line:#ded8cc;
+      --text:#17151d;--muted:#77717d;--green:#c8ff3d;--green2:#a8e820;
+      --purple:#7357ff;--purple2:#5d43e8;--ink:#17131f;
+      --danger:#e45163;--white:#fff;--shadow:0 14px 36px rgba(34,24,48,.10);
+    }
+    html,body{background:var(--bg);color:var(--text)}
+    .app{grid-template-rows:72px 1fr}
+    header{height:72px;background:#17131f;border-bottom:0;padding:0 22px;gap:18px;box-shadow:0 3px 16px rgba(0,0,0,.12)}
+    .brand{color:#fff;font-size:17px}.brand-mark{background:var(--green);color:#17131f;border-radius:10px}.brand small{color:#aaa2b4}
+    .nav-tabs{gap:2px;background:#211b2c;padding:4px;border-radius:12px}
+    .nav-tab{border:0;color:#aaa2b4;padding:9px 13px;border-radius:8px;font-size:12px}
+    .nav-tab:hover{color:#fff;background:#2c2438}.nav-tab.active{background:var(--purple);color:#fff;border:0}
+    .event-name{background:#241e30;border:1px solid #393044;color:#fff;border-radius:10px}
+    .search-wrap{max-width:330px}.top-actions{gap:6px}.top-actions .btn{background:#241e30;border-color:#393044;color:#e9e4ef}
+    .top-actions .btn.primary{background:var(--green);border-color:var(--green);color:#17131f}
+    .btn{border:1px solid var(--line);background:#fff;color:var(--text);border-radius:10px;box-shadow:none}
+    .btn:hover{background:#f4f0e7}.btn.primary{background:var(--purple);border-color:var(--purple);color:#fff}.btn.primary:hover{background:var(--purple2)}
+    .btn.danger{color:var(--danger)}
+    .dashboard,.procure{background:var(--bg);padding:36px 32px}
+    .dashboard-inner,.procure-inner{max-width:1240px}
+    .page-head{align-items:center;margin-bottom:26px}.page-head h1{font-size:34px;color:var(--ink)}.page-head p{color:var(--muted);font-size:14px}
+    .commercial-strip{background:var(--ink)!important;border:0!important;border-radius:16px!important;padding:14px 16px!important;margin-bottom:18px!important}
+    .commercial-pill{color:#d9d2df!important;border-color:#403649!important;background:#241e2c!important}.commercial-pill strong{color:var(--green)!important}
+    .cards{gap:14px;margin-bottom:28px}.metric{background:#fff;border:1px solid var(--line);border-radius:16px;padding:18px 20px;box-shadow:0 4px 14px rgba(37,27,47,.04)}
+    .metric span{color:var(--muted);font-size:10px}.metric b{font-size:28px;color:var(--ink)}
+    .metric:first-child{background:#211a2a;border-color:#211a2a}.metric:first-child span{color:#bdb5c6}.metric:first-child b{color:var(--green)}
+    .section-title{color:#827b87;font-size:10px;letter-spacing:.14em}
+    .event-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+    .event-card{background:#fff;border:1px solid var(--line);border-radius:18px;box-shadow:0 5px 18px rgba(37,27,47,.05)}
+    .event-card:hover{border-color:#b9adca;box-shadow:0 12px 28px rgba(37,27,47,.10)}
+    .event-thumb{height:104px;background:linear-gradient(135deg,#7357ff,#3f2d71);color:var(--green);font-size:22px}
+    .event-body{padding:16px}.event-body h3{color:var(--ink);font-size:16px}.event-meta{color:var(--muted)}
+    .event-actions .btn{font-size:11px;padding:9px}.dashboard-empty,.empty-state{background:#fff;border-color:#cec6ba;color:var(--muted)}
+    .workspace{grid-template-columns:320px minmax(0,1fr) 286px;background:#e9e4da}
+    .sidebar,.inspector{background:#fbf8f2;color:var(--text);border-color:var(--line);padding:18px}
+    .sidebar .section-title,.inspector .section-title{color:#77717d}
+    .icon-search-wrap{background:#fff!important;border-color:var(--line)!important}
+    .icon-search{color:var(--text)!important;background:#fff!important}
+    .object-grid{gap:7px}.object-btn{background:#fff;border-color:var(--line);color:var(--text);border-radius:10px;padding:10px 9px}
+    .object-btn:hover{border-color:var(--purple);transform:none}.object-btn .ico{background:#eee8ff;color:var(--purple)}
+    .tool{background:#fff;border-color:var(--line);color:var(--text)}.tool:hover{border-color:#b5a8c6}.tool.active{border-color:var(--purple);box-shadow:0 0 0 1px var(--purple) inset;color:var(--purple)}
+    .draw-options{background:#f0ebe1;border-color:var(--line)}
+    .field label{color:#77717d}.field input,.field select,.field textarea{background:#fff;border-color:var(--line);color:var(--text)}
+    .empty{color:#77717d;border-color:#d4cdc1;background:#fff}.summary{border-color:var(--line)}.summary-row{color:#77717d}.summary-row strong{color:var(--text)}
+    .map-tip,.draw-banner,.stat{background:rgba(23,19,31,.94);border-color:#41364c;color:#fff}.stat b{color:var(--green)}
+    .tender{background:#fff;border-color:var(--line);border-radius:14px;box-shadow:0 3px 12px rgba(37,27,47,.04)}
+    .tender h3{color:var(--ink)}.tender small{color:var(--muted)}.pill{border-color:#d4cddd}.pill.open{color:#5b3bd4;border-color:#bcaeff;background:#f0ecff}.pill.awarded{color:#377900;background:#efffd1;border-color:#c8ef84}
+    .supplier-tabs{background:#eae4d9!important;border-radius:12px!important;padding:4px!important}
+    .supplier-subtab{border:0!important;background:transparent!important;color:#756d7b!important;border-radius:9px!important}
+    .supplier-subtab.active{background:#fff!important;color:var(--purple)!important;box-shadow:0 2px 8px rgba(37,27,47,.08)!important}
+    .supplier-directory-tools input,.supplier-directory-tools select{background:#fff!important;border-color:var(--line)!important;color:var(--text)!important}
+    #supplierList>* ,#budgetRows>* ,#tenderHistoryByEvent>*{border-color:var(--line)!important}
+    .modal{background:rgba(18,14,24,.72);backdrop-filter:blur(5px)}.modal-card{background:#fbf8f2;border-color:#d7d0c5;color:var(--text);border-radius:20px;box-shadow:0 28px 70px rgba(0,0,0,.25)}
+    .modal-head{border-color:var(--line)}.modal-head h2{color:var(--ink)}
+    .toast{background:#17131f;border-color:#3d3348;color:#fff}
+    .cloud-state{color:var(--green)!important}
+    @media(max-width:1050px){.workspace{grid-template-columns:280px minmax(0,1fr)}.event-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+    @media(max-width:760px){.dashboard,.procure{padding:22px 16px}.event-grid{grid-template-columns:1fr}.cards{grid-template-columns:repeat(2,1fr)}header{background:#17131f}}
+
 </style>
 
 <style>
