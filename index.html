@@ -1342,6 +1342,52 @@ body:has(#plannerModule:not(.hidden)) #plannerModule{
  #plannerModule .object-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}
 }
 
+
+/* V100 — hard containment fix for planner columns */
+body:has(#plannerModule:not(.hidden)) #plannerModule{
+  display:grid!important;
+  grid-template-columns:380px minmax(520px,1fr) 300px!important;
+  grid-template-rows:minmax(0,1fr)!important;
+  width:100%!important;min-width:0!important;overflow:hidden!important;
+}
+#plannerModule .sidebar{
+  grid-column:1!important;grid-row:1!important;
+  display:grid!important;grid-template-columns:78px minmax(0,302px)!important;
+  width:380px!important;min-width:0!important;max-width:380px!important;height:100%!important;
+  position:static!important;inset:auto!important;overflow:hidden!important;
+  border-right:1px solid #e5e6ee!important;box-sizing:border-box!important;
+}
+#plannerModule .sidebar:before{grid-column:1!important;width:auto!important;min-width:0!important}
+#plannerModule .tool-list{
+  grid-column:1!important;grid-row:2/6!important;width:auto!important;min-width:0!important;max-width:78px!important;
+  padding:0 6px 10px!important;overflow-y:auto!important;overflow-x:hidden!important;box-sizing:border-box!important
+}
+#plannerModule .sidebar>.section-title:first-child,#plannerModule .icon-search-wrap,#plannerModule .object-grid,#plannerModule .draw-options{
+  grid-column:2!important;min-width:0!important;max-width:302px!important;box-sizing:border-box!important
+}
+#plannerModule .object-grid{
+  width:100%!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;padding:0 12px 14px!important;
+  overflow-y:auto!important;overflow-x:hidden!important
+}
+#plannerModule .object-btn{min-width:0!important;width:100%!important;max-width:100%!important}
+#plannerModule .draw-options{width:calc(100% - 24px)!important;margin:0 12px 12px!important;overflow:hidden!important}
+#plannerModule .map-wrap{
+  grid-column:2!important;grid-row:1!important;position:relative!important;
+  width:auto!important;min-width:0!important;max-width:none!important;margin:12px!important;overflow:hidden!important
+}
+#plannerModule .inspector{
+  grid-column:3!important;grid-row:1!important;position:relative!important;inset:auto!important;
+  width:auto!important;min-width:0!important;max-width:300px!important;margin:12px 12px 12px 0!important;overflow:auto!important
+}
+@media(max-width:1250px){
+ body:has(#plannerModule:not(.hidden)) #plannerModule{grid-template-columns:330px minmax(440px,1fr) 260px!important}
+ #plannerModule .sidebar{grid-template-columns:72px minmax(0,258px)!important;width:330px!important;max-width:330px!important}
+ #plannerModule .tool-list{max-width:72px!important}
+ #plannerModule .sidebar>.section-title:first-child,#plannerModule .icon-search-wrap,#plannerModule .object-grid,#plannerModule .draw-options{max-width:258px!important}
+ #plannerModule .object-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+ #plannerModule .inspector{max-width:260px!important}
+}
+
 </style>
 
 <style>
