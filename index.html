@@ -1609,6 +1609,13 @@ body:not(:has(#plannerModule:not(.hidden))) #eventsModule{grid-column:2!importan
 #tendersModule .sp-tender-event-stats{display:none!important}
 #tendersModule .sp-tender-event-open{border:0!important;border-radius:999px!important;background:#eaf2ff!important;color:#126be5!important;font-weight:850!important;padding:10px 17px!important;cursor:pointer!important;font-size:12px!important}
 #tendersModule .sp-tender-event-open:hover{background:#ddeaff!important}
+</style><style id="sp-v119-planner-quicklinks">
+/* Event quick links live in the far-left planner rail */
+#plannerModule .planner-event-nav{display:none!important}
+#plannerModule{padding-top:74px!important}
+#plannerModule .planner-rail-divider{height:1px;background:#e6e7ee;margin:8px 7px}
+#plannerModule .planner-event-quick{color:#6045f3!important}
+#plannerModule .planner-event-quick span{color:#6045f3!important}
 </style></head>
 <body>
 
@@ -1738,7 +1745,7 @@ body:not(:has(#plannerModule:not(.hidden))) #eventsModule{grid-column:2!importan
 
   <section class="module events-index hidden" id="eventsModule"><div class="events-index-inner"><div class="page-head"><div><h1>Event Maps</h1><p>Choose an event map to open and edit.</p></div><button class="btn primary" id="eventsNewEventBtn">+ New Event Map</button></div><div class="events-index-grid" id="eventsIndexGrid"></div></div></section>
 
-  <div class="workspace module hidden" id="plannerModule"><nav class="planner-event-nav" aria-label="Event workspace"><button type="button" class="active" onclick="switchModule('planner')">Map</button><button type="button" onclick="openCurrentEventTenders()">Tenders</button><button type="button" onclick="openCurrentEventBudget()">Budget</button></nav><div class="planner-tools-rail"><button class="planner-rail-btn active" type="button"><span>↖</span><b>Objects</b></button><button class="planner-rail-btn" type="button" data-tool-target="zone"><span>⬡</span><b>Zones</b></button><button class="planner-rail-btn" type="button" data-tool-target="barrier"><span>╱</span><b>Barrier</b></button><button class="planner-rail-btn" type="button" data-tool-target="route"><span>➜</span><b>Route</b></button></div>
+  <div class="workspace module hidden" id="plannerModule"><div class="planner-tools-rail"><button class="planner-rail-btn active" type="button"><span>↖</span><b>Objects</b></button><button class="planner-rail-btn" type="button" data-tool-target="zone"><span>⬡</span><b>Zones</b></button><button class="planner-rail-btn" type="button" data-tool-target="barrier"><span>╱</span><b>Barrier</b></button><button class="planner-rail-btn" type="button" data-tool-target="route"><span>➜</span><b>Route</b></button><div class="planner-rail-divider"></div><button class="planner-rail-btn planner-event-quick" type="button" onclick="openCurrentEventTenders()"><span>▤</span><b>Tenders</b></button><button class="planner-rail-btn planner-event-quick" type="button" onclick="openCurrentEventBudget()"><span>◫</span><b>Budget</b></button></div>
     <aside class="sidebar" id="sidebar">
       <div class="section-title">Add to map</div>
       <div class="icon-search-wrap">
