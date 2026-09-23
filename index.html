@@ -1440,7 +1440,14 @@ body:has(#plannerModule:not(.hidden)) #plannerModule{display:grid!important;grid
 .copy-link-box{background:#0e1114;border:1px solid var(--line);border-radius:10px;padding:10px 12px;font-size:11px;color:#9eabb5;word-break:break-all;margin-top:8px}
 @media(max-width:700px){.cloud-state{display:none}.public-money-grid{grid-template-columns:1fr}}
 </style>
-</head>
+<style id="sp-v105-fixes">
+/* V105 final status palette + no dashboard flash */
+html:not(.sp-ui-ready) #app{visibility:hidden!important}
+.cloud-state,.cloud-state.on,#cloudState,#cloudState.on{color:#6045f3!important}
+.sp-connection,.sp-connection *{border-color:#d8d0ff!important}
+.sp-connection{background:#eeeaff!important;color:#6045f3!important}
+.sp-connection .cloud-state,.sp-connection .cloud-state.on,.sp-connection b,.sp-connection span{color:#6045f3!important}
+</style></head>
 <body>
 
 <section class="marketing-home" id="marketingHome">
@@ -3697,13 +3704,22 @@ window.addEventListener('DOMContentLoaded', async () => {
 });
 </script>
 <script>
-/* V104 header home navigation */
+/* V105 reliable header home navigation + initial paint */
 document.addEventListener('DOMContentLoaded',()=>{
  const brand=document.getElementById('siteplanHomeBrand');
- if(!brand)return;
- const goHome=()=>{const dash=document.querySelector('.nav-tab[data-tab="dashboard"],[data-view="dashboard"],#dashboardTab');if(dash){dash.click();return;} if(typeof window.showDashboard==='function'){window.showDashboard();return;} location.hash='dashboard';};
- brand.addEventListener('click',goHome);
- brand.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();goHome();}});
+ const goHome=()=>{
+   if(typeof window.switchModule==='function'){window.switchModule('dashboard');return;}
+   const dash=[...document.querySelectorAll('.nav-tab')].find(x=>x.dataset.module==='dashboard');
+   if(dash){dash.click();return;}
+ };
+ if(brand){
+   brand.addEventListener('click',goHome);
+   brand.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();goHome();}});
+ }
+ const ready=()=>document.documentElement.classList.add('sp-ui-ready');
+ if(document.getElementById('app')?.classList.contains('hidden')) ready();
+ else requestAnimationFrame(()=>requestAnimationFrame(ready));
+ setTimeout(ready,1200);
 });
 </script>
 </body>
