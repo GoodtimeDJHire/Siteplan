@@ -1282,6 +1282,66 @@ body:has(#plannerModule:not(.hidden)) header .top-actions #clearBtn{display:none
  #plannerModule .sidebar{grid-template-columns:72px 245px!important}.object-grid{grid-template-columns:repeat(2,1fr)!important}
 }
 
+
+/* V99 — fix planner left tool/object columns: no overlap, clean independent scrolling */
+body:has(#plannerModule:not(.hidden)) #plannerModule{
+  grid-template-columns:88px 320px minmax(0,1fr) 292px!important;
+}
+#plannerModule .sidebar{
+  grid-template-columns:88px 320px!important;
+  width:408px!important;min-width:408px!important;
+  overflow:hidden!important;box-sizing:border-box!important;
+}
+#plannerModule .sidebar:before{
+  grid-column:1!important;grid-row:1!important;
+  width:88px!important;box-sizing:border-box!important;
+}
+#plannerModule .sidebar>.section-title:first-child{
+  grid-column:2!important;grid-row:1!important;
+  padding:18px 16px 10px!important;
+}
+#plannerModule .icon-search-wrap{
+  grid-column:2!important;grid-row:2!important;
+  width:auto!important;min-width:0!important;margin:0 16px 12px!important;
+}
+#plannerModule .object-grid{
+  grid-column:2!important;grid-row:3!important;
+  width:auto!important;min-width:0!important;
+  grid-template-columns:repeat(3,minmax(0,1fr))!important;
+  padding:0 16px 18px!important;gap:8px!important;
+  max-height:calc(100vh - 240px)!important;overflow-y:auto!important;overflow-x:hidden!important;
+}
+#plannerModule .object-btn{
+  width:100%!important;min-width:0!important;max-width:none!important;
+  height:76px!important;box-sizing:border-box!important;overflow:hidden!important;
+}
+#plannerModule .object-btn>span:last-child{
+  width:100%!important;max-width:100%!important;overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important;
+}
+#plannerModule .tool-list{
+  grid-column:1!important;grid-row:2/5!important;
+  width:88px!important;min-width:88px!important;box-sizing:border-box!important;
+  padding:0 8px 12px!important;overflow-y:auto!important;overflow-x:hidden!important;
+}
+#plannerModule .tool{
+  width:100%!important;min-width:0!important;height:auto!important;min-height:66px!important;
+  white-space:normal!important;line-height:1.15!important;padding:9px 5px!important;box-sizing:border-box!important;
+}
+#plannerModule .draw-options{
+  grid-column:2!important;grid-row:4!important;
+  width:auto!important;min-width:0!important;margin:0 16px 16px!important;box-sizing:border-box!important;
+  overflow:hidden!important;
+}
+#plannerModule .draw-options .palette{max-width:100%!important;flex-wrap:wrap!important}
+#plannerModule .map-wrap{grid-column:3!important}
+#plannerModule .inspector{grid-column:4!important}
+@media(max-width:1250px){
+ body:has(#plannerModule:not(.hidden)) #plannerModule{grid-template-columns:82px 270px minmax(0,1fr) 260px!important}
+ #plannerModule .sidebar{grid-template-columns:82px 270px!important;width:352px!important;min-width:352px!important}
+ #plannerModule .sidebar:before,#plannerModule .tool-list{width:82px!important;min-width:82px!important}
+ #plannerModule .object-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+}
+
 </style>
 
 <style>
