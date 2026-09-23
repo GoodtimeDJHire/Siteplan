@@ -1067,76 +1067,71 @@
     @media(max-width:760px){.dashboard,.procure{padding:22px 16px}.event-grid{grid-template-columns:1fr}.cards{grid-template-columns:repeat(2,1fr)}header{background:#17131f}}
 
 
-    /* V92 — Map-first operations interface */
-    #plannerModule{position:relative;grid-template-columns:74px minmax(0,1fr) 0!important;background:#dedbd3;overflow:hidden}
-    #plannerModule .sidebar{
-      width:74px;padding:12px 10px;background:#17131f;border-right:0;overflow:visible;
-      display:flex;flex-direction:column;align-items:center;gap:8px;z-index:15
+
+    /* V93 — Operations dashboard only. Planner/map intentionally untouched. */
+    #dashboardModule{background:#eeebe4;padding:24px 28px}
+    #dashboardModule .dashboard-inner{max-width:1480px;margin:0 auto}
+    #dashboardModule .page-head{
+      background:#17131f;color:#fff;border-radius:18px;padding:22px 24px;margin-bottom:14px;
+      align-items:center;box-shadow:0 10px 28px rgba(30,23,38,.12)
     }
-    #plannerModule .sidebar>.section-title:first-child,
-    #plannerModule .sidebar>.icon-search-wrap,
-    #plannerModule .sidebar>.section-title:nth-of-type(2),
-    #plannerModule .sidebar>.draw-options{display:none}
-    #plannerModule .object-grid{display:flex;flex-direction:column;gap:7px;width:100%;margin:0;max-height:calc(100vh - 250px);overflow:auto;scrollbar-width:none}
-    #plannerModule .object-grid::-webkit-scrollbar{display:none}
-    #plannerModule .object-btn{
-      width:52px;height:48px;min-height:48px;padding:0!important;margin:0 auto;border:1px solid #332a3d;
-      background:#211b2b;color:#fff;border-radius:12px;display:grid;place-items:center;position:relative;overflow:visible
+    #dashboardModule .page-head h1{color:#fff;font-size:30px}
+    #dashboardModule .page-head p{color:#aaa3b1;margin-top:5px}
+    #dashboardModule .page-head .btn{background:#27202f;border-color:#40364a;color:#fff}
+    #dashboardModule .page-head .btn.primary{background:#c8ff3d;border-color:#c8ff3d;color:#17131f}
+    #dashboardModule .commercial-strip{
+      display:flex!important;gap:7px!important;align-items:center;background:transparent!important;
+      padding:0!important;margin:0 0 14px!important;border-radius:0!important;overflow:auto
     }
-    #plannerModule .object-btn .ico{width:32px;height:32px;background:transparent!important;color:#fff;font-size:16px}
-    #plannerModule .object-btn>span:last-child{display:none}
-    #plannerModule .object-btn:hover{background:#7357ff;border-color:#7357ff}
-    #plannerModule .object-btn:hover:after{
-      content:attr(title);position:absolute;left:62px;top:50%;transform:translateY(-50%);white-space:nowrap;
-      background:#17131f;color:#fff;border:1px solid #40354a;border-radius:8px;padding:7px 9px;font-size:11px;font-weight:800;z-index:40
+    #dashboardModule .commercial-pill{
+      background:#fff!important;border:1px solid #ddd7cc!important;color:#6f6974!important;
+      padding:8px 10px!important;border-radius:9px!important;font-size:10px!important;white-space:nowrap
     }
-    #plannerModule .tool-list{width:100%;display:flex;flex-direction:column;gap:7px;margin-top:auto;padding-top:10px;border-top:1px solid #332a3d}
-    #plannerModule .tool{
-      width:52px;height:44px;padding:0;margin:0 auto;background:#211b2b;border:1px solid #332a3d;color:#fff;
-      border-radius:11px;text-align:center;font-size:0;position:relative
+    #dashboardModule .commercial-pill strong{color:#7357ff!important}
+    #dashboardModule .cards{
+      display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px;margin-bottom:18px
     }
-    #plannerModule .tool[data-tool="zone"]::before{content:"⬡";font-size:19px}
-    #plannerModule .tool[data-tool="barrier"]::before{content:"╱";font-size:21px}
-    #plannerModule .tool[data-tool="route"]::before{content:"➜";font-size:18px}
-    #plannerModule .tool:hover,#plannerModule .tool.active{background:#c8ff3d;border-color:#c8ff3d;color:#17131f;box-shadow:none}
-    #plannerModule .map-wrap{grid-column:2;position:relative}
-    #plannerModule .inspector{
-      position:absolute;right:16px;top:16px;bottom:16px;width:300px;height:auto;z-index:12;
-      background:rgba(251,248,242,.97);border:1px solid #d7d0c5;border-radius:16px;padding:17px;
-      box-shadow:0 16px 45px rgba(31,22,40,.18);backdrop-filter:blur(12px);
-      transform:translateX(calc(100% + 34px));opacity:0;pointer-events:none;transition:.2s ease
+    #dashboardModule .metric{
+      min-height:78px;background:#fff;border:1px solid #ddd7cc;border-radius:12px;padding:13px 15px;
+      box-shadow:none;position:relative;overflow:hidden
     }
-    #plannerModule .inspector:has(.selection-card.show){transform:none;opacity:1;pointer-events:auto}
-    #plannerModule .inspector .summary{display:none}
-    #plannerModule .stats{
-      left:18px;bottom:18px;gap:0;background:rgba(23,19,31,.94);border:1px solid #40354a;
-      border-radius:12px;padding:4px;box-shadow:0 10px 28px rgba(0,0,0,.18);backdrop-filter:blur(10px)
+    #dashboardModule .metric:first-child{background:#fff;border-color:#ddd7cc}
+    #dashboardModule .metric:before{
+      content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:#7357ff
     }
-    #plannerModule .stat{background:transparent;border:0;box-shadow:none;border-radius:8px;padding:8px 12px;color:#bdb6c5}
-    #plannerModule .stat+ .stat{border-left:1px solid #40354a;border-radius:0}
-    #plannerModule .stat b{color:#c8ff3d}
-    #plannerModule .map-tip{top:16px;background:#17131f;border-color:#40354a;color:#fff}
-    #plannerModule .draw-banner{top:16px;background:#17131f;border-color:#40354a}
-    body:has(#plannerModule:not(.hidden)) header{height:58px}
-    body:has(#plannerModule:not(.hidden)) .app{grid-template-rows:58px 1fr}
-    body:has(#plannerModule:not(.hidden)) header .brand small{display:none}
-    body:has(#plannerModule:not(.hidden)) header .brand-mark{width:30px;height:30px}
-    body:has(#plannerModule:not(.hidden)) header .nav-tabs{padding:3px}
-    body:has(#plannerModule:not(.hidden)) header .nav-tab{padding:7px 10px}
-    body:has(#plannerModule:not(.hidden)) header .event-name{max-width:230px;padding:8px 10px}
-    body:has(#plannerModule:not(.hidden)) header .top-actions .btn{padding:8px 10px;font-size:11px}
-    body:has(#plannerModule:not(.hidden)) header .search-wrap{max-width:280px}
-    @media(max-width:1050px){
-      #plannerModule{grid-template-columns:66px minmax(0,1fr)!important}
-      #plannerModule .sidebar{display:flex!important;width:66px}
-      #plannerModule .inspector{display:block;width:280px}
+    #dashboardModule .metric:first-child:before{background:#c8ff3d}
+    #dashboardModule .metric span,#dashboardModule .metric:first-child span{color:#7d7680;font-size:9px}
+    #dashboardModule .metric b,#dashboardModule .metric:first-child b{color:#17131f;font-size:23px;margin-top:4px}
+    #dashboardModule>.dashboard-inner>.section-title{
+      color:#5f5964;font-size:10px;margin:4px 0 9px
     }
-    @media(max-width:760px){
-      #plannerModule{grid-template-columns:58px minmax(0,1fr)!important}
-      #plannerModule .sidebar{display:flex!important;position:relative;left:auto;top:auto;width:58px;max-height:none;border-radius:0;padding:8px 5px}
-      #plannerModule .object-btn,#plannerModule .tool{width:46px}
-      #plannerModule .inspector{right:8px;top:8px;bottom:8px;width:min(280px,calc(100vw - 78px))}
-      body:has(#plannerModule:not(.hidden)) header .search-wrap{display:none}
+    #dashboardModule .event-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+    #dashboardModule .event-card{
+      min-height:112px;background:#fff;border:1px solid #dcd5ca;border-radius:13px;overflow:hidden;
+      box-shadow:none;display:grid;grid-template-columns:116px minmax(0,1fr)
+    }
+    #dashboardModule .event-card:hover{transform:none;border-color:#a99bbd;box-shadow:0 7px 20px rgba(34,25,43,.07)}
+    #dashboardModule .event-thumb{
+      width:116px;height:100%;min-height:112px;background:linear-gradient(145deg,#211a2a,#7357ff);
+      border-radius:0;color:#c8ff3d;font-size:18px
+    }
+    #dashboardModule .event-body{padding:13px 14px;min-width:0}
+    #dashboardModule .event-body h3{font-size:15px;margin:0 0 3px;color:#17131f;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    #dashboardModule .event-meta{font-size:11px;min-height:28px;color:#79727c}
+    #dashboardModule .event-actions{margin-top:8px;gap:5px}
+    #dashboardModule .event-actions .btn{padding:7px 8px;font-size:10px;border-radius:8px}
+    #dashboardModule .event-actions .btn.primary{background:#17131f;border-color:#17131f;color:#fff}
+    #dashboardModule .dashboard-empty{background:#fff;border-color:#d4cdc2;border-radius:13px;padding:42px}
+    @media(max-width:900px){
+      #dashboardModule{padding:18px}
+      #dashboardModule .event-grid{grid-template-columns:1fr}
+      #dashboardModule .cards{grid-template-columns:repeat(2,minmax(0,1fr))}
+    }
+    @media(max-width:600px){
+      #dashboardModule{padding:12px}
+      #dashboardModule .page-head{padding:18px;align-items:flex-start}
+      #dashboardModule .event-card{grid-template-columns:88px minmax(0,1fr)}
+      #dashboardModule .event-thumb{width:88px}
     }
 
 </style>
