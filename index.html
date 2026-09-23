@@ -1066,6 +1066,79 @@
     @media(max-width:1050px){.workspace{grid-template-columns:280px minmax(0,1fr)}.event-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
     @media(max-width:760px){.dashboard,.procure{padding:22px 16px}.event-grid{grid-template-columns:1fr}.cards{grid-template-columns:repeat(2,1fr)}header{background:#17131f}}
 
+
+    /* V92 — Map-first operations interface */
+    #plannerModule{position:relative;grid-template-columns:74px minmax(0,1fr) 0!important;background:#dedbd3;overflow:hidden}
+    #plannerModule .sidebar{
+      width:74px;padding:12px 10px;background:#17131f;border-right:0;overflow:visible;
+      display:flex;flex-direction:column;align-items:center;gap:8px;z-index:15
+    }
+    #plannerModule .sidebar>.section-title:first-child,
+    #plannerModule .sidebar>.icon-search-wrap,
+    #plannerModule .sidebar>.section-title:nth-of-type(2),
+    #plannerModule .sidebar>.draw-options{display:none}
+    #plannerModule .object-grid{display:flex;flex-direction:column;gap:7px;width:100%;margin:0;max-height:calc(100vh - 250px);overflow:auto;scrollbar-width:none}
+    #plannerModule .object-grid::-webkit-scrollbar{display:none}
+    #plannerModule .object-btn{
+      width:52px;height:48px;min-height:48px;padding:0!important;margin:0 auto;border:1px solid #332a3d;
+      background:#211b2b;color:#fff;border-radius:12px;display:grid;place-items:center;position:relative;overflow:visible
+    }
+    #plannerModule .object-btn .ico{width:32px;height:32px;background:transparent!important;color:#fff;font-size:16px}
+    #plannerModule .object-btn>span:last-child{display:none}
+    #plannerModule .object-btn:hover{background:#7357ff;border-color:#7357ff}
+    #plannerModule .object-btn:hover:after{
+      content:attr(title);position:absolute;left:62px;top:50%;transform:translateY(-50%);white-space:nowrap;
+      background:#17131f;color:#fff;border:1px solid #40354a;border-radius:8px;padding:7px 9px;font-size:11px;font-weight:800;z-index:40
+    }
+    #plannerModule .tool-list{width:100%;display:flex;flex-direction:column;gap:7px;margin-top:auto;padding-top:10px;border-top:1px solid #332a3d}
+    #plannerModule .tool{
+      width:52px;height:44px;padding:0;margin:0 auto;background:#211b2b;border:1px solid #332a3d;color:#fff;
+      border-radius:11px;text-align:center;font-size:0;position:relative
+    }
+    #plannerModule .tool[data-tool="zone"]::before{content:"⬡";font-size:19px}
+    #plannerModule .tool[data-tool="barrier"]::before{content:"╱";font-size:21px}
+    #plannerModule .tool[data-tool="route"]::before{content:"➜";font-size:18px}
+    #plannerModule .tool:hover,#plannerModule .tool.active{background:#c8ff3d;border-color:#c8ff3d;color:#17131f;box-shadow:none}
+    #plannerModule .map-wrap{grid-column:2;position:relative}
+    #plannerModule .inspector{
+      position:absolute;right:16px;top:16px;bottom:16px;width:300px;height:auto;z-index:12;
+      background:rgba(251,248,242,.97);border:1px solid #d7d0c5;border-radius:16px;padding:17px;
+      box-shadow:0 16px 45px rgba(31,22,40,.18);backdrop-filter:blur(12px);
+      transform:translateX(calc(100% + 34px));opacity:0;pointer-events:none;transition:.2s ease
+    }
+    #plannerModule .inspector:has(.selection-card.show){transform:none;opacity:1;pointer-events:auto}
+    #plannerModule .inspector .summary{display:none}
+    #plannerModule .stats{
+      left:18px;bottom:18px;gap:0;background:rgba(23,19,31,.94);border:1px solid #40354a;
+      border-radius:12px;padding:4px;box-shadow:0 10px 28px rgba(0,0,0,.18);backdrop-filter:blur(10px)
+    }
+    #plannerModule .stat{background:transparent;border:0;box-shadow:none;border-radius:8px;padding:8px 12px;color:#bdb6c5}
+    #plannerModule .stat+ .stat{border-left:1px solid #40354a;border-radius:0}
+    #plannerModule .stat b{color:#c8ff3d}
+    #plannerModule .map-tip{top:16px;background:#17131f;border-color:#40354a;color:#fff}
+    #plannerModule .draw-banner{top:16px;background:#17131f;border-color:#40354a}
+    body:has(#plannerModule:not(.hidden)) header{height:58px}
+    body:has(#plannerModule:not(.hidden)) .app{grid-template-rows:58px 1fr}
+    body:has(#plannerModule:not(.hidden)) header .brand small{display:none}
+    body:has(#plannerModule:not(.hidden)) header .brand-mark{width:30px;height:30px}
+    body:has(#plannerModule:not(.hidden)) header .nav-tabs{padding:3px}
+    body:has(#plannerModule:not(.hidden)) header .nav-tab{padding:7px 10px}
+    body:has(#plannerModule:not(.hidden)) header .event-name{max-width:230px;padding:8px 10px}
+    body:has(#plannerModule:not(.hidden)) header .top-actions .btn{padding:8px 10px;font-size:11px}
+    body:has(#plannerModule:not(.hidden)) header .search-wrap{max-width:280px}
+    @media(max-width:1050px){
+      #plannerModule{grid-template-columns:66px minmax(0,1fr)!important}
+      #plannerModule .sidebar{display:flex!important;width:66px}
+      #plannerModule .inspector{display:block;width:280px}
+    }
+    @media(max-width:760px){
+      #plannerModule{grid-template-columns:58px minmax(0,1fr)!important}
+      #plannerModule .sidebar{display:flex!important;position:relative;left:auto;top:auto;width:58px;max-height:none;border-radius:0;padding:8px 5px}
+      #plannerModule .object-btn,#plannerModule .tool{width:46px}
+      #plannerModule .inspector{right:8px;top:8px;bottom:8px;width:min(280px,calc(100vw - 78px))}
+      body:has(#plannerModule:not(.hidden)) header .search-wrap{display:none}
+    }
+
 </style>
 
 <style>
