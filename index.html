@@ -1227,6 +1227,7 @@
 header .brand-mark{position:relative;font-size:0!important;background:transparent!important;width:28px!important}header .brand-mark:before,header .brand-mark:after{content:"";position:absolute;width:15px;height:9px;border-radius:4px 9px 4px 9px;transform:rotate(40deg)}header .brand-mark:before{background:#6045f3;left:2px;top:5px}header .brand-mark:after{background:#51a8ff;right:1px;bottom:5px}header .brand>div:last-child{font-size:17px!important;font-weight:900!important;color:#11131b!important}
 @media(max-width:1000px){.sp-dash-grid{grid-template-columns:1fr}.sp-dash-side{grid-template-columns:1fr 1fr}.sp-kpis{grid-template-columns:repeat(2,1fr)!important}}@media(max-width:700px){.sp-dash-side{grid-template-columns:1fr}.sp-date{display:none}.sp-kpis{grid-template-columns:1fr 1fr!important}}
 
+.sp-map-thumb{background:#e8e9ef!important;overflow:hidden!important}.sp-map-thumb .gm-style{pointer-events:none!important}.sp-map-thumb .gmnoprint,.sp-map-thumb .gm-style-cc{display:none!important}
 </style>
 
 <style>
@@ -1925,7 +1926,16 @@ function renderEvents(){
   grid.innerHTML=ordered.length?ordered.map(e=>{
     const et=tenders.filter(t=>t.eventId===e.id),q=et.reduce((n,t)=>n+(t.quotes?.length||0),0);
     const details=[e.eventDate?esc(e.eventDate):'',e.location?esc(e.location):'',et.length+' tender'+(et.length===1?'':'s'),q+' quote'+(q===1?'':'s')].filter(Boolean).join(' · ');
-    return `<article class="event-card${e.archived?' archived':''}"><div class="event-thumb">SP</div><div class="event-body"><h3>${esc(e.name||'Untitled Event')}</h3><div class="event-meta">${details||new Date(e.updated||e.created).toLocaleDateString()}</div><div class="event-actions"><button class="btn primary" onclick="openEvent('${e.id}')">Open</button><button class="btn" onclick="duplicateEvent('${e.id}')">Duplicate</button><button class="btn" onclick="toggleArchiveEvent('${e.id}')">${e.archived?'Restore':'Archive'}</button><button class="btn danger" onclick="deleteEvent('${e.id}')">Delete</button></div></div></article>`  }).join(''):'<div class="dashboard-empty" style="grid-column:1/-1"><b>No events yet.</b><br>Create your first event and start a site plan.</div>';
+    const pc=e.plan?.center; const hasMap=pc&&Number.isFinite(Number(pc.lat))&&Number.isFinite(Number(pc.lng));
+    const thumb=hasMap?`<div class="event-thumb sp-map-thumb" data-lat="${Number(pc.lat)}" data-lng="${Number(pc.lng)}" data-zoom="${Number(e.plan?.zoom)||17}"></div>`:`<div class="event-thumb">SP</div>`;
+    return `<article class="event-card${e.archived?' archived':''}">${thumb}<div class="event-body"><h3>${esc(e.name||'Untitled Event')}</h3><div class="event-meta">${details||new Date(e.updated||e.created).toLocaleDateString()}</div><div class="event-actions"><button class="btn primary" onclick="openEvent('${e.id}')">Open</button><button class="btn" onclick="duplicateEvent('${e.id}')">Duplicate</button><button class="btn" onclick="toggleArchiveEvent('${e.id}')">${e.archived?'Restore':'Archive'}</button><button class="btn danger" onclick="deleteEvent('${e.id}')">Delete</button></div></div></article>`  }).join(''):'<div class="dashboard-empty" style="grid-column:1/-1"><b>No events yet.</b><br>Create your first event and start a site plan.</div>';
+  requestAnimationFrame(()=>{
+    if(!window.google?.maps)return;
+    grid.querySelectorAll('.sp-map-thumb').forEach(el=>{
+      const lat=Number(el.dataset.lat),lng=Number(el.dataset.lng),zoom=Number(el.dataset.zoom)||17;
+      new google.maps.Map(el,{center:{lat,lng},zoom,mapTypeId:'satellite',disableDefaultUI:true,gestureHandling:'none',keyboardShortcuts:false,clickableIcons:false});
+    });
+  });
 }
 
 function duplicateEvent(id){
