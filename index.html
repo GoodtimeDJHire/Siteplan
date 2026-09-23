@@ -3765,16 +3765,17 @@ async function handlePublicQuoteFile(input){
  const f=input?.files?.[0],name=byId('quoteFileName'),box=input?.closest('.tender-ref-upload');
  if(name)name.textContent=f?f.name:'PDF, DOCX, XLSX, JPG or PNG · Maximum 15 MB';
  box?.classList.toggle('quote-file-selected',!!f);
- const fields=byId('tenderManualFields'); if(fields&&f)fields.classList.add('open');
+ const fields=byId('tenderManualFields');if(fields&&f)fields.classList.add('open');
  if(!f)return;
  if(f.size>15*1024*1024){toast('Quote file must be 15 MB or smaller');input.value='';return}
  if(f.type!=='application/pdf'){toast('File selected. Automatic reading is currently available for PDFs; enter the details below.');return}
+ document.querySelector('.quote-ai-status')?.remove();
  const status=document.createElement('div');status.className='quote-ai-status';status.textContent='Reading quote…';
  box.insertAdjacentElement('afterend',status);box.classList.add('quote-reading');
  try{
   const fd=new FormData();fd.append('file',f);
-  const r=await fetch(`${SITEPLAN_SUPABASE_URL}/functions/v1/extract-quote`,{method:'POST',headers:{'Authorization':`Bearer ${SITEPLAN_EDGE_ANON}`,'apikey':SITEPLAN_EDGE_ANON},body:fd});
-  const out=await r.json().catch(()=>({}));if(!r.ok)throw new Error(out.error||'Could not read quote');
+  const response=await fetch(`${SITEPLAN_SUPABASE_URL}/functions/v1/extract-quote`,{method:'POST',headers:{Authorization:`Bearer ${SITEPLAN_EDGE_ANON}`,apikey:SITEPLAN_EDGE_ANON},body:fd});
+  const out=await response.json().catch(()=>({}));if(!response.ok)throw new Error(out.error||'Could not read quote');
   const d=out.data||{};
   if(byId('qCompany'))byId('qCompany').value=d.company||'';
   if(byId('qContact'))byId('qContact').value=d.contact_name||'';
@@ -3785,7 +3786,14 @@ async function handlePublicQuoteFile(input){
   if(byId('qNet'))byId('qNet').value=d.subtotal??0;
   if(byId('qGstAmount'))byId('qGstAmount').value=d.gst??0;
   if(byId('qInclusions'))byId('qInclusions').value=d.inclusions||'';
-  const lines=(d.line_items||[]).map(x=>[x.description,x.quantity?('Qty '+x.quantity):'',x.amount!=null?('
+  const lines=(d.line_items||[]).map(x=>[x.description,x.quantity?('Qty '+x.quantity):'',x.amount!=null?('$'+Number(x.amount).toFixed(2)):''].filter(Boolean).join(' · ')).join('\\n');
+  const notes=[d.quote_number?'Quote '+d.quote_number:'',d.exclusions?'Exclusions: '+d.exclusions:'',d.notes||'',lines?('Line items:\\n'+lines):''].filter(Boolean).join('\\n\\n');
+  if(byId('qNotes'))byId('qNotes').value=notes;
+  status.textContent='✓ Quote read — check the details below before submitting';status.classList.add('done');
+  const step2=document.querySelector('.tender-ref-step:nth-child(2) span');if(step2){step2.style.background='#6045f3';step2.style.color='#fff'}
+ }catch(e){status.textContent='Could not read this PDF automatically. You can still enter the details below.';status.classList.add('error');toast(e.message)}
+ finally{box.classList.remove('quote-reading')}
+}
 submitDemoQuote=async function(id){
  const t=tenders.find(x=>x.id===id);if(!t)return;const btn=byId('publicSubmitBtn');
  const company=byId('qCompany')?.value.trim(),email=byId('qEmail')?.value.trim(),f=byId('qFile')?.files?.[0];
