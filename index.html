@@ -1643,6 +1643,10 @@ body:not(:has(#plannerModule:not(.hidden))) #eventsModule{grid-column:2!importan
 .tender-ref-manual{display:none!important}
 #publicSubmitBtn{background:#6045f3!important;color:#fff!important;border-color:#6045f3!important;cursor:pointer!important}
 #publicSubmitBtn:disabled{opacity:.55!important;cursor:wait!important}
+</style><style id="sp-v122-quote-ai">
+.quote-ai-status{margin:10px 0 4px;padding:10px 12px;border-radius:9px;background:#eeeaff;color:#6045f3;font-size:12px;font-weight:800;text-align:center}
+.quote-ai-status.done{background:#edf8f2;color:#25724a}.quote-ai-status.error{background:#fff1f2;color:#a23d4c}
+.tender-ref-upload.quote-reading{opacity:.7;pointer-events:none}
 </style></head>
 <body>
 
@@ -3749,14 +3753,274 @@ openSupplierForm=function(id,supplierId='',updateHash=true){
  byId('quoteModal').classList.remove('hidden');
 };
 
-function handlePublicQuoteFile(input){
+async function handlePublicQuoteFile(input){
  const f=input?.files?.[0],name=byId('quoteFileName'),box=input?.closest('.tender-ref-upload');
  if(name)name.textContent=f?f.name:'PDF, DOCX, XLSX, JPG or PNG · Maximum 15 MB';
  box?.classList.toggle('quote-file-selected',!!f);
- const fields=byId('tenderManualFields');
- if(fields&&f)fields.classList.add('open');
- const step2=document.querySelector('.tender-ref-step:nth-child(2) span');
- if(step2&&f){step2.style.background='#6045f3';step2.style.color='#fff'}
+ const fields=byId('tenderManualFields'); if(fields&&f)fields.classList.add('open');
+ if(!f)return;
+ if(f.size>15*1024*1024){toast('Quote file must be 15 MB or smaller');input.value='';return}
+ if(f.type!=='application/pdf'){toast('File selected. Automatic reading is currently available for PDFs; enter the details below.');return}
+ const status=document.createElement('div');status.className='quote-ai-status';status.textContent='Reading quote…';
+ box.insertAdjacentElement('afterend',status);box.classList.add('quote-reading');
+ try{
+  const fd=new FormData();fd.append('file',f);
+  const r=await fetch(`${SITEPLAN_SUPABASE_URL}/functions/v1/extract-quote`,{method:'POST',headers:{'Authorization':`Bearer ${SITEPLAN_EDGE_ANON}`,'apikey':SITEPLAN_EDGE_ANON},body:fd});
+  const out=await r.json().catch(()=>({}));if(!r.ok)throw new Error(out.error||'Could not read quote');
+  const d=out.data||{};
+  if(byId('qCompany'))byId('qCompany').value=d.company||'';
+  if(byId('qContact'))byId('qContact').value=d.contact_name||'';
+  if(byId('qEmail'))byId('qEmail').value=d.email||'';
+  if(byId('qPhone'))byId('qPhone').value=d.phone||'';
+  if(byId('qPrice')&&d.total!=null)byId('qPrice').value=d.total;
+  if(byId('qGST')&&d.includes_gst!=null)byId('qGST').checked=!!d.includes_gst;
+  if(byId('qNet'))byId('qNet').value=d.subtotal??0;
+  if(byId('qGstAmount'))byId('qGstAmount').value=d.gst??0;
+  if(byId('qInclusions'))byId('qInclusions').value=d.inclusions||'';
+  const lines=(d.line_items||[]).map(x=>[x.description,x.quantity?('Qty '+x.quantity):'',x.amount!=null?('
+submitDemoQuote=async function(id){
+ const t=tenders.find(x=>x.id===id);if(!t)return;const btn=byId('publicSubmitBtn');
+ const company=byId('qCompany')?.value.trim(),email=byId('qEmail')?.value.trim(),f=byId('qFile')?.files?.[0];
+ if(f&&f.size>15*1024*1024){toast('Quote file must be 15 MB or smaller');return}
+ if(!company||!email){toast('Company and email are required');byId('tenderManualFields')?.classList.add('open');return}
+ btn.disabled=true;btn.textContent='Uploading quote…';
+ try{
+  const d=await publicTenderRequest(t.publicToken||t.id,'POST',{company_name:company,contact_name:byId('qContact').value.trim(),email,phone:byId('qPhone').value.trim(),price:byId('qPrice').value||null,gst_included:byId('qGST').checked,availability:byId('qAvailability').value.trim(),notes:byId('qNotes').value.trim(),inclusions:byId('qInclusions').value.trim(),exclusions:'',answers:{net:Number(byId('qNet')?.value)||0,gst_amount:Number(byId('qGstAmount')?.value)||0}});
+  let attachmentUrl='',attachmentName='';
+  if(f){
+    const fd=new FormData();fd.append('upload_token',d.upload_token);fd.append('file',f);
+    const r=await fetch(`${SITEPLAN_SUPABASE_URL}/functions/v1/tender-file-upload`,{method:'POST',headers:{'Authorization':`Bearer ${SITEPLAN_EDGE_ANON}`,'apikey':SITEPLAN_EDGE_ANON},body:fd});
+    const u=await r.json().catch(()=>({}));if(!r.ok)throw new Error(u.error||'Quote submitted but file upload failed');
+    attachmentUrl=String(u.signed_url||'');attachmentName=String(u.file_name||f.name||'');
+  }
+  try{
+    const nr=await fetch('/api/notify-quote',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({
+      token:t.publicToken||t.id,company,contact:byId('qContact').value.trim(),email,
+      net:Number(byId('qNet')?.value)||0,gst:Number(byId('qGstAmount')?.value)||0,total:Number(byId('qPrice')?.value)||0,
+      inclusions:byId('qInclusions').value.trim(),notes:byId('qNotes').value.trim(),attachmentUrl,attachmentName
+    })});
+    if(!nr.ok)console.warn('Quote notification email failed',await nr.text());
+  }catch(notificationError){console.warn('Quote notification email failed',notificationError)}
+  byId('quoteModalContent').innerHTML=`<div style="min-height:100vh;background:#f4f5fb;padding:80px 20px"><div class="public-card" style="max-width:560px;margin:auto;text-align:center;padding:48px;background:#fff;border:1px solid #e1e2ea"><div style="width:54px;height:54px;border-radius:50%;display:grid;place-items:center;margin:0 auto 16px;background:#eeeaff;color:#6045f3;font-size:28px">✓</div><h2>Quote submitted</h2><p class="muted">Your quote has been uploaded and added to the organiser's tender dashboard.</p></div></div>`;toast('Quote submitted');
+ }catch(e){toast(e.message);btn.disabled=false;btn.textContent='Submit Quote'}
+};
+
+async function loadPublicTenderFromHash(){
+ document.documentElement.classList.add('public-tender-route');
+ document.body.classList.add('public-tender-route');
+ document.documentElement.style.cssText+=';height:auto!important;min-height:100%!important;overflow-y:auto!important;overflow-x:hidden!important';
+ document.body.style.cssText+=';position:static!important;height:auto!important;min-height:100%!important;overflow:visible!important';
+ const marketing=byId('marketingHome');if(marketing)marketing.classList.add('hidden');
+ const app=byId('app');if(app)app.classList.add('hidden');
+ const setup=byId('setup');if(setup)setup.classList.remove('setup-error-visible');
+ const p=new URLSearchParams(location.hash.replace(/^#/,'')||'');const token=p.get('tender');if(!token)return false;
+ // Ignore authenticated admin DB ids; public links use token and are loaded through the token endpoint.
+ try{
+   const d=await publicTenderRequest(token,'GET');const x=d.tender;const ev=Array.isArray(x.events)?x.events[0]:x.events;
+   const t={id:token,publicToken:token,cloudTenderId:x.id,eventId:x.event_id,eventName:ev?.name||'Event',title:x.title,category:x.category||'Custom',due:x.due_at?x.due_at.slice(0,10):'',region:x.region||'',brief:x.brief||'',requirements:x.requirements_json||[],planSnapshot:x.include_site_plan?(ev?.plan_data||{}):{},status:'Open',quotes:[]};
+   const idx=tenders.findIndex(z=>z.id===token);if(idx>=0)tenders[idx]=t;else tenders.unshift(t);
+   const wait=()=>{if(byId('quoteModalContent')&&window.google?.maps){if(p.get('plan')==='1')viewTenderPlan(token,'',false);else openSupplierForm(token,'',false)}else setTimeout(wait,120)};wait();return true;
+ }catch(e){console.error(e);setTimeout(()=>toast(e.message),800);return false}
+}
+
+function setAuthMode(mode='signin'){
+ const signedIn=!!siteplanCloudUser;
+ const title=byId('authTitle'), sub=byId('authSubtitle');
+ const signIn=byId('authSignIn'), signUp=byId('authSignUp'), signOut=byId('authSignOut');
+ if(signedIn){
+   if(title)title.textContent='Your SitePlan account';
+   if(sub)sub.textContent=siteplanCloudUser.email||'Signed in';
+   if(signIn)signIn.classList.add('hidden');
+   if(signUp)signUp.classList.add('hidden');
+   if(signOut)signOut.classList.remove('hidden');
+   return;
+ }
+ if(signOut)signOut.classList.add('hidden');
+ if(signIn)signIn.classList.remove('hidden');
+ if(signUp)signUp.classList.remove('hidden');
+ if(mode==='signup'){
+   if(title)title.textContent='Create your SitePlan account';
+   if(sub)sub.textContent='Save your events and plans securely in the cloud.';
+   if(signUp){signUp.classList.add('primary'); signIn.classList.remove('primary')}
+ }else{
+   if(title)title.textContent='Sign in to SitePlan';
+   if(sub)sub.textContent='Access your events, plans, tenders and supplier quotes from any device.';
+   if(signIn){signIn.classList.add('primary'); signUp.classList.remove('primary')}
+ }
+}
+function openAuthModalMode(mode='signin'){ setAuthMode(mode); openAuthModal(); }
+
+function siteplanAuthTimeout(promise,action,ms=20000){
+ let timer;
+ return Promise.race([
+   promise,
+   new Promise((_,reject)=>{timer=setTimeout(()=>reject(new Error(`${action} timed out. Check your connection and try again.`)),ms)})
+ ]).finally(()=>clearTimeout(timer));
+}
+async function siteplanAuthInit(){
+ const accountBtn=byId('accountBtn');
+ if(accountBtn) accountBtn.onclick=()=>openAuthModalMode('signin');
+ const close=byId('authClose'); if(close) close.onclick=closeAuthModal;
+
+ const homeSignIn=byId('homeSignIn');
+ const homeCreate=byId('homeCreateAccount');
+ const homeCreateHero=byId('homeCreateAccountHero');
+ if(homeSignIn) homeSignIn.onclick=()=>openAuthModalMode('signin');
+ if(homeCreate) homeCreate.onclick=()=>openAuthModalMode('signup');
+ if(homeCreateHero) homeCreateHero.onclick=()=>openAuthModalMode('signup');
+
+ const signIn=byId('authSignIn');
+ if(signIn) signIn.onclick=async()=>{
+   const label=signIn.textContent;signIn.disabled=true;signIn.textContent='Signing in…';
+   try{
+     authMsg('Signing in…');
+     const email=byId('authEmail').value.trim(), password=byId('authPassword').value;
+     if(!email||!password) throw new Error('Enter your email and password.');
+     const{data,error}=await siteplanAuthTimeout(siteplanCloud.auth.signInWithPassword({email,password}),'Sign in');
+     if(error)throw error;
+     siteplanCloudUser=data?.user||data?.session?.user||null;
+     if(!siteplanCloudUser)throw new Error('Sign in completed without a user session. Please try again.');
+     cloudStatus('Cloud synced',true);
+     closeAuthModal();
+     await launchSitePlanFromHome();
+     cloudLoadAll().catch(error=>{console.error('Cloud load after sign in',error);toast('Signed in, but cloud data is still loading')});
+   }catch(e){console.error('SitePlan sign in',e);authMsg(e?.message||'Could not sign in')}
+   finally{signIn.disabled=false;signIn.textContent=label}
+ };
+
+ const signUp=byId('authSignUp');
+ if(signUp) signUp.onclick=async()=>{
+   const label=signUp.textContent;signUp.disabled=true;signUp.textContent='Creating…';
+   try{
+     authMsg('Creating account…');
+     const email=byId('authEmail').value.trim(), password=byId('authPassword').value;
+     if(!email) throw new Error('Enter your email.');
+     if(!password||password.length<6) throw new Error('Password must be at least 6 characters.');
+     const{data,error}=await siteplanAuthTimeout(siteplanCloud.auth.signUp({email,password}),'Account creation');
+     if(error)throw error;
+     if(data.session){
+       siteplanCloudUser=data.user;
+       cloudStatus('Cloud synced',true);
+       closeAuthModal();
+       await launchSitePlanFromHome();
+       cloudLoadAll().catch(error=>console.error('Cloud load after sign up',error));
+     }else authMsg('Account created. Check your email to confirm it, then sign in.');
+   }catch(e){console.error('SitePlan sign up',e);authMsg(e?.message||'Could not create account')}
+   finally{signUp.disabled=false;signUp.textContent=label}
+ };
+
+ const signOut=byId('authSignOut');
+ if(signOut) signOut.onclick=async()=>{
+   const label=signOut.textContent;signOut.disabled=true;signOut.textContent='Signing out…';
+   try{
+     const{error}=await siteplanAuthTimeout(siteplanCloud.auth.signOut({scope:'local'}),'Sign out');
+     if(error)throw error;
+     siteplanCloudUser=null;
+     closeAuthModal();
+     cloudStatus('Sign in');
+     toast('Signed out');
+   }catch(e){console.error('SitePlan sign out',e);authMsg(e?.message||'Could not sign out')}
+   finally{signOut.disabled=false;signOut.textContent=label}
+ };
+
+ try{
+   const{data,error}=await siteplanCloud.auth.getSession();
+   if(error)throw error;
+   siteplanCloudUser=data.session?.user||null;
+   if(siteplanCloudUser){cloudStatus('Cloud synced',true);await launchSitePlanFromHome();cloudLoadAll().catch(error=>console.error('Initial cloud load',error))}
+   else cloudStatus('Sign in');
+ }catch(error){console.error('SitePlan auth session',error);siteplanCloudUser=null;cloudStatus('Sign in');authMsg(error?.message||'Could not check your session')}
+ siteplanCloud.auth.onAuthStateChange((_event,session)=>{
+   siteplanCloudUser=session?.user||null;
+   cloudStatus(siteplanCloudUser?'Cloud synced':'Sign in',!!siteplanCloudUser);
+   setAuthMode('signin');
+ });
+}
+
+</script>
+
+<div class="auth-modal hidden" id="authModal">
+  <div class="auth-card">
+    <div style="display:flex;justify-content:space-between;gap:12px;align-items:start">
+      <div><h2 id="authTitle">Sign in to SitePlan</h2><p id="authSubtitle">Access your events, plans, tenders and supplier quotes from any device.</p></div>
+      <button class="btn" id="authClose">×</button>
+    </div>
+    <div class="field"><label>Email</label><input id="authEmail" type="email" autocomplete="email" placeholder="you@company.co.nz"></div>
+    <div class="field"><label>Password</label><input id="authPassword" type="password" autocomplete="current-password" placeholder="Minimum 6 characters"></div>
+    <div class="auth-actions"><button class="btn primary" id="authSignIn">Sign in</button><button class="btn" id="authSignUp">Create account</button><button class="btn hidden" id="authSignOut">Sign out</button></div>
+    <div class="cloud-notice" id="authMessage">Your public supplier links do not require suppliers to create an account.</div>
+  </div>
+</div>
+
+<script src="/siteplan-runtime-20260916.js"></script>
+<script src="/v82.js"></script>
+<script>
+window.addEventListener('DOMContentLoaded', async () => {
+  ['supplierSearch','supplierCategoryFilter','supplierRegionFilter'].forEach(id=>{
+    const el=document.getElementById(id); if(el) el.addEventListener(id==='supplierSearch'?'input':'change',renderSuppliers);
+  });
+  try{
+    if(location.hash.startsWith('#tender=')){
+      await loadPublicTenderFromHash();
+      return;
+    }
+    await siteplanAuthInit();
+  }catch(err){
+    console.error('SitePlan boot failed', err);
+    const m=document.getElementById('authMessage');
+    if(m)m.textContent='SitePlan could not start. Please refresh and try again.';
+  }
+});
+</script>
+<script>
+/* V105 reliable header home navigation + initial paint */
+document.addEventListener('DOMContentLoaded',()=>{
+ const brand=document.getElementById('siteplanHomeBrand');
+ const goHome=()=>{
+   if(typeof window.switchModule==='function'){window.switchModule('dashboard');return;}
+   const dash=[...document.querySelectorAll('.nav-tab')].find(x=>x.dataset.module==='dashboard');
+   if(dash){dash.click();return;}
+ };
+ if(brand){
+   brand.addEventListener('click',goHome);
+   brand.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();goHome();}});
+ }
+ const ready=()=>document.documentElement.classList.add('sp-ui-ready');
+ const revealWhenReady=()=>{
+   const app=document.getElementById('app');
+   const auth=document.getElementById('authOverlay');
+   if((app && !app.classList.contains('hidden')) || (auth && !auth.classList.contains('hidden'))) ready();
+   else requestAnimationFrame(revealWhenReady);
+ };
+ revealWhenReady();
+ setTimeout(ready,1800);
+});
+</script>
+<script>
+/* V113 remove legacy tender context labels injected by older runtime */
+document.addEventListener('DOMContentLoaded',()=>{
+ const cleanTenderHeader=()=>{
+  const m=document.getElementById('tendersModule'); if(!m)return;
+  m.querySelectorAll('.page-head').forEach(h=>{
+   [...h.querySelectorAll('*')].forEach(el=>{
+    const s=(el.textContent||'').trim();
+    if((s.startsWith('· PBR ')||s.startsWith('Event: PBR ')) && !el.closest('.sp-tender-event-card')) el.remove();
+   });
+  });
+ };
+ cleanTenderHeader();
+ new MutationObserver(cleanTenderHeader).observe(document.getElementById('tendersModule'),{childList:true,subtree:true});
+});
+</script></body>
+</html>
++Number(x.amount).toFixed(2)):''].filter(Boolean).join(' · ')).join('\n');
+  const notes=[d.quote_number?'Quote '+d.quote_number:'',d.exclusions?'Exclusions: '+d.exclusions:'',d.notes||'',lines?('Line items:\n'+lines):''].filter(Boolean).join('\n\n');
+  if(byId('qNotes'))byId('qNotes').value=notes;
+  status.textContent='✓ Quote read — check the details below before submitting';
+  status.classList.add('done');
+  const step2=document.querySelector('.tender-ref-step:nth-child(2) span');if(step2){step2.style.background='#6045f3';step2.style.color='#fff'}
+ }catch(e){status.textContent='Could not read this PDF automatically. You can still enter the details below.';status.classList.add('error');toast(e.message)}
+ finally{box.classList.remove('quote-reading')}
 }
 submitDemoQuote=async function(id){
  const t=tenders.find(x=>x.id===id);if(!t)return;const btn=byId('publicSubmitBtn');
