@@ -1456,6 +1456,13 @@ body:has(#dashboardModule:not(.hidden)) .sp-app-nav{grid-column:1!important;grid
 body:has(#dashboardModule:not(.hidden)) .sp-app-nav:before{content:"SitePlanNZ";display:flex;align-items:center;height:32px;padding-left:38px;margin:0 7px 26px;font-size:17px;font-weight:900;letter-spacing:-.035em;color:#11131b;position:relative}
 body:has(#dashboardModule:not(.hidden)) .sp-app-nav:after{content:"";position:absolute;left:23px;top:25px;width:15px;height:9px;border-radius:4px 9px 4px 9px;background:#6045f3;transform:rotate(40deg);box-shadow:9px 7px 0 #51a8ff}
 body:has(#dashboardModule:not(.hidden)) #dashboardModule{grid-column:2!important;grid-row:2!important}
+</style><style id="sp-v107-dashboard-fix">
+/* V107 compact dashboard nav + suppress legacy boot paint */
+html:not(.sp-ui-ready) body{visibility:hidden!important}
+body:has(#dashboardModule:not(.hidden)) .sp-app-nav{display:flex!important;flex-direction:column!important;justify-content:flex-start!important}
+body:has(#dashboardModule:not(.hidden)) .sp-nav-main{margin-top:0!important;padding-top:0!important;gap:5px!important}
+body:has(#dashboardModule:not(.hidden)) .sp-app-nav .nav-tab{padding:10px 12px!important;min-height:42px!important}
+body:has(#dashboardModule:not(.hidden)) .sp-nav-secondary{margin-top:auto!important}
 </style></head>
 <body>
 
@@ -3726,9 +3733,14 @@ document.addEventListener('DOMContentLoaded',()=>{
    brand.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();goHome();}});
  }
  const ready=()=>document.documentElement.classList.add('sp-ui-ready');
- if(document.getElementById('app')?.classList.contains('hidden')) ready();
- else requestAnimationFrame(()=>requestAnimationFrame(ready));
- setTimeout(ready,1200);
+ const revealWhenReady=()=>{
+   const app=document.getElementById('app');
+   const auth=document.getElementById('authOverlay');
+   if((app && !app.classList.contains('hidden')) || (auth && !auth.classList.contains('hidden'))) ready();
+   else requestAnimationFrame(revealWhenReady);
+ };
+ revealWhenReady();
+ setTimeout(ready,1800);
 });
 </script>
 </body>
