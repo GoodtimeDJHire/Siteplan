@@ -1654,6 +1654,8 @@ html.public-tender-route #quoteModal{display:block!important;position:fixed!impo
 html.public-tender-route #quoteModal.hidden{display:block!important}
 html.public-tender-route #quoteModalContent{width:100%!important;max-width:none!important;min-height:100vh!important;margin:0!important;border:0!important;border-radius:0!important;background:#f4f5fb!important}
 html.public-tender-route .modal-backdrop{background:#f4f5fb!important}
+</style><style id="sp-v124-quote-review">
+.quote-ai-status{display:grid;gap:3px;text-align:left!important;padding:13px 15px!important}.quote-ai-status b{font-size:13px}.quote-ai-status span{font-size:11px;font-weight:650;opacity:.82}.quote-review-note{display:flex;gap:12px;align-items:flex-start;background:#f0edff;border:1px solid #d9d1ff;border-radius:11px;padding:12px 14px;margin:0 0 18px;color:#4433a8}.quote-review-note b{white-space:nowrap}.quote-review-note span{font-size:12px;line-height:1.45}.quote-section-label{font-weight:850;font-size:13px;margin:20px 0 8px}.quote-items-head,.quote-item-row{display:grid;grid-template-columns:minmax(0,1fr) 90px 130px 34px;gap:8px;align-items:center}.quote-items-head{padding:0 2px 6px;color:#737687;font-size:11px;font-weight:800}.quote-items-head span:nth-child(2),.quote-items-head span:nth-child(3){text-align:right}.quote-items{display:grid;gap:7px}.quote-item-row input{width:100%;background:#fff!important;color:#171923!important;border:1px solid #dfe1ea!important;border-radius:9px!important;padding:10px!important}.q-item-qty,.q-item-amount{text-align:right}.q-item-remove{border:0;background:transparent;color:#9296a5;font-size:20px;cursor:pointer}.quote-add-item{border:0;background:transparent;color:#6045f3;font-weight:800;padding:9px 0;cursor:pointer}.quote-totals-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-top:10px}.quote-total-field input{font-weight:850}.quote-reading:after{content:'AI reading…';position:absolute;inset:auto 16px 14px;background:#fff;border:1px solid #d9d1ff;border-radius:8px;padding:7px 10px;color:#6045f3;font-size:11px;font-weight:850}.tender-ref-upload{position:relative}@media(max-width:700px){.quote-review-note{display:grid;gap:4px}.quote-items-head,.quote-item-row{grid-template-columns:minmax(0,1fr) 65px 92px 28px}.quote-totals-grid{grid-template-columns:1fr}.quote-items-head{font-size:10px}}
 </style></head>
 <body>
 
@@ -3597,7 +3599,7 @@ function cloudSupplierToLocal(s){
 }
 function cloudTenderToLocal(t){
  const subs=t.tender_submissions||[];
- return {id:t.id,eventId:t.event_id,eventName:t.events?.name||'',title:t.title,category:t.category||'Custom',due:t.due_at?t.due_at.slice(0,10):'',region:t.region||'',attendance:Number(t.attendance)||0,estimatedValue:Number(t.estimated_value)||0,brief:t.brief||'',requirements:t.requirements_json||[],attachPlan:t.include_site_plan!==false,planSnapshot:null,status:t.status==='awarded'?'Awarded':t.status==='published'?'Open':t.status==='closed'?'Closed':'Draft',publicToken:t.public_token,quotes:subs.map(q=>({id:q.id,company:q.company_name,contact:q.contact_name||'',email:q.email,total:Number(q.price)||0,net:Number(q.answers?.net)||0,gstAmount:Number(q.answers?.gst_amount)||0,notes:q.notes||'',inclusions:q.inclusions||'',exclusions:q.exclusions||'',status:q.status,submitted:q.submitted_at,awarded:q.status==='awarded'})),created:t.created_at};
+ return {id:t.id,eventId:t.event_id,eventName:t.events?.name||'',title:t.title,category:t.category||'Custom',due:t.due_at?t.due_at.slice(0,10):'',region:t.region||'',attendance:Number(t.attendance)||0,estimatedValue:Number(t.estimated_value)||0,brief:t.brief||'',requirements:t.requirements_json||[],attachPlan:t.include_site_plan!==false,planSnapshot:null,status:t.status==='awarded'?'Awarded':t.status==='published'?'Open':t.status==='closed'?'Closed':'Draft',publicToken:t.public_token,quotes:subs.map(q=>({id:q.id,company:q.company_name,contact:q.contact_name||'',email:q.email,total:Number(q.price)||0,net:Number(q.answers?.net)||0,gstAmount:Number(q.answers?.gst_amount)||0,quoteNumber:q.answers?.quote_number||'',lineItems:Array.isArray(q.answers?.line_items)?q.answers.line_items:[],notes:q.notes||'',inclusions:q.inclusions||'',exclusions:q.exclusions||'',status:q.status,submitted:q.submitted_at,awarded:q.status==='awarded'})),created:t.created_at};
 }
 
 async function cloudLoadAll(){
@@ -3755,12 +3757,20 @@ openSupplierForm=function(id,supplierId='',updateHash=true){
     <div class="tender-ref-steps"><div class="tender-ref-step"><span>1</span>Upload</div><div class="tender-ref-step"><span>2</span>Review details</div><div class="tender-ref-step"><span>3</span>Submit</div></div>
     <div class="tender-ref-lock">▣ &nbsp; Only the event organiser can view your quote.</div>
     <div class="tender-ref-manual"><button type="button" onclick="document.getElementById('tenderManualFields').classList.toggle('open')">Prefer to enter it manually?</button></div>
-    <div class="tender-ref-fields open" id="tenderManualFields"><div class="quote-minimal-fields"><div class="field"><label>Company *</label><input id="qCompany"></div><div class="field"><label>Contact name</label><input id="qContact"></div><div class="field"><label>Email *</label><input id="qEmail" type="email"></div><div class="field"><label>Phone</label><input id="qPhone"></div></div><div class="field"><label>Quoted total (optional)</label><input id="qPrice" type="number" min="0" step=".01"></div><label class="public-check"><input id="qGST" type="checkbox" checked> Total includes GST</label><div class="field"><label>Notes / exclusions</label><textarea class="quote-comments" id="qNotes"></textarea></div><input id="qNet" type="hidden" value="0"><input id="qGstAmount" type="hidden" value="0"><input id="qAvailability" type="hidden"><input id="qInclusions" type="hidden"><button class="btn primary" id="publicSubmitBtn" style="width:100%;padding:14px;margin-top:12px" onclick="submitDemoQuote('${t.id}','')">Submit Quote</button></div>
+    <div class="tender-ref-fields open" id="tenderManualFields"><div class="quote-review-note"><b>Review before submitting</b><span>AI has filled these details from your quote. Please check and correct anything below before you submit.</span></div><div class="quote-minimal-fields"><div class="field"><label>Company *</label><input id="qCompany"></div><div class="field"><label>Contact name</label><input id="qContact"></div><div class="field"><label>Email *</label><input id="qEmail" type="email"></div><div class="field"><label>Phone</label><input id="qPhone"></div></div><div class="quote-section-label">Quote items</div><div class="quote-items-head"><span>Item / description</span><span>Qty</span><span>Amount</span></div><div id="qLineItems" class="quote-items"></div><button type="button" class="quote-add-item" onclick="addQuoteReviewRow()">+ Add item</button><div class="quote-totals-grid"><div class="field"><label>Net</label><input id="qNet" type="number" min="0" step=".01"></div><div class="field"><label>GST</label><input id="qGstAmount" type="number" min="0" step=".01"></div><div class="field quote-total-field"><label>Total</label><input id="qPrice" type="number" min="0" step=".01"></div></div><label class="public-check"><input id="qGST" type="checkbox" checked> Total includes GST</label><div class="field"><label>Notes / exclusions</label><textarea class="quote-comments" id="qNotes"></textarea></div><input id="qAvailability" type="hidden"><input id="qInclusions" type="hidden"><button class="btn primary" id="publicSubmitBtn" style="width:100%;padding:14px;margin-top:12px" onclick="submitDemoQuote('${t.id}','')">Submit Quote</button></div>
    </section>
   </div></div>`;
  byId('quoteModal').classList.remove('hidden');
 };
 
+let currentQuoteExtraction=null;
+function addQuoteReviewRow(item={}){
+ const host=byId('qLineItems');if(!host)return;
+ const row=document.createElement('div');row.className='quote-item-row';
+ row.innerHTML=`<input class="q-item-desc" placeholder="Item / description" value="${esc(item.description||'')}"><input class="q-item-qty" type="number" min="0" step="any" placeholder="Qty" value="${item.quantity??''}"><input class="q-item-amount" type="number" min="0" step=".01" placeholder="Amount" value="${item.amount??''}"><button type="button" class="q-item-remove" aria-label="Remove item">×</button>`;
+ row.querySelector('.q-item-remove').onclick=()=>row.remove();host.appendChild(row);
+}
+function quoteReviewItems(){return [...document.querySelectorAll('#qLineItems .quote-item-row')].map(row=>({description:row.querySelector('.q-item-desc')?.value.trim()||'',quantity:row.querySelector('.q-item-qty')?.value?Number(row.querySelector('.q-item-qty').value):null,amount:row.querySelector('.q-item-amount')?.value?Number(row.querySelector('.q-item-amount').value):null})).filter(x=>x.description||x.quantity!=null||x.amount!=null)}
 async function handlePublicQuoteFile(input){
  const f=input?.files?.[0],name=byId('quoteFileName'),box=input?.closest('.tender-ref-upload');
  if(name)name.textContent=f?f.name:'PDF, DOCX, XLSX, JPG or PNG · Maximum 15 MB';
@@ -3770,13 +3780,14 @@ async function handlePublicQuoteFile(input){
  if(f.size>15*1024*1024){toast('Quote file must be 15 MB or smaller');input.value='';return}
  if(f.type!=='application/pdf'){toast('File selected. Automatic reading is currently available for PDFs; enter the details below.');return}
  document.querySelector('.quote-ai-status')?.remove();
- const status=document.createElement('div');status.className='quote-ai-status';status.textContent='Reading quote…';
+ const status=document.createElement('div');status.className='quote-ai-status';status.innerHTML='<b>AI is reading your quote…</b><span>This can take a few seconds. You will need to review the extracted details before submitting.</span>';
  box.insertAdjacentElement('afterend',status);box.classList.add('quote-reading');
  try{
   const fd=new FormData();fd.append('file',f);
   const response=await fetch(`${SITEPLAN_SUPABASE_URL}/functions/v1/extract-quote`,{method:'POST',headers:{Authorization:`Bearer ${SITEPLAN_EDGE_ANON}`,apikey:SITEPLAN_EDGE_ANON},body:fd});
   const out=await response.json().catch(()=>({}));if(!response.ok)throw new Error(out.error||'Could not read quote');
-  const d=out.data||{};
+  const d=out.data||{};currentQuoteExtraction=d;
+  const items=byId('qLineItems');if(items){items.innerHTML='';(d.line_items||[]).forEach(addQuoteReviewRow);if(!(d.line_items||[]).length)addQuoteReviewRow()}
   if(byId('qCompany'))byId('qCompany').value=d.company||'';
   if(byId('qContact'))byId('qContact').value=d.contact_name||'';
   if(byId('qEmail'))byId('qEmail').value=d.email||'';
@@ -3801,7 +3812,7 @@ submitDemoQuote=async function(id){
  if(!company||!email){toast('Company and email are required');byId('tenderManualFields')?.classList.add('open');return}
  btn.disabled=true;btn.textContent='Uploading quote…';
  try{
-  const d=await publicTenderRequest(t.publicToken||t.id,'POST',{company_name:company,contact_name:byId('qContact').value.trim(),email,phone:byId('qPhone').value.trim(),price:byId('qPrice').value||null,gst_included:byId('qGST').checked,availability:byId('qAvailability').value.trim(),notes:byId('qNotes').value.trim(),inclusions:byId('qInclusions').value.trim(),exclusions:'',answers:{net:Number(byId('qNet')?.value)||0,gst_amount:Number(byId('qGstAmount')?.value)||0}});
+  const d=await publicTenderRequest(t.publicToken||t.id,'POST',{company_name:company,contact_name:byId('qContact').value.trim(),email,phone:byId('qPhone').value.trim(),price:byId('qPrice').value||null,gst_included:byId('qGST').checked,availability:byId('qAvailability').value.trim(),notes:byId('qNotes').value.trim(),inclusions:byId('qInclusions').value.trim(),exclusions:'',answers:{net:Number(byId('qNet')?.value)||0,gst_amount:Number(byId('qGstAmount')?.value)||0,quote_number:currentQuoteExtraction?.quote_number||'',line_items:quoteReviewItems()}});
   let attachmentUrl='',attachmentName='';
   if(f){
     const fd=new FormData();fd.append('upload_token',d.upload_token);fd.append('file',f);
