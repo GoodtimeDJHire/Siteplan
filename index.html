@@ -1572,6 +1572,13 @@ body:not(:has(#plannerModule:not(.hidden))) #dashboardModule,body:not(:has(#plan
 #tendersModule .page-head [class*="event"],#tendersModule .page-head [class*="context"],#tendersModule .page-head [class*="badge"],#tendersModule .page-head [class*="pill"]{color:#6045f3!important;border-color:#d8d0ff!important}
 #tendersModule .page-head h1:after,#tendersModule .page-head h1:before{color:#6045f3!important}
 @media(max-width:760px){#tendersModule .sp-tender-event-grid{grid-template-columns:1fr!important}.sp-side-brand strong{display:none}.sp-side-brand{justify-content:center;padding:0}}
+</style><style id="sp-v114-single-sidebar-logo">
+/* V114: one sidebar logo only — remove legacy duplicate branding */
+body:not(:has(#plannerModule:not(.hidden))) .sp-app-nav>.brand,
+body:not(:has(#plannerModule:not(.hidden))) .sp-app-nav>.sp-brand,
+body:not(:has(#plannerModule:not(.hidden))) .sp-app-nav>.sidebar-brand,
+body:not(:has(#plannerModule:not(.hidden))) .sp-app-nav>.app-brand{display:none!important}
+.sp-app-nav>.sp-side-brand~.sp-side-brand{display:none!important}
 </style></head>
 <body>
 
