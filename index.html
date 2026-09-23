@@ -1153,6 +1153,65 @@
     @media(max-width:1050px){.workspace{grid-template-columns:220px minmax(0,1fr)!important}.event-grid{grid-template-columns:1fr!important}}
     @media(max-width:760px){.dashboard,.procure{padding:16px!important}.workspace{grid-template-columns:1fr!important}.sidebar{position:absolute!important}.cards{grid-template-columns:repeat(2,1fr)!important}}
 
+
+    /* V96 — structural shell matching approved SitePlanNZ mockup */
+    .app{height:100%;display:grid!important;grid-template-columns:188px minmax(0,1fr)!important;grid-template-rows:68px minmax(0,1fr)!important;background:#f3f4fb!important}
+    header{grid-column:1/-1!important;grid-row:1!important;height:68px!important;padding:0 18px 0 22px!important;display:flex!important;gap:14px!important;background:#fff!important;border-bottom:1px solid #e8e9f1!important;z-index:50!important}
+    header .brand{width:166px;flex:0 0 166px;font-size:15px!important}
+    header .brand-mark{width:26px!important;height:26px!important;font-size:11px!important}
+    header .brand small{display:none!important}
+    .sp-global-search{width:min(360px,28vw);height:38px;display:flex;align-items:center;gap:8px;background:#f7f7fb;border:1px solid #ececf3;border-radius:10px;padding:0 12px;color:#9699a6}
+    .sp-global-search input{border:0;outline:0;background:transparent;width:100%;color:#30333d;font:inherit;font-size:12px}
+    .sp-header-spacer{flex:1}
+    header .cloud-account{display:flex!important;align-items:center!important;gap:7px!important}
+    header .top-actions{display:flex!important;gap:6px!important}
+    header .top-actions .btn,header .cloud-account .btn{padding:8px 10px!important;font-size:10px!important}
+    header .event-name,header .search-wrap{display:none!important}
+    .sp-app-nav{grid-column:1!important;grid-row:2!important;background:#fff;border-right:1px solid #e8e9f1;padding:18px 12px 16px;display:flex;flex-direction:column;justify-content:space-between;min-height:0;z-index:25}
+    .sp-nav-main{display:grid;gap:7px}.sp-app-nav .nav-tab{width:100%;display:flex;align-items:center;gap:10px;text-align:left;padding:11px 12px!important;border:0!important;background:transparent!important;color:#5d6270!important;border-radius:10px!important;font-size:12px;font-weight:750}
+    .sp-app-nav .nav-tab span{width:18px;text-align:center;font-size:14px}.sp-app-nav .nav-tab.active{background:#ebe7ff!important;color:#5c42ed!important}
+    .sp-nav-secondary{display:grid;gap:5px;border-top:1px solid #eeeef4;padding-top:12px;color:#727684;font-size:11px}
+    .sp-nav-secondary div{padding:8px 12px}
+    #dashboardModule,#tendersModule,#budgetModule,#suppliersModule,#plannerModule{grid-column:2!important;grid-row:2!important;min-width:0!important;min-height:0!important}
+    #dashboardModule,#tendersModule,#budgetModule,#suppliersModule{padding:28px!important;background:#f5f6fb!important}
+    .dashboard-inner,.procure-inner{max-width:1280px!important;margin:0 auto!important}
+    #dashboardModule .page-head{margin-bottom:18px!important}
+    #dashboardModule .page-head h1:before{content:"Good to see you, James";font-size:28px;display:block}
+    #dashboardModule .page-head h1{font-size:0!important}
+    #dashboardModule .page-head p{font-size:0!important}
+    #dashboardModule .page-head p:after{content:"Here’s what’s happening across your events.";font-size:12px}
+    #dashboardModule .cards{grid-template-columns:repeat(4,minmax(0,1fr))!important}
+    #dashboardModule .metric{min-height:82px!important;border-radius:13px!important}
+    #dashboardModule>.dashboard-inner>.section-title{font-size:14px!important;text-transform:none!important;letter-spacing:0!important;color:#252832!important;font-weight:850!important}
+    #dashboardModule .event-grid{grid-template-columns:minmax(0,1.45fr) minmax(280px,.8fr)!important;align-items:start}
+    #dashboardModule .event-card{grid-template-columns:72px minmax(0,1fr)!important;min-height:84px!important;border-radius:11px!important}
+    #dashboardModule .event-thumb{width:72px!important;min-height:84px!important}
+    #dashboardModule .event-body{padding:10px 12px!important}
+    #dashboardModule .event-body h3{font-size:13px!important}
+    #dashboardModule .event-meta{font-size:10px!important;min-height:22px!important}
+    #dashboardModule .event-actions{margin-top:5px!important}
+    #plannerModule{display:grid!important;grid-template-columns:minmax(0,1fr) 280px!important;position:relative!important;background:#f5f6fb!important;padding:74px 18px 18px!important;gap:12px!important}
+    #plannerModule.hidden{display:none!important}
+    #plannerModule:before{content:"Event Workspace  /  Site Plan";position:absolute;left:22px;top:19px;color:#252832;font-size:20px;font-weight:900;letter-spacing:-.03em}
+    #plannerModule .sidebar{position:absolute!important;left:30px!important;top:94px!important;width:88px!important;max-height:calc(100% - 125px)!important;z-index:20!important;background:#fff!important;border:1px solid #e4e5ed!important;border-radius:13px!important;padding:9px!important;box-shadow:0 8px 25px rgba(45,43,70,.09)!important;overflow:auto!important}
+    #plannerModule .sidebar>.section-title,#plannerModule .icon-search-wrap,#plannerModule .draw-options{display:none!important}
+    #plannerModule .object-grid{grid-template-columns:1fr!important;gap:5px!important;margin:0 0 8px!important}
+    #plannerModule .object-btn{height:46px!important;padding:5px!important;justify-content:center!important;text-align:center!important;flex-direction:column!important;gap:2px!important;font-size:8px!important}
+    #plannerModule .object-btn .ico{height:23px!important;width:28px!important}
+    #plannerModule .object-btn>span:last-child{font-size:8px!important;white-space:nowrap!important;overflow:hidden!important;max-width:62px!important}
+    #plannerModule .tool-list{gap:5px!important}.tool-list .tool{font-size:9px!important;padding:9px 4px!important;text-align:center!important}
+    #plannerModule .map-wrap{grid-column:1!important;margin:0!important;border-radius:14px!important;border:1px solid #e2e3eb!important;overflow:hidden!important}
+    #plannerModule .inspector{grid-column:2!important;border:1px solid #e4e5ed!important;border-radius:14px!important;margin:0!important;background:#fff!important;padding:16px!important}
+    #plannerModule .stats{left:106px!important;bottom:12px!important;background:#fff!important;border:1px solid #e3e4ec!important;border-radius:9px!important;padding:2px!important}
+    #plannerModule .stat{background:transparent!important;border:0!important;color:#656a77!important;box-shadow:none!important}.stat b{color:#5f45ef!important}
+    #tendersModule .tender-list,#suppliersModule #supplierList,#budgetModule #budgetRows{background:#fff;border:1px solid #e6e7ef;border-radius:13px;padding:5px}
+    #tendersModule .tender{border:0!important;border-bottom:1px solid #ededf3!important;border-radius:0!important;grid-template-columns:1.6fr .8fr .7fr .7fr auto!important}
+    #tendersModule .tender:last-child{border-bottom:0!important}
+    #suppliersModule .supplier-directory-tools{display:grid!important;grid-template-columns:2fr 1fr 1fr!important;gap:8px!important;margin-bottom:12px!important}
+    #suppliersModule .supplier-tabs{margin-bottom:14px!important}
+    #budgetModule .cards,#tendersModule .cards,#suppliersModule .cards{grid-template-columns:repeat(4,1fr)!important}
+    @media(max-width:900px){.app{grid-template-columns:72px minmax(0,1fr)!important}.sp-app-nav{padding:14px 7px}.sp-app-nav .nav-tab{justify-content:center!important;padding:11px 6px!important}.sp-app-nav .nav-tab:not(.active){font-size:0}.sp-app-nav .nav-tab.active{font-size:0}.sp-app-nav .nav-tab span{font-size:15px}.sp-nav-secondary{display:none}header .brand{width:55px;flex-basis:55px}.brand>div:last-child{display:none}.sp-global-search{width:240px}#plannerModule{grid-template-columns:minmax(0,1fr)!important}#plannerModule .inspector{display:none!important}}
+
 </style>
 
 <style>
@@ -1256,17 +1315,30 @@
 
 <div class="app hidden" id="app">
   <header>
-    <div class="brand"><div class="brand-mark">SP</div><div>SitePlan<small>Event Planner</small></div></div><div class="nav-tabs"><button class="nav-tab active" data-module="dashboard">Dashboard</button><button class="nav-tab" data-module="planner">Plan</button><button class="nav-tab" data-module="tenders">Tenders</button><button class="nav-tab" data-module="budget">Budget</button><button class="nav-tab" data-module="suppliers">Suppliers</button></div>
-    <input id="eventName" class="event-name" value="Untitled Site Plan" aria-label="Event name" />
-    <div class="search-wrap"><div class="place-host" id="placeHost"></div></div>
-    <div class="top-actions"><div class="cloud-account"><span class="cloud-state" id="cloudState">Local</span><button class="btn" id="accountBtn">Sign in</button></div>
+    <div class="brand"><div class="brand-mark">◆</div><div>SitePlanNZ<small>Event Operations</small></div></div>
+    <div class="sp-global-search"><span>⌕</span><input id="spGlobalSearch" type="search" placeholder="Search events, suppliers, tenders…" /></div>
+    <div class="sp-header-spacer"></div>
+    <div class="cloud-account"><span class="cloud-state" id="cloudState">Local</span><button class="btn" id="accountBtn">Sign in</button></div>
+    <div class="top-actions">
       <button class="btn" id="undoBtn" title="Undo (⌘Z / Ctrl+Z)">Undo</button>
       <button class="btn" id="redoBtn" title="Redo (⌘⇧Z / Ctrl+Y)">Redo</button>
       <button class="btn" id="saveBtn">Save</button>
       <button class="btn" id="clearBtn">Clear</button>
       <button class="btn primary" id="printBtn">Export PDF</button>
     </div>
+    <input id="eventName" class="event-name" value="Untitled Site Plan" aria-label="Event name" />
+    <div class="search-wrap"><div class="place-host" id="placeHost"></div></div>
   </header>
+  <aside class="sp-app-nav">
+    <div class="sp-nav-main">
+      <button class="nav-tab active" data-module="dashboard"><span>⌂</span>Dashboard</button>
+      <button class="nav-tab" data-module="planner"><span>▣</span>Events</button>
+      <button class="nav-tab" data-module="tenders"><span>▤</span>Tenders</button>
+      <button class="nav-tab" data-module="suppliers"><span>♙</span>Suppliers</button>
+      <button class="nav-tab" data-module="budget"><span>◫</span>Budget</button>
+    </div>
+    <div class="sp-nav-secondary"><div>Templates</div><div>Reports</div><div>Settings</div></div>
+  </aside>
 
   <section class="module dashboard" id="dashboardModule"><div class="dashboard-inner"><div class="page-head"><div><h1>Events</h1><p>Keep separate site plans, tenders and budgets for every event.</p></div><div class="local-backup"><button class="btn" id="exportBackupBtn">Export backup</button><button class="btn" id="importBackupBtn">Import backup</button><input id="backupFileInput" type="file" accept="application/json,.json" hidden><button class="btn primary" id="newEventBtn">+ New Event</button></div></div><div class="commercial-strip"><span class="commercial-pill"><strong>CLOUD READY</strong> · browser autosave</span><span class="commercial-pill">Interactive contractor plans</span><span class="commercial-pill">Tender + quote workflow</span><span class="commercial-pill">PDF-ready printing</span></div><div class="cards"><div class="metric"><span>Saved events</span><b id="savedEventCount">0</b></div><div class="metric"><span>Active tenders</span><b id="dashTenderCount">0</b></div><div class="metric"><span>Quotes received</span><b id="dashQuoteCount">0</b></div><div class="metric"><span>Suppliers</span><b id="dashSupplierCount">0</b></div></div><div class="section-title">Your events</div><div class="event-grid" id="eventGrid"></div></div></section>
 
