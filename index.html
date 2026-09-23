@@ -1583,6 +1583,15 @@ body:not(:has(#plannerModule:not(.hidden))) #eventsModule{grid-column:2!importan
 .events-index-inner{max-width:1280px;margin:0 auto;padding:30px 28px 50px}.events-index-inner .page-head{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px}.events-index-inner h1{font-size:28px;margin:0 0 5px}.events-index-inner p{margin:0;color:#73798a}
 .events-index-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.events-index-card{background:#fff;border:1px solid #e3e5ed;border-radius:14px;padding:18px;cursor:pointer;transition:.15s}.events-index-card:hover{border-color:#c8beff;box-shadow:0 8px 24px rgba(60,50,100,.06);transform:translateY(-1px)}.events-index-card h3{font-size:17px;margin:0 0 5px}.events-index-card .meta{font-size:11px;color:#747b8c;margin-bottom:15px}.events-index-card .stats{display:flex;gap:7px;flex-wrap:wrap}.events-index-card .stats span{background:#f0edff;color:#6045f3;border-radius:999px;padding:6px 9px;font-size:10px;font-weight:850}
 @media(max-width:760px){.events-index-grid{grid-template-columns:1fr}}
+</style><style id="sp-v116-event-maps-dashboard-style">
+#eventsModule .events-index-grid{display:block!important;background:#fff!important;border:1px solid #e3e5ed!important;border-radius:14px!important;overflow:hidden!important}
+#eventsModule .events-index-card{display:grid!important;grid-template-columns:minmax(0,1fr) auto!important;align-items:center!important;min-height:116px!important;padding:22px 26px!important;border:0!important;border-bottom:1px solid #e7e8ef!important;border-radius:0!important;background:#fff!important;box-shadow:none!important;transform:none!important}
+#eventsModule .events-index-card:last-child{border-bottom:0!important}
+#eventsModule .events-index-card:hover{background:#fcfcff!important;border-color:#e7e8ef!important;box-shadow:none!important}
+#eventsModule .events-index-card h3{font-size:17px!important;margin:0 0 9px!important;color:#171923!important}
+#eventsModule .events-index-card .meta{font-size:12px!important;color:#697184!important;margin:0!important}
+#eventsModule .events-index-open{border:0!important;border-radius:999px!important;background:#eaf2ff!important;color:#126be5!important;font-weight:850!important;padding:10px 17px!important;cursor:pointer!important;font-size:12px!important}
+#eventsModule .events-index-open:hover{background:#ddeaff!important}
 </style></head>
 <body>
 
@@ -1685,7 +1694,7 @@ body:not(:has(#plannerModule:not(.hidden))) #eventsModule{grid-column:2!importan
     <button class="sp-side-brand" type="button" onclick="switchModule('dashboard')" aria-label="Go to dashboard"><span class="sp-side-mark"></span><strong>SitePlanNZ</strong></button>
     <div class="sp-nav-main">
       <button class="nav-tab active" data-module="dashboard"><span>⌂</span>Dashboard</button>
-      <button class="nav-tab" data-module="events"><span>▣</span>Events</button>
+      <button class="nav-tab" data-module="events"><span>▣</span>Event Maps</button>
       <button class="nav-tab" data-module="tenders"><span>▤</span>Tenders</button>
       <button class="nav-tab" data-module="suppliers"><span>♙</span>Suppliers</button>
       <button class="nav-tab" data-module="budget"><span>◫</span>Budget</button>
@@ -1710,7 +1719,7 @@ body:not(:has(#plannerModule:not(.hidden))) #eventsModule{grid-column:2!importan
  </div>
 </div></div></section>
 
-  <section class="module events-index hidden" id="eventsModule"><div class="events-index-inner"><div class="page-head"><div><h1>Events</h1><p>Choose an event to open its site plan and event workspace.</p></div><button class="btn primary" id="eventsNewEventBtn">+ New Event</button></div><div class="events-index-grid" id="eventsIndexGrid"></div></div></section>
+  <section class="module events-index hidden" id="eventsModule"><div class="events-index-inner"><div class="page-head"><div><h1>Event Maps</h1><p>Choose an event map to open and edit.</p></div><button class="btn primary" id="eventsNewEventBtn">+ New Event Map</button></div><div class="events-index-grid" id="eventsIndexGrid"></div></div></section>
 
   <div class="workspace module hidden" id="plannerModule"><div class="planner-tools-rail"><button class="planner-rail-btn active" type="button"><span>↖</span><b>Objects</b></button><button class="planner-rail-btn" type="button" data-tool-target="zone"><span>⬡</span><b>Zones</b></button><button class="planner-rail-btn" type="button" data-tool-target="barrier"><span>╱</span><b>Barrier</b></button><button class="planner-rail-btn" type="button" data-tool-target="route"><span>➜</span><b>Route</b></button></div>
     <aside class="sidebar" id="sidebar">
@@ -3012,8 +3021,8 @@ let eventBudget = Number(localStorage.getItem('siteplan_budget')||0);
 const money=n=>new Intl.NumberFormat('en-NZ',{style:'currency',currency:'NZD',maximumFractionDigits:0}).format(Number(n)||0);
 function saveTenders(){localStorage.setItem('siteplan_tenders',JSON.stringify(tenders));renderTenders();renderBudget()}
 document.addEventListener('click',e=>{const b=e.target.closest('.planner-rail-btn');if(!b)return;document.querySelectorAll('.planner-rail-btn').forEach(x=>x.classList.remove('active'));b.classList.add('active');const target=b.dataset.toolTarget;if(target){const tool=document.querySelector('#plannerModule .tool[data-tool="'+target+'"]');if(tool)tool.click();}});
-function renderEventsIndex(){const grid=byId('eventsIndexGrid');if(!grid)return;const list=events.filter(e=>!e.archived);grid.innerHTML=list.length?list.map(e=>{const ts=tenders.filter(t=>t.eventId===e.id),open=ts.filter(t=>t.status==='Open').length,quotes=ts.reduce((n,t)=>n+(t.quotes||[]).length,0),meta=[e.eventDate||'',e.location||''].filter(Boolean).join(' · ')||'Event workspace';return `<article class="events-index-card" onclick="openEventFromIndex('${e.id}')"><h3>${esc(e.name||'Untitled event')}</h3><div class="meta">${esc(meta)}</div><div class="stats"><span>Site plan</span><span>${open} tender${open===1?'':'s'}</span><span>${quotes} quote${quotes===1?'':'s'}</span></div></article>`}).join(''):'<div class="empty-state"><b>No events yet.</b><br>Create your first event to start planning.</div>'}
-function openEventFromIndex(id){const e=events.find(x=>x.id===id);if(!e)return;currentEventId=id;localStorage.setItem('siteplan_current_event_id',id);byId('eventName').value=e.name||'Untitled Site Plan';if(e.plan)loadPlan(e.plan);else clearVisualPlan();switchModule('planner')}
+function renderEventsIndex(){const grid=byId('eventsIndexGrid');if(!grid)return;const list=events.filter(e=>!e.archived);grid.innerHTML=list.length?list.map(e=>{const ts=tenders.filter(t=>t.eventId===e.id),quotes=ts.reduce((n,t)=>n+(t.quotes||[]).length,0);const details=[e.eventDate?esc(e.eventDate):'',e.location?esc(e.location):'',ts.length+' tender'+(ts.length===1?'':'s'),quotes+' quote'+(quotes===1?'':'s')].filter(Boolean).join(' · ');return `<article class="events-index-card"><div class="events-index-body"><h3>${esc(e.name||'Untitled Event')}</h3><div class="meta">${details||new Date(e.updated||e.created).toLocaleDateString()}</div></div><button class="events-index-open" type="button" onclick="openEvent('${e.id}')">Open →</button></article>`}).join(''):'<div class="empty-state"><b>No event maps yet.</b><br>Create your first event map to start planning.</div>'}
+function openEventFromIndex(id){openEvent(id)}
 function switchModule(name){document.querySelectorAll('.module').forEach(x=>x.classList.add('hidden'));byId(name+'Module').classList.remove('hidden');byId('newEventBtn').onclick=newEvent;byId('eventsNewEventBtn').onclick=newEvent;document.querySelectorAll('.nav-tab').forEach(x=>x.classList.toggle('active',x.dataset.module===name));document.querySelector('.search-wrap').style.display=name==='planner'?'flex':'none';byId('eventName').style.display=name==='planner'?'':'none';byId('saveBtn').style.display=name==='planner'?'':'none';byId('clearBtn').style.display=name==='planner'?'':'none';byId('printBtn').style.display=name==='planner'?'':'none';if(name==='dashboard')renderEvents();if(name==='events')renderEventsIndex();if(name==='tenders')renderTenders();if(name==='budget')renderBudget()}
 function addReqRow(name='',qty='',unit=''){const d=document.createElement('div');d.className='req-row';d.innerHTML=`<input class="rname" placeholder="Requirement" value="${name}"><input class="rqty" placeholder="Qty" value="${qty}"><input class="runit" placeholder="Unit" value="${unit}"><button class="btn danger" type="button">×</button>`;d.querySelector('button').onclick=()=>d.remove();byId('reqRows').appendChild(d)}
 function openTender(){
