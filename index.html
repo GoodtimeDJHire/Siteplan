@@ -1542,6 +1542,36 @@ body.public-tender-route .tender-public-shell{min-height:100vh!important;backgro
 #tendersModule [style*="color:#c8ff3d"],#tendersModule [style*="color: #c8ff3d"],#tendersModule [style*="color:#a8e820"],#tendersModule [style*="color: #a8e820"]{color:#6045f3!important}
 #tendersModule .sp-event-picker{display:none!important}
 @media(max-width:760px){#tendersModule .sp-tender-event-grid{grid-template-columns:1fr}}
+</style><style id="sp-v113-shell-tenders">
+/* V113 permanent app shell */
+body:not(:has(#plannerModule:not(.hidden))) .app{grid-template-columns:188px minmax(0,1fr)!important;grid-template-rows:68px minmax(0,1fr)!important}
+body:not(:has(#plannerModule:not(.hidden))) .sp-app-nav{grid-column:1!important;grid-row:1/3!important;padding:20px 12px 16px!important;justify-content:flex-start!important}
+body:not(:has(#plannerModule:not(.hidden))) header{grid-column:2!important;grid-row:1!important}
+body:not(:has(#plannerModule:not(.hidden))) header .brand{display:none!important}
+.sp-side-brand{height:40px;display:flex;align-items:center;gap:11px;border:0;background:transparent;padding:0 10px;margin:0 0 24px;cursor:pointer;color:#11131b;font:inherit}
+.sp-side-brand strong{font-size:17px;font-weight:950;letter-spacing:-.045em;white-space:nowrap}
+.sp-side-mark{width:27px;height:28px;position:relative;display:block;flex:0 0 27px}
+.sp-side-mark:before,.sp-side-mark:after{content:"";position:absolute;width:16px;height:10px;border-radius:5px 10px 5px 10px;transform:rotate(40deg)}
+.sp-side-mark:before{background:#6045f3;left:1px;top:4px}.sp-side-mark:after{background:#51a8ff;left:10px;top:14px}
+body:not(:has(#plannerModule:not(.hidden))) .sp-nav-main{display:grid!important;gap:5px!important;margin:0!important;padding:0!important}
+body:not(:has(#plannerModule:not(.hidden))) .sp-nav-secondary{margin-top:auto!important}
+body:not(:has(#plannerModule:not(.hidden))) #dashboardModule,body:not(:has(#plannerModule:not(.hidden))) #tendersModule,body:not(:has(#plannerModule:not(.hidden))) #suppliersModule,body:not(:has(#plannerModule:not(.hidden))) #budgetModule{grid-column:2!important;grid-row:2!important}
+
+/* Tender event index uses the same visual language as dashboard Recent Events */
+#tendersModule .sp-tender-index{max-width:1280px!important}
+#tendersModule .sp-tender-index .page-head{margin-bottom:16px!important}
+#tendersModule .sp-tender-event-grid{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:12px!important;margin-top:16px!important}
+#tendersModule .sp-tender-event-card{min-height:112px!important;padding:16px!important;border:1px solid #e6e7ef!important;border-radius:14px!important;background:#fff!important;box-shadow:none!important}
+#tendersModule .sp-tender-event-card:hover{border-color:#c9c0ff!important;box-shadow:0 8px 24px rgba(61,51,91,.06)!important}
+#tendersModule .sp-tender-event-card h3{font-size:16px!important;margin:0 0 5px!important}
+#tendersModule .sp-tender-event-meta{font-size:11px!important;margin-bottom:12px!important}
+#tendersModule .sp-tender-event-stats span{background:#f0edff!important;color:#6045f3!important}
+
+/* kill legacy lime event-context decoration */
+#tendersModule .page-head h1,#tendersModule .page-head h1 *{color:#171923!important}
+#tendersModule .page-head [class*="event"],#tendersModule .page-head [class*="context"],#tendersModule .page-head [class*="badge"],#tendersModule .page-head [class*="pill"]{color:#6045f3!important;border-color:#d8d0ff!important}
+#tendersModule .page-head h1:after,#tendersModule .page-head h1:before{color:#6045f3!important}
+@media(max-width:760px){#tendersModule .sp-tender-event-grid{grid-template-columns:1fr!important}.sp-side-brand strong{display:none}.sp-side-brand{justify-content:center;padding:0}}
 </style></head>
 <body>
 
@@ -1641,6 +1671,7 @@ body.public-tender-route .tender-public-shell{min-height:100vh!important;backgro
     <div class="search-wrap"><div class="place-host" id="placeHost"></div></div>
   </header>
   <aside class="sp-app-nav">
+    <button class="sp-side-brand" type="button" onclick="switchModule('dashboard')" aria-label="Go to dashboard"><span class="sp-side-mark"></span><strong>SitePlanNZ</strong></button>
     <div class="sp-nav-main">
       <button class="nav-tab active" data-module="dashboard"><span>⌂</span>Dashboard</button>
       <button class="nav-tab" data-module="planner"><span>▣</span>Events</button>
@@ -3860,5 +3891,20 @@ document.addEventListener('DOMContentLoaded',()=>{
  setTimeout(ready,1800);
 });
 </script>
-</body>
+<script>
+/* V113 remove legacy tender context labels injected by older runtime */
+document.addEventListener('DOMContentLoaded',()=>{
+ const cleanTenderHeader=()=>{
+  const m=document.getElementById('tendersModule'); if(!m)return;
+  m.querySelectorAll('.page-head').forEach(h=>{
+   [...h.querySelectorAll('*')].forEach(el=>{
+    const s=(el.textContent||'').trim();
+    if((s.startsWith('· PBR ')||s.startsWith('Event: PBR ')) && !el.closest('.sp-tender-event-card')) el.remove();
+   });
+  });
+ };
+ cleanTenderHeader();
+ new MutationObserver(cleanTenderHeader).observe(document.getElementById('tendersModule'),{childList:true,subtree:true});
+});
+</script></body>
 </html>
