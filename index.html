@@ -1409,6 +1409,11 @@ body:has(#plannerModule:not(.hidden)) #plannerModule{display:grid!important;grid
 #plannerModule>.sidebar .object-btn .ico{width:27px!important;height:25px!important;font-size:10px!important;border-radius:6px!important}
 #plannerModule>.sidebar .object-btn>span:last-child{font-size:7px!important;line-height:1.05!important}
 @media(max-width:1200px){#plannerModule>.sidebar>.object-grid{grid-template-columns:repeat(3,minmax(0,1fr))!important}}
+/* V103 pictogram object library */
+#plannerModule .object-btn .ico svg{width:21px!important;height:21px!important;display:block}
+#plannerModule .object-btn .ico{color:#6045f3!important;background:#eeeaff!important}
+#plannerModule .object-btn:first-child .ico{color:#78f51b!important;background:#252c34!important}
+
 </style>
 
 <style>
@@ -2228,12 +2233,47 @@ function setupPlaces(){
   });
 }
 
+function eventObjectIcon(type){
+  const common='viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"';
+  const paths={
+    text:'<path d="M5 5h14M12 5v14M8 19h8"/>',
+    marquee:'<path d="M3 18V9l9-5 9 5v9M3 9h18M7 18v-6h10v6"/>',
+    stage:'<path d="M4 16h16M6 16V8h12v8M8 8V5h8v3M5 19h14"/>',
+    dj:'<rect x="3" y="8" width="18" height="10" rx="2"/><circle cx="8" cy="13" r="2.5"/><circle cx="16" cy="13" r="2.5"/><path d="M12 10v6"/>',
+    foh:'<path d="M4 18h16M6 18V8h12v10M9 8V5h6v3M9 12h6M9 15h6"/>',
+    speaker:'<path d="M7 3h10v18H7z"/><circle cx="12" cy="8" r="2"/><circle cx="12" cy="15" r="3"/>',
+    sub:'<path d="M5 4h14v16H5z"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/>',
+    delay:'<path d="M8 4h8v16H8z"/><circle cx="12" cy="9" r="1.5"/><circle cx="12" cy="15" r="2.5"/><path d="M5 20h14"/>',
+    screen:'<rect x="3" y="4" width="18" height="13" rx="1"/><path d="M8 21h8M12 17v4"/>',
+    led:'<rect x="3" y="4" width="18" height="14" rx="1"/><path d="M7 4v14M12 4v14M17 4v14M3 9h18M3 14h18"/>',
+    lighttower:'<path d="M8 21l4-16 4 16M6 21h12M9 9h6M7 5h10"/><path d="M5 3l2 2M19 3l-2 2"/>',
+    followspot:'<path d="M5 8l9-3 3 8-9 3zM10 15l-2 6M14 14l2 7M17 9l4-2"/>',
+    camera:'<path d="M4 7h11v10H4zM15 10l5-3v10l-5-3z"/><circle cx="9.5" cy="12" r="2.5"/>',
+    bar:'<path d="M4 8h16l-2 10H6zM7 12h10M9 8V5h6v3"/>',
+    toilet:'<circle cx="8" cy="5" r="2"/><path d="M8 7v7M5 10h6M6 14v7M10 14v7"/><circle cx="17" cy="5" r="2"/><path d="M17 7l-3 7h6l-3-7M17 14v7"/>',
+    food:'<path d="M5 3v7M8 3v7M5 7h3M6.5 10v11M16 3v18M13 8c0-3 1-5 3-5v8"/>',
+    firstaid:'<path d="M9 3h6v6h6v6h-6v6H9v-6H3V9h6z"/>',
+    entry:'<path d="M4 21V4h10v17M14 12h7M18 9l3 3-3 3"/>',
+    fence:'<path d="M3 20V5M9 20V5M15 20V5M21 20V5M3 8h18M3 17h18"/>',
+    generator:'<rect x="3" y="6" width="18" height="12" rx="2"/><path d="M8 10h4l-2 4h4M6 18v2M18 18v2"/>',
+    bin:'<path d="M5 7h14M9 7V4h6v3M7 7l1 13h8l1-13M10 10v7M14 10v7"/>',
+    truck:'<path d="M3 7h11v10H3zM14 10h4l3 3v4h-7z"/><circle cx="7" cy="18" r="2"/><circle cx="18" cy="18" r="2"/>',
+    parking:'<rect x="4" y="3" width="16" height="18" rx="2"/><path d="M9 17V7h4a3 3 0 010 6H9"/>',
+    security:'<path d="M12 3l7 3v5c0 5-3 8-7 10-4-2-7-5-7-10V6z"/><path d="M9 12l2 2 4-4"/>',
+    medic:'<path d="M9 3h6v6h6v6h-6v6H9v-6H3V9h6z"/>',
+    coffee:'<path d="M5 8h11v8a4 4 0 01-4 4H9a4 4 0 01-4-4zM16 10h2a3 3 0 010 6h-2M8 4v2M12 3v3"/>',
+    power:'<path d="M13 2L5 14h6l-1 8 9-13h-6z"/>'
+  };
+  const aliases={dj:'dj',subwoofer:'sub',video:'screen',video_screen:'screen',ledwall:'led',camera2:'camera',camera:'camera',toilets:'toilet',portabletoilet:'toilet',urinal:'toilet',food:'food',vendor:'food',catering:'food',firstaid:'firstaid',medical:'medic',medic:'medic',gate:'entry',pedestrian:'entry',vehicleentry:'entry',staffentry:'entry',fence:'fence',heras:'fence',crowdbarrier:'fence',waste:'bin',recycling:'bin',skip:'bin',dumpster:'bin',delivery:'truck',truck:'truck',securitygate:'security',police:'security',beer:'bar',cocktail:'bar',coffee:'coffee',distribution:'power',charging:'power',charginghub:'power'};
+  const key=aliases[type]||type; const body=paths[key];
+  return body?'<svg '+common+'>'+body+'</svg>':null;
+}
 function buildObjectButtons(){
   const grid=byId('objectGrid');
   OBJECT_TYPES.forEach(([type,ico,label])=>{
     const b=document.createElement('button');b.className='object-btn';
     b.dataset.search=(type+' '+label).toLowerCase();
-    const toolIcon=type==='marquee'?`<svg viewBox="0 0 42 28" aria-hidden="true"><rect x="2" y="3" width="38" height="22" fill="#fff" stroke="#111" stroke-width="1.7"/><path d="M2 3L21 14L40 3M2 25L21 14L40 25" fill="none" stroke="#111" stroke-width="1.4"/></svg>`:ico;
+    const toolIcon=eventObjectIcon(type)||ico;
     b.innerHTML=`<span class="ico${type==='marquee'?' marquee-tool-ico':''}">${toolIcon}</span><span>${label}</span>`;
     b.onclick=()=>{pendingObjectType=type;drawMode=null;setToolStates();byId('mapTip').textContent=`Click map to place ${label}`;byId('mapTip').classList.add('show')};
     grid.appendChild(b)
