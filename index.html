@@ -1414,6 +1414,13 @@ body:has(#plannerModule:not(.hidden)) #plannerModule{display:grid!important;grid
 #plannerModule .object-btn .ico{color:#6045f3!important;background:#eeeaff!important}
 #plannerModule .object-btn:first-child .ico{color:#78f51b!important;background:#252c34!important}
 
+/* V104 remove neon green status accents */
+#siteplanHomeBrand{cursor:pointer;user-select:none}
+.cloud-state,#cloudState{color:#6045f3!important}
+.cloud-state:before,#cloudState:before{background:#6045f3!important}
+.cloud-account .cloud-state,.cloud-account #cloudState{color:#6045f3!important}
+#plannerModule .cloud-connected,.cloud-connected,[class*="cloud-connected"]{color:#6045f3!important;background:#eeeaff!important;border-color:#d8d0ff!important}
+
 </style>
 
 <style>
@@ -1517,7 +1524,7 @@ body:has(#plannerModule:not(.hidden)) #plannerModule{display:grid!important;grid
 
 <div class="app hidden" id="app">
   <header>
-    <div class="brand"><div class="brand-mark">◆</div><div>SitePlanNZ<small>Event Operations</small></div></div>
+    <div class="brand" id="siteplanHomeBrand" role="button" tabindex="0" title="Back to dashboard"><div class="brand-mark">◆</div><div>SitePlanNZ<small>Event Operations</small></div></div>
     <div class="sp-global-search"><span>⌕</span><input id="spGlobalSearch" type="search" placeholder="Search events, suppliers, tenders…" /></div>
     <div class="sp-header-spacer"></div>
     <div class="cloud-account"><span class="cloud-state" id="cloudState">Local</span><button class="btn" id="accountBtn">Sign in</button></div>
@@ -3687,6 +3694,16 @@ window.addEventListener('DOMContentLoaded', async () => {
     const m=document.getElementById('authMessage');
     if(m)m.textContent='SitePlan could not start. Please refresh and try again.';
   }
+});
+</script>
+<script>
+/* V104 header home navigation */
+document.addEventListener('DOMContentLoaded',()=>{
+ const brand=document.getElementById('siteplanHomeBrand');
+ if(!brand)return;
+ const goHome=()=>{const dash=document.querySelector('.nav-tab[data-tab="dashboard"],[data-view="dashboard"],#dashboardTab');if(dash){dash.click();return;} if(typeof window.showDashboard==='function'){window.showDashboard();return;} location.hash='dashboard';};
+ brand.addEventListener('click',goHome);
+ brand.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();goHome();}});
 });
 </script>
 </body>
