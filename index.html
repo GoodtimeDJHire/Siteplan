@@ -1227,7 +1227,6 @@
 header .brand-mark{position:relative;font-size:0!important;background:transparent!important;width:28px!important}header .brand-mark:before,header .brand-mark:after{content:"";position:absolute;width:15px;height:9px;border-radius:4px 9px 4px 9px;transform:rotate(40deg)}header .brand-mark:before{background:#6045f3;left:2px;top:5px}header .brand-mark:after{background:#51a8ff;right:1px;bottom:5px}header .brand>div:last-child{font-size:17px!important;font-weight:900!important;color:#11131b!important}
 @media(max-width:1000px){.sp-dash-grid{grid-template-columns:1fr}.sp-dash-side{grid-template-columns:1fr 1fr}.sp-kpis{grid-template-columns:repeat(2,1fr)!important}}@media(max-width:700px){.sp-dash-side{grid-template-columns:1fr}.sp-date{display:none}.sp-kpis{grid-template-columns:1fr 1fr!important}}
 
-.sp-mini-map{background-size:cover!important;background-position:center!important;background-repeat:no-repeat!important;position:relative!important;overflow:hidden!important}.sp-mini-map:after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent 45%,rgba(20,22,30,.18))}.sp-mini-map span{display:none}
 </style>
 
 <style>
@@ -1926,11 +1925,7 @@ function renderEvents(){
   grid.innerHTML=ordered.length?ordered.map(e=>{
     const et=tenders.filter(t=>t.eventId===e.id),q=et.reduce((n,t)=>n+(t.quotes?.length||0),0);
     const details=[e.eventDate?esc(e.eventDate):'',e.location?esc(e.location):'',et.length+' tender'+(et.length===1?'':'s'),q+' quote'+(q===1?'':'s')].filter(Boolean).join(' · ');
-    const mapThumb=e.plan?.mapCenter||e.plan?.center||e.plan?.map?.center||null;
-    const lat=Number(mapThumb?.lat??e.lat??e.latitude), lng=Number(mapThumb?.lng??e.lng??e.longitude);
-    const thumb=(Number.isFinite(lat)&&Number.isFinite(lng))?`<div class="event-thumb sp-mini-map" style="background-image:url('https://maps.googleapis.com/maps/api/staticmap?center=${lat},${lng}&zoom=16&size=180x180&maptype=satellite&key=${encodeURIComponent(GOOGLE_MAPS_API_KEY||'')}')"><span>SP</span></div>`:`<div class="event-thumb">SP</div>`;
-    return `<article class="event-card${e.archived?' archived':''}">${thumb}<div class="event-body"><h3>${esc(e.name||'Untitled Event')}</h3><div class="event-meta">${details||new Date(e.updated||e.created).toLocaleDateString()}</div><div class="event-actions"><button class="btn primary" onclick="openEvent('${e.id}')">Open</button><button class="btn" onclick="duplicateEvent('${e.id}')">Duplicate</button><button class="btn" onclick="toggleArchiveEvent('${e.id}')">${e.archived?'Restore':'Archive'}</button><button class="btn danger" onclick="deleteEvent('${e.id}')">Delete</button></div></div></article>`
-  }).join(''):'<div class="dashboard-empty" style="grid-column:1/-1"><b>No events yet.</b><br>Create your first event and start a site plan.</div>';
+    return `<article class="event-card${e.archived?' archived':''}"><div class="event-thumb">SP</div><div class="event-body"><h3>${esc(e.name||'Untitled Event')}</h3><div class="event-meta">${details||new Date(e.updated||e.created).toLocaleDateString()}</div><div class="event-actions"><button class="btn primary" onclick="openEvent('${e.id}')">Open</button><button class="btn" onclick="duplicateEvent('${e.id}')">Duplicate</button><button class="btn" onclick="toggleArchiveEvent('${e.id}')">${e.archived?'Restore':'Archive'}</button><button class="btn danger" onclick="deleteEvent('${e.id}')">Delete</button></div></div></article>`  }).join(''):'<div class="dashboard-empty" style="grid-column:1/-1"><b>No events yet.</b><br>Create your first event and start a site plan.</div>';
 }
 
 function duplicateEvent(id){
