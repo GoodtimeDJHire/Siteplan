@@ -2234,40 +2234,30 @@ function setupPlaces(){
 }
 
 function eventObjectIcon(type){
-  const common='viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"';
-  const paths={
-    text:'<path d="M5 5h14M12 5v14M8 19h8"/>',
-    marquee:'<path d="M3 18V9l9-5 9 5v9M3 9h18M7 18v-6h10v6"/>',
-    stage:'<path d="M4 16h16M6 16V8h12v8M8 8V5h8v3M5 19h14"/>',
-    dj:'<rect x="3" y="8" width="18" height="10" rx="2"/><circle cx="8" cy="13" r="2.5"/><circle cx="16" cy="13" r="2.5"/><path d="M12 10v6"/>',
-    foh:'<path d="M4 18h16M6 18V8h12v10M9 8V5h6v3M9 12h6M9 15h6"/>',
-    speaker:'<path d="M7 3h10v18H7z"/><circle cx="12" cy="8" r="2"/><circle cx="12" cy="15" r="3"/>',
-    sub:'<path d="M5 4h14v16H5z"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/>',
-    delay:'<path d="M8 4h8v16H8z"/><circle cx="12" cy="9" r="1.5"/><circle cx="12" cy="15" r="2.5"/><path d="M5 20h14"/>',
-    screen:'<rect x="3" y="4" width="18" height="13" rx="1"/><path d="M8 21h8M12 17v4"/>',
-    led:'<rect x="3" y="4" width="18" height="14" rx="1"/><path d="M7 4v14M12 4v14M17 4v14M3 9h18M3 14h18"/>',
-    lighttower:'<path d="M8 21l4-16 4 16M6 21h12M9 9h6M7 5h10"/><path d="M5 3l2 2M19 3l-2 2"/>',
-    followspot:'<path d="M5 8l9-3 3 8-9 3zM10 15l-2 6M14 14l2 7M17 9l4-2"/>',
-    camera:'<path d="M4 7h11v10H4zM15 10l5-3v10l-5-3z"/><circle cx="9.5" cy="12" r="2.5"/>',
-    bar:'<path d="M4 8h16l-2 10H6zM7 12h10M9 8V5h6v3"/>',
-    toilet:'<circle cx="8" cy="5" r="2"/><path d="M8 7v7M5 10h6M6 14v7M10 14v7"/><circle cx="17" cy="5" r="2"/><path d="M17 7l-3 7h6l-3-7M17 14v7"/>',
-    food:'<path d="M5 3v7M8 3v7M5 7h3M6.5 10v11M16 3v18M13 8c0-3 1-5 3-5v8"/>',
-    firstaid:'<path d="M9 3h6v6h6v6h-6v6H9v-6H3V9h6z"/>',
-    entry:'<path d="M4 21V4h10v17M14 12h7M18 9l3 3-3 3"/>',
-    fence:'<path d="M3 20V5M9 20V5M15 20V5M21 20V5M3 8h18M3 17h18"/>',
-    generator:'<rect x="3" y="6" width="18" height="12" rx="2"/><path d="M8 10h4l-2 4h4M6 18v2M18 18v2"/>',
-    bin:'<path d="M5 7h14M9 7V4h6v3M7 7l1 13h8l1-13M10 10v7M14 10v7"/>',
-    truck:'<path d="M3 7h11v10H3zM14 10h4l3 3v4h-7z"/><circle cx="7" cy="18" r="2"/><circle cx="18" cy="18" r="2"/>',
-    parking:'<rect x="4" y="3" width="16" height="18" rx="2"/><path d="M9 17V7h4a3 3 0 010 6H9"/>',
-    security:'<path d="M12 3l7 3v5c0 5-3 8-7 10-4-2-7-5-7-10V6z"/><path d="M9 12l2 2 4-4"/>',
-    medic:'<path d="M9 3h6v6h6v6h-6v6H9v-6H3V9h6z"/>',
-    coffee:'<path d="M5 8h11v8a4 4 0 01-4 4H9a4 4 0 01-4-4zM16 10h2a3 3 0 010 6h-2M8 4v2M12 3v3"/>',
-    power:'<path d="M13 2L5 14h6l-1 8 9-13h-6z"/>'
-  };
-  const aliases={dj:'dj',subwoofer:'sub',video:'screen',video_screen:'screen',ledwall:'led',camera2:'camera',camera:'camera',toilets:'toilet',portabletoilet:'toilet',urinal:'toilet',food:'food',vendor:'food',catering:'food',firstaid:'firstaid',medical:'medic',medic:'medic',gate:'entry',pedestrian:'entry',vehicleentry:'entry',staffentry:'entry',fence:'fence',heras:'fence',crowdbarrier:'fence',waste:'bin',recycling:'bin',skip:'bin',dumpster:'bin',delivery:'truck',truck:'truck',securitygate:'security',police:'security',beer:'bar',cocktail:'bar',coffee:'coffee',distribution:'power',charging:'power',charginghub:'power'};
-  const key=aliases[type]||type; const body=paths[key];
-  return body?'<svg '+common+'>'+body+'</svg>':null;
+ const common='viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"';
+ const P={
+ text:'<path d="M5 5h14M12 5v14M8 19h8"/>',stage:'<path d="M4 17h16M6 17V9h12v8M8 9V6h8v3"/>',dj:'<rect x="3" y="8" width="18" height="10" rx="2"/><circle cx="8" cy="13" r="2.5"/><circle cx="16" cy="13" r="2.5"/><path d="M12 10v6"/>',foh:'<path d="M4 19h16M6 19V7h12v12M9 10h6M9 13h6M9 16h6"/>',
+ speaker:'<rect x="7" y="3" width="10" height="18" rx="1"/><circle cx="12" cy="8" r="2"/><circle cx="12" cy="15" r="3"/>',sub:'<rect x="5" y="4" width="14" height="16" rx="1"/><circle cx="12" cy="12" r="5"/>',delay:'<rect x="8" y="3" width="8" height="16"/><circle cx="12" cy="8" r="1.5"/><circle cx="12" cy="14" r="2.5"/><path d="M6 21h12"/>',screen:'<rect x="3" y="4" width="18" height="13" rx="1"/><path d="M8 21h8M12 17v4"/>',ledwall:'<rect x="3" y="4" width="18" height="14"/><path d="M7 4v14M12 4v14M17 4v14M3 9h18M3 14h18"/>',
+ lightingtower:'<path d="M8 21l4-16 4 16M6 21h12M9 10h6M7 5h10"/>',followspot:'<path d="M5 8l9-3 3 8-9 3zM10 15l-2 6M14 14l2 7M17 9l4-2"/>',camera:'<path d="M4 7h11v10H4zM15 10l5-3v10l-5-3z"/><circle cx="9.5" cy="12" r="2.5"/>',broadcast:'<path d="M5 8h10v9H5zM15 10l5-3v11l-5-3zM8 5h4"/>',
+ bar:'<path d="M4 8h16l-2 10H6zM7 12h10M9 8V5h6v3"/>',food:'<path d="M5 3v7M8 3v7M5 7h3M6.5 10v11M16 3v18M13 8c0-3 1-5 3-5v8"/>',merch:'<path d="M8 5l4-2 4 2 4 4-3 3-2-2v11H9V10l-2 2-3-3z"/>',vip:'<path d="M4 8l4 4 4-7 4 7 4-4-2 10H6z"/>',hospitality:'<path d="M5 12h14M7 12a5 5 0 0110 0M12 7V5M4 17h16"/>',greenroom:'<path d="M4 4h16v16H4zM8 20v-7h8v7M9 8h6"/>',dressing:'<path d="M5 4h14v16H5zM9 8h6M9 12h6M12 16h.01"/>',
+ toilet:'<circle cx="8" cy="5" r="2"/><path d="M8 7v7M5 10h6M6 14v7M10 14v7"/><circle cx="17" cy="5" r="2"/><path d="M17 7l-3 7h6l-3-7M17 14v7"/>',accessible:'<circle cx="9" cy="4" r="2"/><path d="M9 7v6h5l3 6M9 10h5M8 13a5 5 0 106 6"/>',water:'<path d="M12 3s6 7 6 11a6 6 0 11-12 0c0-4 6-11 6-11z"/>',bin:'<path d="M5 7h14M9 7V4h6v3M7 7l1 13h8l1-13"/>',
+ power:'<path d="M13 2L5 14h6l-1 8 9-13h-6z"/>',generator:'<rect x="3" y="6" width="18" height="12" rx="2"/><path d="M8 10h4l-2 4h4M6 18v2M18 18v2"/>',fuel:'<path d="M6 3h9v18H6zM8 6h5v4H8zM15 7h2l2 3v7a2 2 0 01-2 2h-2"/>',marquee:'<path d="M3 19V9l9-5 9 5v10M3 9h18M7 19v-7h10v7"/>',
+ security:'<path d="M12 3l7 3v5c0 5-3 8-7 10-4-2-7-5-7-10V6z"/><path d="M9 12l2 2 4-4"/>',firstaid:'<path d="M9 3h6v6h6v6h-6v6H9v-6H3V9h6z"/>',ambulance:'<path d="M3 9h12v9H3zM15 12h4l2 3v3h-6zM8 11v5M5.5 13.5h5"/><circle cx="7" cy="19" r="2"/><circle cx="18" cy="19" r="2"/>',fire:'<path d="M12 3c2 4-2 5 1 8 1-2 3-2 4-5 3 4 3 7 1 11a7 7 0 01-12-1c-1-4 2-7 6-13z"/>',
+ eventcontrol:'<path d="M4 5h16v14H4zM8 9h8M8 13h5"/>',lostchild:'<circle cx="12" cy="7" r="3"/><path d="M6 21v-3a6 6 0 0112 0v3M18 5l3-2M18 9l3 2"/>',assembly:'<circle cx="12" cy="12" r="8"/><path d="M12 4v16M4 12h16"/>',
+ entry:'<path d="M4 21V4h10v17M14 12h7M18 9l3 3-3 3"/>',exit:'<path d="M20 21V4H10v17M10 12H3M6 9l-3 3 3 3"/>',emergency:'<path d="M5 19L19 5M10 5h9v9"/>',ticket:'<path d="M4 7h16v4a2 2 0 000 4v4H4v-4a2 2 0 000-4zM12 8v8"/>',boxoffice:'<path d="M4 9h16v11H4zM3 9l3-5h12l3 5M9 13h6"/>',accreditation:'<path d="M7 3h10v18H7zM9 7h6M9 11h6M10 16h4"/>',queue:'<path d="M5 6h14M5 12h14M5 18h14M8 3L5 6l3 3M16 9l3 3-3 3"/>',info:'<circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7h.01"/>',
+ parking:'<rect x="4" y="3" width="16" height="18" rx="2"/><path d="M9 17V7h4a3 3 0 010 6H9"/>',bus:'<path d="M5 4h14a2 2 0 012 2v11H3V6a2 2 0 012-2zM6 8h12M6 18v2M18 18v2"/><circle cx="7" cy="14" r="1"/><circle cx="17" cy="14" r="1"/>',taxi:'<path d="M5 9l2-4h10l2 4 2 2v6H3v-6zM7 17v2M17 17v2M7 13h.01M17 13h.01"/>',dropoff:'<path d="M4 18h16M12 4v10M8 10l4 4 4-4"/>',loading:'<path d="M3 8h12v9H3zM15 11h4l2 3v3h-6z"/><circle cx="7" cy="18" r="2"/><circle cx="18" cy="18" r="2"/>',truck:'<path d="M3 7h11v10H3zM14 10h4l3 3v4h-7z"/><circle cx="7" cy="18" r="2"/><circle cx="18" cy="18" r="2"/>',road:'<circle cx="12" cy="12" r="9"/><path d="M6 18L18 6"/>',traffic:'<path d="M9 3h6v18H9zM12 7h.01M12 12h.01M12 17h.01"/>',
+ staff:'<path d="M8 11a3 3 0 100-6 3 3 0 000 6zM16 11a3 3 0 100-6 3 3 0 000 6zM3 21v-3a5 5 0 0110 0v3M13 21v-3a5 5 0 018-4"/>',storage:'<path d="M4 8l8-5 8 5v13H4zM8 12h8M8 16h8"/>',compound:'<path d="M3 6h18v15H3zM7 6V3h10v3M8 11h8M8 15h8"/>',office:'<path d="M5 3h14v18H5zM8 7h3M13 7h3M8 11h3M13 11h3M10 21v-5h4v5"/>',
+ charging:'<path d="M13 2L6 13h5l-1 9 8-13h-5z"/>',wifi:'<path d="M3 9a14 14 0 0118 0M6 13a9 9 0 0112 0M9 17a4 4 0 016 0M12 21h.01"/>',light:'<path d="M9 18h6M10 21h4M8 14a6 6 0 118 0c-1 1-2 2-2 4h-4c0-2-1-3-2-4z"/>',
+ fence:'<path d="M3 20V5M9 20V5M15 20V5M21 20V5M3 8h18M3 17h18"/>',bollard:'<path d="M9 5h6l1 16H8zM7 8h10"/>',scanner:'<path d="M6 3h12v18H6zM9 7h6M9 11h6M10 17h4"/>',bagcheck:'<path d="M5 8h14l-1 12H6zM9 8V6a3 3 0 016 0v2M9 13h6"/>',wristband:'<path d="M6 8h12v8H6zM3 10h3M18 10h3M3 14h3M18 14h3"/>',
+ coffee:'<path d="M5 8h11v8a4 4 0 01-4 4H9a4 4 0 01-4-4zM16 10h2a3 3 0 010 6h-2M8 4v2M12 3v3"/>',artist:'<path d="M12 3v12M12 6l7-2v10M9 18a3 2 0 11-6 0 3 2 0 016 0M19 16a3 2 0 11-6 0 3 2 0 016 0"/>',backstage:'<path d="M4 5h16v14H4zM8 5v14M16 5v14M4 10h16"/>',production:'<path d="M4 5h16v14H4zM8 9h8M8 13h8M8 17h5"/>',sounddesk:'<path d="M4 5h16v14H4zM8 8v8M12 8v8M16 8v8M6 11h4M10 14h4M14 10h4"/>',lightingdesk:'<path d="M4 5h16v14H4zM8 8v8M12 8v8M16 8v8M6 13h4M10 10h4M14 15h4"/>',
+ photopit:'<path d="M4 8h4l2-3h4l2 3h4v11H4z"/><circle cx="12" cy="13" r="4"/>',press:'<path d="M5 4h14v16H5zM8 8h8M8 12h8M8 16h5"/>',meetgreet:'<circle cx="8" cy="8" r="3"/><circle cx="16" cy="8" r="3"/><path d="M3 21v-3a5 5 0 0110 0v3M11 21v-3a5 5 0 0110 0v3"/>',
+ handwash:'<path d="M4 9h12M7 9V6h6v3M16 9h4v4M12 13c0 3-2 5-4 5s-4-2-4-5M18 15c0 2-1 3-2 3"/>',recycling:'<path d="M10 4l2-2 3 5h-3M18 10l3 1-3 5-2-2M9 19l-1 3-5-4 2-2"/>',cablecross:'<path d="M3 16h18M5 12h14M7 8h10M9 4h6"/>',waterfill:'<path d="M5 7h10v4H5zM15 9h4v4M9 14c0 3-2 5-4 5"/>',septic:'<path d="M4 7h16v12H4zM8 7V4h8v3M8 12h8"/>',
+ camping:'<path d="M3 20L12 5l9 15zM12 5v15"/>',rides:'<circle cx="12" cy="12" r="8"/><path d="M12 4v16M4 12h16M7 7l10 10M17 7L7 17"/>',kids:'<circle cx="12" cy="7" r="3"/><path d="M12 10v6M8 13h8M9 21l3-5 3 5"/>',smoking:'<path d="M4 14h13v4H4zM17 14h3v4h-3M7 10c0-3 4-2 4-5M12 10c0-3 4-2 4-5"/>',quiet:'<path d="M5 10h4l5-4v12l-5-4H5zM18 9l3 6M21 9l-3 6"/>',atm:'<rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 7h8M12 10v7M9 12h6M9 15h6"/>',locker:'<path d="M6 3h12v18H6zM12 3v18M9 12h.01M15 12h.01"/>'
+ };
+ const aliases={accessibleparking:'parking',staffparking:'parking',vehicleentry:'entry',pedestrian:'entry',gate:'entry',staffentry:'entry',fencegate:'entry',crowdbarrier:'fence',heras:'fence',emergencylane:'emergency',evac:'assembly',fireexit:'emergency',medic:'firstaid',police:'security',securitygate:'security',beer:'bar',cocktail:'bar',waterstation:'water',catering:'food',vendor:'food',camera2:'camera',fencegate:'entry',crewcheck:'staff',portabletoilet:'toilet',urinal:'toilet',skip:'bin',dumpster:'bin',distribution:'power',lightingmast:'lightingtower',greywater:'waterfill',glamping:'camping',charginghub:'charging',volunteer:'staff',contractor:'staff'};
+ const body=P[aliases[type]||type]; return body?'<svg '+common+'>'+body+'</svg>':null;
 }
+
 function buildObjectButtons(){
   const grid=byId('objectGrid');
   OBJECT_TYPES.forEach(([type,ico,label])=>{
