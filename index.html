@@ -1526,6 +1526,22 @@ body.public-tender-route .tender-public-shell{min-height:100vh!important;backgro
 #tendersModule .tender-actions .btn.primary{background:#6045f3!important;border-color:#6045f3!important;color:#fff!important}
 #tendersModule [style*="#c8ff3d"],#tendersModule [style*="#a8e820"]{color:#6045f3!important}
 @media(max-width:760px){#tendersModule .sp-event-picker{display:block}#tendersModule .sp-event-picker label{display:block;margin-bottom:6px}#tendersModule #tenderEventPicker{min-width:0;width:100%}}
+</style><style id="sp-v112-tender-event-index">
+#tendersModule .sp-tender-index,#tendersModule .sp-tender-workspace{max-width:1380px;margin:0 auto}
+#tendersModule .sp-tender-event-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-top:20px}
+#tendersModule .sp-tender-event-card{background:#fff;border:1px solid #e1e3ec;border-radius:16px;padding:22px;cursor:pointer;transition:.15s ease}
+#tendersModule .sp-tender-event-card:hover{border-color:#b9adff;box-shadow:0 8px 24px rgba(64,50,120,.07);transform:translateY(-1px)}
+#tendersModule .sp-tender-event-card h3{margin:0 0 7px;font-size:18px;color:#171923}
+#tendersModule .sp-tender-event-meta{font-size:12px;color:#7a8090;margin-bottom:18px}
+#tendersModule .sp-tender-event-stats{display:flex;gap:8px;flex-wrap:wrap}
+#tendersModule .sp-tender-event-stats span{background:#f4f2ff;color:#6045f3;border-radius:999px;padding:6px 9px;font-size:10px;font-weight:850}
+#tendersModule .sp-back-events{border:0;background:none;color:#6045f3;font-weight:850;padding:0;margin:0 0 18px;cursor:pointer}
+#tendersModule .sp-event-eyebrow{font-size:10px;font-weight:900;letter-spacing:.1em;color:#777d8d;margin-bottom:6px}
+#tendersModule .sp-tender-workspace.hidden,#tendersModule .sp-tender-index.hidden{display:none!important}
+#tendersModule .page-head h1:after,#tendersModule .page-head h1+span{display:none!important}
+#tendersModule [style*="color:#c8ff3d"],#tendersModule [style*="color: #c8ff3d"],#tendersModule [style*="color:#a8e820"],#tendersModule [style*="color: #a8e820"]{color:#6045f3!important}
+#tendersModule .sp-event-picker{display:none!important}
+@media(max-width:760px){#tendersModule .sp-tender-event-grid{grid-template-columns:1fr}}
 </style></head>
 <body>
 
@@ -1706,7 +1722,7 @@ body.public-tender-route .tender-public-shell{min-height:100vh!important;backgro
       </div>
     </aside>
   </div>
-  <section class="module procure hidden" id="tendersModule"><div class="procure-inner"><div class="page-head"><div><h1>Tenders & Quotes</h1><p>Choose an event to manage its tenders, supplier invites and quotes.</p><div class="sp-event-picker"><label>Event</label><select id="tenderEventPicker" aria-label="Choose event"></select></div></div><div class="sp-tender-head-actions"><button class="btn primary" id="newTenderBtn">+ New Tender</button><button class="btn sp-brief-btn" data-event-brief="1" onclick="openApprovedSupplierBrief()">Email approved suppliers</button></div></div><div class="cards"><div class="metric"><span>Open tenders</span><b id="openTenderCount">0</b></div><div class="metric"><span>Quotes received</span><b id="quoteCount">0</b></div><div class="metric"><span>Awarded</span><b id="awardedCount">0</b></div><div class="metric"><span>Quoted value</span><b id="quotedValue">$0</b></div></div><div class="section-title">Event procurement</div><div class="tender-list" id="tenderList"></div><div class="section-title" style="margin-top:30px">Past event tender history</div><div id="tenderHistoryByEvent"></div></div></section>
+  <section class="module procure hidden" id="tendersModule"><div class="procure-inner"><div class="sp-tender-index" id="tenderEventIndex"><div class="page-head"><div><h1>Tenders & Quotes</h1><p>Select an event to open its procurement workspace.</p></div></div><div class="sp-tender-event-grid" id="tenderEventGrid"></div></div><div class="sp-tender-workspace hidden" id="tenderEventWorkspace"><button class="sp-back-events" type="button" onclick="closeTenderEvent()">← All events</button><div class="page-head"><div><div class="sp-event-eyebrow">EVENT PROCUREMENT</div><h1 id="tenderWorkspaceTitle">Event</h1><p>Manage tenders, supplier invitations and incoming quotes for this event.</p></div><div class="sp-tender-head-actions"><button class="btn primary" id="newTenderBtn">+ New Tender</button><button class="btn sp-brief-btn" data-event-brief="1" onclick="openApprovedSupplierBrief()">Email approved suppliers</button></div></div><div class="cards"><div class="metric"><span>Open tenders</span><b id="openTenderCount">0</b></div><div class="metric"><span>Quotes received</span><b id="quoteCount">0</b></div><div class="metric"><span>Awarded</span><b id="awardedCount">0</b></div><div class="metric"><span>Quoted value</span><b id="quotedValue">$0</b></div></div><div class="section-title">Event procurement</div><div class="tender-list" id="tenderList"></div><div id="tenderHistoryByEvent" style="display:none"></div></div></div></section>
   <section class="module procure hidden" id="budgetModule"><div class="procure-inner"><div class="page-head"><div><h1>Event Budget</h1><p>Awarded tenders flow into committed costs automatically.</p></div></div><div class="cards"><div class="metric"><span>Budget</span><b id="budgetTotal">$0</b></div><div class="metric"><span>Committed</span><b id="budgetCommitted">$0</b></div><div class="metric"><span>Quotes pending</span><b id="budgetPending">$0</b></div><div class="metric"><span>Remaining</span><b id="budgetRemaining">$0</b></div></div><div class="field" style="max-width:300px"><label>Event budget (NZD)</label><input id="budgetInput" type="number" placeholder="85000"></div><div class="section-title">Committed suppliers</div><div id="budgetRows"></div></div></section>
   <section class="module procure hidden" id="suppliersModule"><div class="procure-inner"><div class="page-head"><div><h1>Supplier Network</h1><p>Register vendors once, match them to relevant tenders, and manage opportunities from a supplier view.</p></div><button class="btn primary" id="newSupplierBtn">+ Register Supplier</button></div><div class="cards"><div class="metric"><span>Suppliers</span><b id="supplierCount">0</b></div><div class="metric"><span>Categories</span><b id="supplierCategoryCount">0</b></div><div class="metric"><span>Open matches</span><b id="supplierMatchCount">0</b></div><div class="metric"><span>Email alerts</span><b id="supplierNotificationCount">0</b></div></div><div class="supplier-tabs"><button class="supplier-subtab active" data-supplier-view="directory">Directory</button><button class="supplier-subtab" data-supplier-view="dashboard">Supplier Dashboard</button></div><div id="supplierDirectoryView">
 <div class="supplier-directory-tools">
@@ -2980,21 +2996,28 @@ function editTender(id){
  byId('tenderModal').classList.remove('hidden');
 }
 function publishTender(){const title=byId('tTitle').value.trim()||byId('tCategory').value+' Tender';const requirements=[...document.querySelectorAll('.req-row')].map(r=>({name:r.querySelector('.rname').value,qty:r.querySelector('.rqty').value,unit:r.querySelector('.runit').value})).filter(x=>x.name);const t={id:crypto.randomUUID().slice(0,8),eventId:currentEventId,eventName:byId('eventName').value,title,category:byId('tCategory').value,due:byId('tDue').value,region:byId('tRegion').value,attendance:Number(byId('tAttendance').value)||0,estimatedValue:Number(byId('tEstimated').value)||0,brief:byId('tBrief').value,requirements,attachPlan:true,planSnapshot:serializePlan(),status:'Open',quotes:[],created:new Date().toISOString()};tenders.unshift(t);saveTenders();byId('tenderModal').classList.add('hidden');const matches=matchingSuppliers(t);toast(matches.length?`Tender published · ${matches.length} supplier${matches.length===1?'':'s'} matched`:'Tender published · no matching suppliers yet');renderSupplierDashboard()}
-function syncTenderEventPicker(){
- const picker=byId('tenderEventPicker');if(!picker)return;
+let tenderEventOpen=false;
+function renderTenderEventIndex(){
+ const grid=byId('tenderEventGrid');if(!grid)return;
  const available=events.filter(e=>!e.archived);
- picker.innerHTML=available.length?available.map(e=>`<option value="${esc(e.id)}">${esc(e.name||'Untitled event')}${e.eventDate?' · '+esc(e.eventDate):''}</option>`).join(''):'<option value="">No events available</option>';
- if(currentEventId&&available.some(e=>e.id===currentEventId))picker.value=currentEventId;
- picker.onchange=()=>{
-   const id=picker.value;if(!id||id===currentEventId)return;
-   const ev=events.find(e=>e.id===id);if(!ev)return;
-   currentEventId=id;
-   if(byId('eventName'))byId('eventName').value=ev.name||'Untitled Site Plan';
-   if(ev.plan)loadPlan(ev.plan);
-   renderTenders();renderBudget();
- };
+ grid.innerHTML=available.length?available.map(e=>{
+  const list=tenders.filter(t=>t.eventId===e.id),open=list.filter(t=>t.status==='Open').length,quotes=list.reduce((n,t)=>n+(t.quotes||[]).length,0);
+  const meta=[e.eventDate||e.date||'',e.location||''].filter(Boolean).join(' · ');
+  return `<article class="sp-tender-event-card" onclick="openTenderEvent('${e.id}')"><h3>${esc(e.name||'Untitled event')}</h3><div class="sp-tender-event-meta">${meta||'Event procurement'}</div><div class="sp-tender-event-stats"><span>${open} open tender${open===1?'':'s'}</span><span>${quotes} quote${quotes===1?'':'s'}</span></div></article>`;
+ }).join(''):'<div class="empty-state"><b>No events yet.</b><br>Create an event first, then add tenders to it.</div>';
 }
-function renderTenders(){syncTenderEventPicker();const list=currentEventTenders();const open=list.filter(t=>t.status==='Open').length, awarded=list.filter(t=>t.status==='Awarded').length, quotes=list.reduce((n,t)=>n+t.quotes.length,0), val=list.reduce((n,t)=>n+t.quotes.reduce((a,q)=>a+Number(q.total||0),0),0);byId('openTenderCount').textContent=open;byId('quoteCount').textContent=quotes;byId('awardedCount').textContent=awarded;byId('quotedValue').textContent=money(val);byId('tenderList').innerHTML=list.length?list.map(t=>{const m=matchingSuppliers(t).length;return `<div class="tender"><div><h3>${esc(t.title)}</h3><small>${esc(t.category)}${t.due?' · Due '+esc(t.due):''} · ${m} matching supplier${m===1?'':'s'}</small></div><span class="pill ${t.status.toLowerCase()}">${t.status}</span><div><b>${t.quotes.length}</b><br><small>quotes</small></div><div><b>${t.quotes.length?money(Math.min(...t.quotes.map(q=>q.total))):'—'}</b><br><small>lowest</small></div><div class="tender-actions"><button class="btn" onclick="openTenderView('${t.id}')">View</button><button class="btn" onclick="editTender('${t.id}')">Edit</button><button class="btn" onclick="copyTenderLink('${t.id}')">Copy link</button><button class="btn primary" onclick="shareTenderToAll('${t.id}')">Share to ${m}</button></div></div>`}).join(''):'<div class="empty-state"><b>No tenders for this event yet.</b><br>Create a supplier brief and share the private quote page.</div>';renderTenderHistoryByEvent()}
+function openTenderEvent(id){
+ const ev=events.find(e=>e.id===id);if(!ev)return;
+ currentEventId=id;localStorage.setItem('siteplan_current_event_id',id);tenderEventOpen=true;
+ byId('tenderEventIndex')?.classList.add('hidden');byId('tenderEventWorkspace')?.classList.remove('hidden');
+ if(byId('tenderWorkspaceTitle'))byId('tenderWorkspaceTitle').textContent=ev.name||'Untitled event';
+ renderTenders();
+}
+function closeTenderEvent(){
+ tenderEventOpen=false;byId('tenderEventWorkspace')?.classList.add('hidden');byId('tenderEventIndex')?.classList.remove('hidden');renderTenderEventIndex();
+}
+
+function renderTenders(){renderTenderEventIndex();if(!tenderEventOpen){byId('tenderEventWorkspace')?.classList.add('hidden');byId('tenderEventIndex')?.classList.remove('hidden');return;}const list=currentEventTenders();const open=list.filter(t=>t.status==='Open').length, awarded=list.filter(t=>t.status==='Awarded').length, quotes=list.reduce((n,t)=>n+t.quotes.length,0), val=list.reduce((n,t)=>n+t.quotes.reduce((a,q)=>a+Number(q.total||0),0),0);byId('openTenderCount').textContent=open;byId('quoteCount').textContent=quotes;byId('awardedCount').textContent=awarded;byId('quotedValue').textContent=money(val);byId('tenderList').innerHTML=list.length?list.map(t=>{const m=matchingSuppliers(t).length;return `<div class="tender"><div><h3>${esc(t.title)}</h3><small>${esc(t.category)}${t.due?' · Due '+esc(t.due):''} · ${m} matching supplier${m===1?'':'s'}</small></div><span class="pill ${t.status.toLowerCase()}">${t.status}</span><div><b>${t.quotes.length}</b><br><small>quotes</small></div><div><b>${t.quotes.length?money(Math.min(...t.quotes.map(q=>q.total))):'—'}</b><br><small>lowest</small></div><div class="tender-actions"><button class="btn" onclick="openTenderView('${t.id}')">View</button><button class="btn" onclick="editTender('${t.id}')">Edit</button><button class="btn" onclick="copyTenderLink('${t.id}')">Copy link</button><button class="btn primary" onclick="shareTenderToAll('${t.id}')">Share to ${m}</button></div></div>`}).join(''):'<div class="empty-state"><b>No tenders for this event yet.</b><br>Create a supplier brief and share the private quote page.</div>';renderTenderHistoryByEvent()}
 
 function renderTenderHistoryByEvent(){
  const host=byId('tenderHistoryByEvent');if(!host)return;
