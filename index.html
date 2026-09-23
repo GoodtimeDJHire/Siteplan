@@ -1656,6 +1656,50 @@ html.public-tender-route #quoteModalContent{width:100%!important;max-width:none!
 html.public-tender-route .modal-backdrop{background:#f4f5fb!important}
 </style><style id="sp-v124-quote-review">
 .quote-ai-status{display:grid;gap:3px;text-align:left!important;padding:13px 15px!important}.quote-ai-status b{font-size:13px}.quote-ai-status span{font-size:11px;font-weight:650;opacity:.82}.quote-review-note{display:flex;gap:12px;align-items:flex-start;background:#f0edff;border:1px solid #d9d1ff;border-radius:11px;padding:12px 14px;margin:0 0 18px;color:#4433a8}.quote-review-note b{white-space:nowrap}.quote-review-note span{font-size:12px;line-height:1.45}.quote-section-label{font-weight:850;font-size:13px;margin:20px 0 8px}.quote-items-head,.quote-item-row{display:grid;grid-template-columns:minmax(0,1fr) 90px 130px 34px;gap:8px;align-items:center}.quote-items-head{padding:0 2px 6px;color:#737687;font-size:11px;font-weight:800}.quote-items-head span:nth-child(2),.quote-items-head span:nth-child(3){text-align:right}.quote-items{display:grid;gap:7px}.quote-item-row input{width:100%;background:#fff!important;color:#171923!important;border:1px solid #dfe1ea!important;border-radius:9px!important;padding:10px!important}.q-item-qty,.q-item-amount{text-align:right}.q-item-remove{border:0;background:transparent;color:#9296a5;font-size:20px;cursor:pointer}.quote-add-item{border:0;background:transparent;color:#6045f3;font-weight:800;padding:9px 0;cursor:pointer}.quote-totals-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-top:10px}.quote-total-field input{font-weight:850}.quote-reading:after{content:'AI reading…';position:absolute;inset:auto 16px 14px;background:#fff;border:1px solid #d9d1ff;border-radius:8px;padding:7px 10px;color:#6045f3;font-size:11px;font-weight:850}.tender-ref-upload{position:relative}@media(max-width:700px){.quote-review-note{display:grid;gap:4px}.quote-items-head,.quote-item-row{grid-template-columns:minmax(0,1fr) 65px 92px 28px}.quote-totals-grid{grid-template-columns:1fr}.quote-items-head{font-size:10px}}
+</style><style id="sp-v125-tender-detail-light">
+/* Tender detail: remove legacy dark/neon styling */
+#tendersModule .tender-summary-card,
+#tendersModule .quote-summary,
+#tendersModule .quote-stat,
+#tendersModule .quote-metric,
+#tendersModule .tender-delivery .tender,
+#tendersModule .delivery-row,
+#tendersModule [class*="delivery"] .tender{
+  background:#fff!important;color:#20232d!important;border-color:#e1e3ec!important;box-shadow:none!important
+}
+#tendersModule .quote-stat,
+#tendersModule .quote-metric{
+  border:1px solid #e1e3ec!important;border-radius:14px!important
+}
+#tendersModule .quote-stat *,
+#tendersModule .quote-metric *,
+#tendersModule .tender-delivery *,
+#tendersModule [class*="delivery"] .tender *{color:inherit}
+#tendersModule .quote-stat small,
+#tendersModule .quote-metric small,
+#tendersModule .tender-delivery small,
+#tendersModule [class*="delivery"] .tender small{color:#74798a!important}
+#tendersModule .quote-card,
+#tendersModule [class*="quote-card"]{
+  background:#fff!important;border:1px solid #e1e3ec!important;color:#20232d!important
+}
+#tendersModule .quote-card.lowest,
+#tendersModule [class*="quote-card"].lowest{background:#faf9ff!important;border-color:#cfc6ff!important}
+#tendersModule .quote-card .lowest-quote,
+#tendersModule .quote-card [class*="lowest"],
+#tendersModule [class*="quote-card"] [class*="lowest"]{color:#6045f3!important;background:transparent!important}
+#tendersModule .quote-card .pill,
+#tendersModule [class*="quote-card"] .pill{background:#f1efff!important;color:#6045f3!important;border-color:#d8d0ff!important}
+#tendersModule .quote-card .pill.submitted,
+#tendersModule [class*="quote-card"] .pill.submitted{background:#edf8f2!important;color:#25724a!important;border-color:#cfe9da!important}
+#tendersModule .quote-card a,
+#tendersModule [class*="quote-card"] a{background:#f6f4ff!important;color:#6045f3!important;border-color:#d8d0ff!important}
+#tendersModule .tender-delivery .pill,
+#tendersModule [class*="delivery"] .pill{background:#eef5ff!important;color:#3567a8!important;border-color:#d4e3f6!important}
+#tendersModule [style*="#c8ff3d"],
+#tendersModule [style*="#a8e820"],
+#tendersModule [style*="greenyellow"],
+#tendersModule [style*="lime"]{color:#6045f3!important;background:#f6f4ff!important;border-color:#d8d0ff!important}
 </style></head>
 <body>
 
