@@ -1719,7 +1719,15 @@ html.public-tender-route .modal-backdrop{background:#f4f5fb!important}
 #dashboardModule .sp-dash-side .sp-panel{
   border-color:#c7cad6!important;
 }
-</style></head>
+</style><style id="sp-v128-map-share-print">
+@media print{
+ @page{size:A4 landscape;margin:8mm}html,body{width:100%!important;height:auto!important;background:#fff!important;overflow:visible!important}body *{visibility:hidden!important}
+ #plannerModule,#plannerModule *{visibility:visible!important}#plannerModule{display:block!important;position:relative!important;width:100%!important;height:190mm!important;padding:16mm 0 0!important;background:#fff!important;overflow:hidden!important}
+ #plannerModule:before{content:attr(data-print-title);display:block!important;visibility:visible!important;position:absolute!important;left:0!important;top:0!important;right:0!important;height:12mm!important;font:900 18pt/12mm Arial,sans-serif!important;color:#171923!important;border-bottom:1px solid #d9dce6!important}
+ #plannerModule .planner-tools-rail,#plannerModule .sidebar,#plannerModule .inspector,#plannerModule .map-tip,#plannerModule .draw-banner,#plannerModule .stats,header,.sp-app-nav,.cloud-state,.toast{display:none!important}
+ #plannerModule .map-wrap{display:block!important;position:absolute!important;left:0!important;right:0!important;top:16mm!important;bottom:0!important;width:100%!important;height:auto!important;border:1px solid #d9dce6!important;border-radius:4mm!important;overflow:hidden!important}
+ #plannerModule #map{display:block!important;position:absolute!important;inset:0!important;width:100%!important;height:100%!important}
+}</style></head>
 <body>
 
 <section class="marketing-home" id="marketingHome">
@@ -2989,7 +2997,7 @@ function wireUI(){
   byId('redoBtn').onclick=redo;
   updateUndoRedoButtons();
   document.querySelectorAll('[data-tool]').forEach(b=>b.onclick=()=>setDrawMode(b.dataset.tool));
-  byId('finishDraw').onclick=finishDrawing;byId('cancelDraw').onclick=()=>cancelDrawing(true);byId('finishDrawTop').onclick=finishDrawing;byId('cancelDrawTop').onclick=()=>cancelDrawing(true);byId('saveBtn').onclick=()=>savePlan(true);byId('clearBtn').onclick=clearPlan;byId('printBtn').onclick=()=>window.print();
+  byId('finishDraw').onclick=finishDrawing;byId('cancelDraw').onclick=()=>cancelDrawing(true);byId('finishDrawTop').onclick=finishDrawing;byId('cancelDrawTop').onclick=()=>cancelDrawing(true);byId('saveBtn').onclick=()=>savePlan(true);byId('clearBtn').onclick=clearPlan;byId('printBtn').onclick=()=>{const p=byId('plannerModule');if(p)p.dataset.printTitle=(byId('eventName')?.value||activeEvent()?.name||'Site Plan')+' · SitePlanNZ';setTimeout(()=>window.print(),80)};
   byId('deleteBtn').onclick=deleteSelected;byId('duplicateBtn').onclick=duplicateSelected;
   byId('selName').addEventListener('input',e=>{if(!selected)return;selected.name=e.target.value;if(selected.content){selected.content.querySelector('.ml').textContent=selected.name;selected.marker.title=selected.name}updateStats();autoSave()});
   byId('selDimensions').addEventListener('input',e=>{

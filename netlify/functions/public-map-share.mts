@@ -5,9 +5,8 @@ function store(){
   return Netlify.context?.deploy?.context === "production" ? getStore("siteplan-public-maps",{consistency:"strong"}) : getDeployStore("siteplan-public-maps");
 }
 function supabaseConfig(){
-  const url=Netlify.env.get("SITEPLAN_SUPABASE_URL");
-  const key=Netlify.env.get("SITEPLAN_SUPABASE_KEY");
-  if(!url||!key)throw new Error("SitePlan database configuration is missing.");
+  const url=Netlify.env.get("SITEPLAN_SUPABASE_URL")||"https://qkvkemcqfnbmaktbxddg.supabase.co";
+  const key=Netlify.env.get("SITEPLAN_SUPABASE_KEY")||"sb_publishable_tiPl-Y7wvfrpB7RzNzOBVA_CMIGBTwA";
   return {url,key};
 }
 async function authUser(req:Request){
