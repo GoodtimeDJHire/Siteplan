@@ -1779,6 +1779,22 @@ body:not(:has(#plannerModule:not(.hidden))) :is(.metric,.sp-panel,.events-index-
  background:rgba(255,255,255,.94)!important;
  border-color:#c9cdd8!important;
 }
+</style><style id="sp-v139-canvas-contrast-fix">
+/* Force the visible workspace canvas itself grey; cards stay white */
+html body .app:not(.hidden){background:#e9ebf1!important}
+html body .app:not(.hidden) #dashboardModule:not(.hidden),
+html body .app:not(.hidden) #eventsModule:not(.hidden),
+html body .app:not(.hidden) #tendersModule:not(.hidden),
+html body .app:not(.hidden) #suppliersModule:not(.hidden),
+html body .app:not(.hidden) #budgetModule:not(.hidden){
+ background:#e9ebf1!important;
+ background-image:linear-gradient(rgba(255,255,255,.18),rgba(255,255,255,.18))!important;
+}
+html body .app:not(.hidden) :is(
+ #dashboardModule,#eventsModule,#tendersModule,#suppliersModule,#budgetModule
+) :is(.metric,.sp-panel,.events-index-grid,.sp-tender-event-grid,.sp-tender-event-card,.tender-list,.tender,.supplier-group,.supplier-profile,.supplier-layout main,.quote-card,[class*="quote-card"],.tender-ref-fields){
+ background:#fff!important;
+}
 </style></head>
 <body>
 
