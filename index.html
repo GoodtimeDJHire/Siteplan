@@ -1769,6 +1769,16 @@ body:not(:has(#plannerModule:not(.hidden))) :is(.events-index-card,.sp-tender-ev
 #tendersModule .sp-new-tender-sticky{display:inline-flex!important;align-items:center!important;justify-content:center!important;visibility:visible!important;opacity:1!important;background:#6045f3!important;color:#fff!important;border:1px solid #6045f3!important;min-height:40px!important;padding:0 16px!important;white-space:nowrap!important;position:relative!important;z-index:5!important}
 #tendersModule .sp-tender-head-actions #newTenderBtn{display:inline-flex!important}
 @media(max-width:700px){#tendersModule .sp-tender-workspace-bar{align-items:stretch!important}.sp-new-tender-sticky{min-width:130px!important}}
+</style><style id="sp-v138-app-background">
+/* App canvas: visible cool-grey backdrop so white cells/cards read as separate surfaces */
+body:not(:has(#plannerModule:not(.hidden))) .app{background:#eef0f5!important}
+body:not(:has(#plannerModule:not(.hidden))) :is(#dashboardModule,#eventsModule,#tendersModule,#suppliersModule,#budgetModule){
+ background:rgba(238,240,245,.82)!important;
+}
+body:not(:has(#plannerModule:not(.hidden))) :is(.metric,.sp-panel,.events-index-card,.sp-tender-event-card,.tender,.supplier-group,.supplier-profile,.supplier-layout main,.quote-card,[class*="quote-card"],.tender-ref-fields){
+ background:rgba(255,255,255,.94)!important;
+ border-color:#c9cdd8!important;
+}
 </style></head>
 <body>
 
