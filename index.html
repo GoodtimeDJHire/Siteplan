@@ -1731,6 +1731,25 @@ html.public-tender-route .modal-backdrop{background:#f4f5fb!important}
 #tendersModule .sp-tender-head-actions{display:flex!important;align-items:center!important;gap:10px!important;flex-wrap:wrap!important}
 #tendersModule #newTenderBtn.sp-new-tender-visible{display:inline-flex!important;visibility:visible!important;opacity:1!important;background:#6045f3!important;color:#fff!important;border:1px solid #6045f3!important;position:relative!important;z-index:2!important}
 #tendersModule .sp-brief-btn{display:inline-flex!important}
+</style><style id="sp-v130-header-cleanup">
+/* Keep the app header contained and remove duplicate floating cloud status */
+body:not(:has(#plannerModule:not(.hidden))) header{
+  min-width:0!important;overflow:hidden!important;box-sizing:border-box!important;
+  padding-right:18px!important;gap:10px!important
+}
+body:not(:has(#plannerModule:not(.hidden))) header .sp-global-search{
+  flex:1 1 360px!important;min-width:180px!important;max-width:470px!important
+}
+body:not(:has(#plannerModule:not(.hidden))) header .cloud-account{
+  margin-left:auto!important;min-width:0!important;display:flex!important;align-items:center!important;gap:9px!important;flex:0 1 auto!important
+}
+body:not(:has(#plannerModule:not(.hidden))) header .cloud-account>*{flex:0 0 auto!important}
+body:not(:has(#plannerModule:not(.hidden))) header .btn{white-space:nowrap!important}
+body:not(:has(#plannerModule:not(.hidden))) .cloud-state{display:none!important}
+@media(max-width:1050px){
+ body:not(:has(#plannerModule:not(.hidden))) header .sp-global-search{max-width:300px!important}
+ body:not(:has(#plannerModule:not(.hidden))) header .cloud-account{gap:6px!important}
+}
 </style></head>
 <body>
 
