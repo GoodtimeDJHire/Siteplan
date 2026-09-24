@@ -1700,25 +1700,6 @@ html.public-tender-route .modal-backdrop{background:#f4f5fb!important}
 #tendersModule [style*="#a8e820"],
 #tendersModule [style*="greenyellow"],
 #tendersModule [style*="lime"]{color:#6045f3!important;background:#f6f4ff!important;border-color:#d8d0ff!important}
-</style><style id="sp-v126-dashboard-section-borders">
-/* Give dashboard sections clearer structure without making them heavy */
-#dashboardModule .sp-kpis .metric{
-  border:1px solid #e1e3ec!important;
-  box-shadow:0 1px 2px rgba(24,27,39,.02)!important;
-}
-#dashboardModule .sp-panel{
-  border:1px solid #dfe2eb!important;
-  box-shadow:0 2px 8px rgba(36,31,64,.025)!important;
-}
-#dashboardModule .sp-events-panel{border-color:#dcdfe9!important}
-#dashboardModule .sp-dash-side .sp-panel{border-color:#dfe2eb!important}
-</style><style id="sp-v127-dashboard-stronger-borders">
-#dashboardModule .sp-kpis .metric,
-#dashboardModule .sp-panel,
-#dashboardModule .sp-events-panel,
-#dashboardModule .sp-dash-side .sp-panel{
-  border-color:#c7cad6!important;
-}
 </style><style id="sp-v128-map-share-print">
 @media print{
  @page{size:A4 landscape;margin:8mm}html,body{width:100%!important;height:auto!important;background:#fff!important;overflow:visible!important}body *{visibility:hidden!important}
@@ -1762,83 +1743,27 @@ body:not(:has(#plannerModule:not(.hidden))) .local-backup{position:static!import
 body:not(:has(#plannerModule:not(.hidden))) #dashboardModule .local-backup #exportBackupBtn,
 body:not(:has(#plannerModule:not(.hidden))) #dashboardModule .local-backup #importBackupBtn{display:none!important}
 @media(max-width:900px){body:not(:has(#plannerModule:not(.hidden))) header{grid-template-columns:minmax(180px,1fr) auto!important}body:not(:has(#plannerModule:not(.hidden))) header .sp-header-spacer{display:none!important}body:not(:has(#plannerModule:not(.hidden))) header .cloud-account{grid-column:2!important}}
-</style><style id="sp-v132-dashboard-cells">
-/* Stronger dashboard cells with a very light tinted fill */
-#dashboardModule .sp-kpis .metric,
-#dashboardModule .sp-panel{
-  border:1.5px solid #aeb3c3!important;
-  background:rgba(255,255,255,.72)!important;
-  box-shadow:0 2px 8px rgba(35,38,55,.035)!important;
+</style><style id="sp-v136-surface-system">
+/* Unified app surfaces */
+:root{--sp-bg:#f7f7fa;--sp-card:#fff;--sp-line:#d7d9e2;--sp-line-strong:#c4c7d2;--sp-ink:#20222b;--sp-muted:#747887;--sp-purple:#6045f3}
+body:not(:has(#plannerModule:not(.hidden))) :is(#dashboardModule,#eventsModule,#tendersModule,#suppliersModule,#budgetModule){background:var(--sp-bg)!important}
+body:not(:has(#plannerModule:not(.hidden))) :is(.dashboard-inner,.events-index-inner,.tenders-inner,.suppliers-inner,.budget-inner){max-width:1440px!important}
+body:not(:has(#plannerModule:not(.hidden))) :is(.metric,.sp-panel,.events-index-card,.sp-tender-event-card,.tender,.supplier-group,.supplier-profile,.supplier-layout main,.quote-card,[class*="quote-card"],.tender-ref-fields,.modal-card){
+ background:var(--sp-card)!important;border:1px solid var(--sp-line)!important;box-shadow:0 1px 2px rgba(24,27,39,.03),0 6px 18px rgba(24,27,39,.025)!important;opacity:1!important
 }
-#dashboardModule .sp-events-panel,
-#dashboardModule .sp-dash-side .sp-panel{border-color:#aeb3c3!important}
-#dashboardModule .event-card{
-  border-bottom-color:#c9ccd7!important;
-}
-#dashboardModule .sp-deadlines>div{
-  border-bottom-color:#c9ccd7!important;
-}
-</style><style id="sp-v133-global-cells">
-/* Site-wide surface system: stronger borders + subtle translucent shading */
-:root{--sp-cell-border:#aeb3c3;--sp-cell-fill:rgba(255,255,255,.74);--sp-cell-soft:rgba(248,248,252,.78)}
-body:not(:has(#plannerModule:not(.hidden))) :is(
- .metric,.sp-panel,.events-index-card,.sp-tender-event-card,.tender,.supplier-group,
- .supplier-profile,.supplier-layout main,.modal-card,.empty-state,.field input,.field textarea,.field select,
- .supplier-directory-tools input,.supplier-directory-tools select,.quote-card,[class*="quote-card"],
- .tender-ref-fields,.tender-ref-upload,.quote-review-note,.public-check
-){
- border-color:var(--sp-cell-border)!important;
-}
-body:not(:has(#plannerModule:not(.hidden))) :is(
- .metric,.sp-panel,.events-index-card,.sp-tender-event-card,.tender,.supplier-group,
- .supplier-profile,.supplier-layout main,.modal-card,.empty-state,.quote-card,[class*="quote-card"],
- .tender-ref-fields
-){
- background:var(--sp-cell-fill)!important;
- box-shadow:0 2px 8px rgba(35,38,55,.035)!important;
-}
-body:not(:has(#plannerModule:not(.hidden))) :is(
- .field input,.field textarea,.field select,.supplier-directory-tools input,.supplier-directory-tools select,
- .public-check
-){background:var(--sp-cell-soft)!important}
-body:not(:has(#plannerModule:not(.hidden))) :is(
- .metric,.sp-panel,.events-index-card,.sp-tender-event-card,.tender,.supplier-group,
- .supplier-profile,.supplier-layout main,.modal-card,.empty-state,.quote-card,[class*="quote-card"],
- .tender-ref-fields,.tender-ref-upload
-){border-width:1.5px!important}
-body:not(:has(#plannerModule:not(.hidden))) :is(
- .event-card,.supplier-group-list .tender,.sp-deadlines>div,.tender-list>.tender
-){border-bottom-color:#c9ccd7!important}
-</style><style id="sp-v134-solid-surfaces">
-/* Avoid browser compositing/transparency issues: keep the same visual treatment with solid fills */
-:root{--sp-cell-border:#aeb3c3;--sp-cell-fill:#fbfbfd;--sp-cell-soft:#f7f7fb}
-body:not(:has(#plannerModule:not(.hidden))) :is(
- .metric,.sp-panel,.events-index-card,.sp-tender-event-card,.tender,.supplier-group,
- .supplier-profile,.supplier-layout main,.modal-card,.empty-state,.quote-card,[class*="quote-card"],
- .tender-ref-fields
-){background:#fbfbfd!important;opacity:1!important;filter:none!important;backdrop-filter:none!important}
-body:not(:has(#plannerModule:not(.hidden))) :is(
- .field input,.field textarea,.field select,.supplier-directory-tools input,.supplier-directory-tools select,.public-check
-){background:#f7f7fb!important;opacity:1!important;filter:none!important;backdrop-filter:none!important}
-</style><style id="sp-v135-clean-card-system">
-/* Clean SitePlanNZ card system — crisp separation, no muddy translucent wash */
-body:not(:has(#plannerModule:not(.hidden))) :is(#dashboardModule,#eventsModule,#tendersModule,#suppliersModule,#budgetModule){background:#f5f6fa!important}
-body:not(:has(#plannerModule:not(.hidden))) :is(
- .metric,.sp-panel,.events-index-card,.sp-tender-event-card,.tender,.supplier-group,
- .supplier-profile,.supplier-layout main,.quote-card,[class*="quote-card"],.tender-ref-fields
-){
- background:#fff!important;
- border:1px solid #c8ccd8!important;
- box-shadow:0 1px 2px rgba(20,24,40,.025)!important;
- opacity:1!important;
-}
+body:not(:has(#plannerModule:not(.hidden))) :is(.metric,.sp-panel,.events-index-card,.sp-tender-event-card,.supplier-group,.supplier-profile,.supplier-layout main,.quote-card,[class*="quote-card"]){border-radius:14px!important}
 body:not(:has(#plannerModule:not(.hidden))) :is(.field input,.field textarea,.field select,.supplier-directory-tools input,.supplier-directory-tools select){
- background:#fff!important;border:1px solid #c5c9d5!important;box-shadow:none!important
+ background:#fff!important;border:1px solid var(--sp-line)!important;box-shadow:0 1px 2px rgba(24,27,39,.025)!important
 }
-body:not(:has(#plannerModule:not(.hidden))) :is(.metric,.sp-panel,.events-index-card,.sp-tender-event-card,.tender,.supplier-group,.quote-card,[class*="quote-card"]):hover{
- border-color:#aeb4c4!important
+body:not(:has(#plannerModule:not(.hidden))) :is(.field input,.field textarea,.field select,.supplier-directory-tools input,.supplier-directory-tools select):focus{
+ border-color:#9588f7!important;box-shadow:0 0 0 3px rgba(96,69,243,.10)!important;outline:0!important
 }
-#dashboardModule .sp-kpis .metric,#dashboardModule .sp-panel{background:#fff!important;border-color:#c5c9d5!important}
+#dashboardModule .sp-kpis .metric{border-color:#d1d4de!important}
+#dashboardModule .sp-panel{border-color:#d1d4de!important}
+#dashboardModule :is(.event-card,.sp-deadlines>div){border-bottom-color:#e2e4ea!important}
+body:not(:has(#plannerModule:not(.hidden))) :is(.events-index-card,.sp-tender-event-card,.quote-card,[class*="quote-card"]):hover{
+ border-color:var(--sp-line-strong)!important;box-shadow:0 4px 16px rgba(24,27,39,.055)!important;transform:translateY(-1px)
+}
 </style></head>
 <body>
 
