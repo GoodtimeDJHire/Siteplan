@@ -1809,6 +1809,17 @@ body:not(:has(#plannerModule:not(.hidden))) :is(
 body:not(:has(#plannerModule:not(.hidden))) :is(
  .event-card,.supplier-group-list .tender,.sp-deadlines>div,.tender-list>.tender
 ){border-bottom-color:#c9ccd7!important}
+</style><style id="sp-v134-solid-surfaces">
+/* Avoid browser compositing/transparency issues: keep the same visual treatment with solid fills */
+:root{--sp-cell-border:#aeb3c3;--sp-cell-fill:#fbfbfd;--sp-cell-soft:#f7f7fb}
+body:not(:has(#plannerModule:not(.hidden))) :is(
+ .metric,.sp-panel,.events-index-card,.sp-tender-event-card,.tender,.supplier-group,
+ .supplier-profile,.supplier-layout main,.modal-card,.empty-state,.quote-card,[class*="quote-card"],
+ .tender-ref-fields
+){background:#fbfbfd!important;opacity:1!important;filter:none!important;backdrop-filter:none!important}
+body:not(:has(#plannerModule:not(.hidden))) :is(
+ .field input,.field textarea,.field select,.supplier-directory-tools input,.supplier-directory-tools select,.public-check
+){background:#f7f7fb!important;opacity:1!important;filter:none!important;backdrop-filter:none!important}
 </style></head>
 <body>
 
