@@ -1820,6 +1820,28 @@ html body .app:not(.hidden) #tendersModule .sp-tender-event-card{
 html body .sp-connection{display:none!important}
 html body .cloud-state:not(#cloudState){display:none!important}
 html body header #cloudState{display:inline-flex!important}
+</style><style id="sp-v141-definitive-grey-canvas">
+/* Definitive non-planner canvas. Intentionally opaque so no parent/underlay can wash it out. */
+html body .app:not(.hidden),
+html body .app:not(.hidden) > #dashboardModule:not(.hidden),
+html body .app:not(.hidden) > #eventsModule:not(.hidden),
+html body .app:not(.hidden) > #tendersModule:not(.hidden),
+html body .app:not(.hidden) > #suppliersModule:not(.hidden),
+html body .app:not(.hidden) > #budgetModule:not(.hidden){
+ background-color:#e6e8ed!important;
+ background-image:none!important;
+}
+html body .app:not(.hidden) :is(#dashboardModule,#eventsModule,#tendersModule,#suppliersModule,#budgetModule) :is(
+ .metric,.sp-panel,.events-index-grid,.sp-tender-event-grid,.sp-tender-event-card,.tender-list,.tender,
+ .supplier-group,.supplier-profile,.supplier-layout main,.quote-card,[class*="quote-card"],.tender-ref-fields
+){
+ background:#f7f8fa!important;
+ border-color:#cdd1da!important;
+}
+/* Never render a second floating cloud badge. Header #cloudState is the only sync indicator. */
+html body .cloud-connected,
+html body [class*="cloud-connected"],
+html body .sp-connection{display:none!important}
 </style></head>
 <body>
 
