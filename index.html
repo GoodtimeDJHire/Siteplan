@@ -1842,7 +1842,62 @@ html body .app:not(.hidden) :is(#dashboardModule,#eventsModule,#tendersModule,#s
 html body .cloud-connected,
 html body [class*="cloud-connected"],
 html body .sp-connection{display:none!important}
-</style></head>
+</style>
+<style>
+/* SITEPLANNZ SOFT GREY SURFACE OVERRIDE — 2026-09-24 */
+:root {
+  --bg-page: #f3f4f6;
+  --bg-card: #ffffff;
+  --border-card: #e5e7eb;
+  --shadow-card: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+}
+
+/* Light UI only: visual surface treatment; no layout/spacing/sizing changes. */
+html:not(.dark):not([data-theme="dark"]),
+html:not(.dark):not([data-theme="dark"]) body,
+html:not(.dark):not([data-theme="dark"]) .app,
+html:not(.dark):not([data-theme="dark"]) .workspace,
+html:not(.dark):not([data-theme="dark"]) .module,
+html:not(.dark):not([data-theme="dark"]) .module-content,
+html:not(.dark):not([data-theme="dark"]) .page,
+html:not(.dark):not([data-theme="dark"]) .page-content,
+html:not(.dark):not([data-theme="dark"]) .dashboard,
+html:not(.dark):not([data-theme="dark"]) .dashboard-content {
+  background-color: var(--bg-page);
+}
+
+html:not(.dark):not([data-theme="dark"]) :is(
+  .card, .panel, .content-card, .dashboard-card, .section-card, .info-card,
+  .settings-card, .form-card, .tender-card, .supplier-card, .event-card,
+  .stat-card, .summary-card, .content-block, .widget, .cell, .grid-cell,
+  .list-item, .data-row, .detail-row, .info-row, .setting-row, .supplier-row,
+  .tender-row, .event-row, .form-section, .form-group-container, .form-panel,
+  fieldset, .table-container, .table-wrapper, .data-table-container, .table-card,
+  .public-card, .auth-card, .sp-tender-event-card
+) {
+  background-color: var(--bg-card);
+  border-color: var(--border-card);
+  box-shadow: var(--shadow-card);
+}
+
+html:not(.dark):not([data-theme="dark"]) :is(.table-container, .table-wrapper, .data-table-container, .table-card) :is(table, thead, tbody, tr, th, td) {
+  border-color: var(--border-card);
+}
+
+html:not(.dark):not([data-theme="dark"]) :is(.table-container, .table-wrapper, .data-table-container, .table-card) :is(th, td) {
+  background-color: var(--bg-card);
+}
+
+html:not(.dark):not([data-theme="dark"]) :is(.card, .panel, .content-card, .dashboard-card, .section-card, .info-card, .settings-card, .form-card, .tender-card, .supplier-card, .event-card, .content-block, .public-card, .auth-card, .sp-tender-event-card) {
+  color: #111827;
+}
+
+html:not(.dark):not([data-theme="dark"]) :is(.text-muted, .muted, .secondary-text, .description, .helper-text) {
+  color: #6b7280;
+}
+/* Header/nav, branded buttons, map, images and brand colours intentionally untouched. */
+</style>
+</head>
 <body>
 
 <section class="marketing-home" id="marketingHome">
