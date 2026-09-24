@@ -1771,43 +1771,58 @@ body:not(:has(#plannerModule:not(.hidden))) :is(.events-index-card,.sp-tender-ev
 @media(max-width:700px){#tendersModule .sp-tender-workspace-bar{align-items:stretch!important}.sp-new-tender-sticky{min-width:130px!important}}
 </style>
 
-<style id="sp-v142-clean-surface-system">
-/* V142 — single authoritative non-planner surface system.
-   Visual-only: no layout, sizing, spacing, content or behaviour changes. */
+<style id="sp-v143-two-tone-ui">
+/* V143 — two-tone app UI. Visual-only. */
 :root{
- --sp-bg:#f3f4f6;
- --sp-card:#ffffff;
- --sp-line:#d1d5db;
- --sp-line-strong:#c4c7d2;
- --sp-surface-shadow:0 1px 3px rgba(0,0,0,.06),0 1px 2px rgba(0,0,0,.04);
+ --sp-tone-page:#e9ebf0;
+ --sp-tone-surface:#ffffff;
+ --sp-tone-soft:#f6f7f9;
+ --sp-tone-line:#d7dae1;
+ --sp-tone-line-strong:#c7cbd4;
+ --sp-tone-text:#1f2430;
+ --sp-tone-muted:#6f7685;
+ --sp-tone-shadow:0 2px 8px rgba(28,32,42,.055),0 1px 2px rgba(28,32,42,.035);
 }
-html body .app:not(.hidden){background-color:var(--sp-bg)!important;background-image:none!important}
+html body .app:not(.hidden),
 html body .app:not(.hidden) :is(#dashboardModule,#eventsModule,#tendersModule,#suppliersModule,#budgetModule):not(.hidden){
- background-color:var(--sp-bg)!important;
+ background:var(--sp-tone-page)!important;
  background-image:none!important;
 }
 html body .app:not(.hidden) :is(#dashboardModule,#eventsModule,#tendersModule,#suppliersModule,#budgetModule) :is(
- .metric,.sp-panel,.events-index-grid,.events-index-card,.sp-tender-event-grid,.sp-tender-event-card,
- .tender-list,.tender,.supplier-group,.supplier-profile,.supplier-layout main,.quote-card,[class*="quote-card"],
- .tender-ref-fields,.event-card
+ .metric,.sp-panel,.events-index-grid,.sp-tender-event-grid,.tender-list,#supplierList,#budgetRows,
+ .supplier-group,.supplier-profile,.supplier-layout main,.quote-card,[class*="quote-card"],.tender-ref-fields,.event-card
 ){
- background-color:var(--sp-card)!important;
- border-color:var(--sp-line)!important;
- box-shadow:var(--sp-surface-shadow)!important;
- opacity:1!important;
+ background:var(--sp-tone-surface)!important;
+ border:1px solid var(--sp-tone-line)!important;
+ box-shadow:var(--sp-tone-shadow)!important;
+}
+html body .app:not(.hidden) :is(#dashboardModule,#eventsModule,#tendersModule,#suppliersModule,#budgetModule) :is(
+ .events-index-card,.sp-tender-event-card,.tender,.supplier-group-list .tender,.sp-deadlines>div
+){
+ background:var(--sp-tone-soft)!important;
+ border-color:var(--sp-tone-line)!important;
+}
+html body .app:not(.hidden) :is(#dashboardModule,#eventsModule,#tendersModule,#suppliersModule,#budgetModule) :is(
+ .events-index-card,.sp-tender-event-card,.tender
+):hover{
+ background:var(--sp-tone-surface)!important;
+ border-color:var(--sp-tone-line-strong)!important;
+ box-shadow:0 5px 16px rgba(28,32,42,.08)!important;
 }
 html body .app:not(.hidden) :is(#dashboardModule,#eventsModule,#tendersModule,#suppliersModule,#budgetModule) :is(
  .field input,.field textarea,.field select,.supplier-directory-tools input,.supplier-directory-tools select
 ){
- background-color:var(--sp-card)!important;
- border-color:var(--sp-line)!important;
+ background:var(--sp-tone-surface)!important;
+ border:1px solid var(--sp-tone-line)!important;
+ color:var(--sp-tone-text)!important;
+ box-shadow:inset 0 1px 1px rgba(28,32,42,.02)!important;
 }
-html body .app:not(.hidden) #eventsModule .events-index-card,
-html body .app:not(.hidden) #tendersModule .sp-tender-event-card{
- background-color:var(--sp-card)!important;
- border-color:var(--sp-line)!important;
+html body .app:not(.hidden) :is(#dashboardModule,#eventsModule,#tendersModule,#suppliersModule,#budgetModule) :is(
+ .section-title,.meta,.muted,.helper-text,small
+){color:var(--sp-tone-muted)!important}
+html body .app:not(.hidden) :is(#dashboardModule,#eventsModule,#tendersModule,#suppliersModule,#budgetModule) :is(h1,h2,h3,strong,b){
+ color:var(--sp-tone-text);
 }
-/* One sync indicator only: the header copy. */
 html body .cloud-connected,
 html body [class*="cloud-connected"],
 html body .sp-connection{display:none!important}
