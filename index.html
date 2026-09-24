@@ -1762,6 +1762,22 @@ body:not(:has(#plannerModule:not(.hidden))) .local-backup{position:static!import
 body:not(:has(#plannerModule:not(.hidden))) #dashboardModule .local-backup #exportBackupBtn,
 body:not(:has(#plannerModule:not(.hidden))) #dashboardModule .local-backup #importBackupBtn{display:none!important}
 @media(max-width:900px){body:not(:has(#plannerModule:not(.hidden))) header{grid-template-columns:minmax(180px,1fr) auto!important}body:not(:has(#plannerModule:not(.hidden))) header .sp-header-spacer{display:none!important}body:not(:has(#plannerModule:not(.hidden))) header .cloud-account{grid-column:2!important}}
+</style><style id="sp-v132-dashboard-cells">
+/* Stronger dashboard cells with a very light tinted fill */
+#dashboardModule .sp-kpis .metric,
+#dashboardModule .sp-panel{
+  border:1.5px solid #aeb3c3!important;
+  background:rgba(255,255,255,.72)!important;
+  box-shadow:0 2px 8px rgba(35,38,55,.035)!important;
+}
+#dashboardModule .sp-events-panel,
+#dashboardModule .sp-dash-side .sp-panel{border-color:#aeb3c3!important}
+#dashboardModule .event-card{
+  border-bottom-color:#c9ccd7!important;
+}
+#dashboardModule .sp-deadlines>div{
+  border-bottom-color:#c9ccd7!important;
+}
 </style></head>
 <body>
 
