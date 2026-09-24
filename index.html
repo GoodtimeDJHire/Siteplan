@@ -1846,56 +1846,50 @@ html body .sp-connection{display:none!important}
 <style>
 /* SITEPLANNZ SOFT GREY SURFACE OVERRIDE — 2026-09-24 */
 :root {
-  --bg-page: #f3f4f6;
-  --bg-card: #ffffff;
-  --border-card: #e5e7eb;
-  --shadow-card: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+  --bg-page:#f3f4f6;
+  --bg-card:#ffffff;
+  --border-card:#e5e7eb;
+  --shadow-card:0 1px 3px rgba(0,0,0,.06),0 1px 2px rgba(0,0,0,.04);
+  --sp-bg:var(--bg-page);
+  --sp-card:var(--bg-card);
+  --sp-line:var(--border-card);
 }
 
-/* Light UI only: visual surface treatment; no layout/spacing/sizing changes. */
-html:not(.dark):not([data-theme="dark"]),
+/* Exact current SitePlan app surfaces. Visual properties only. */
 html:not(.dark):not([data-theme="dark"]) body,
-html:not(.dark):not([data-theme="dark"]) .app,
+html:not(.dark):not([data-theme="dark"]) #app,
 html:not(.dark):not([data-theme="dark"]) .workspace,
-html:not(.dark):not([data-theme="dark"]) .module,
-html:not(.dark):not([data-theme="dark"]) .module-content,
-html:not(.dark):not([data-theme="dark"]) .page,
-html:not(.dark):not([data-theme="dark"]) .page-content,
 html:not(.dark):not([data-theme="dark"]) .dashboard,
-html:not(.dark):not([data-theme="dark"]) .dashboard-content {
-  background-color: var(--bg-page);
+html:not(.dark):not([data-theme="dark"]) .procure,
+html:not(.dark):not([data-theme="dark"]) #dashboardModule,
+html:not(.dark):not([data-theme="dark"]) #eventsModule,
+html:not(.dark):not([data-theme="dark"]) #tendersModule,
+html:not(.dark):not([data-theme="dark"]) #suppliersModule,
+html:not(.dark):not([data-theme="dark"]) #budgetModule,
+html:not(.dark):not([data-theme="dark"]) .events-index {
+  background:var(--bg-page)!important;
 }
 
 html:not(.dark):not([data-theme="dark"]) :is(
-  .card, .panel, .content-card, .dashboard-card, .section-card, .info-card,
-  .settings-card, .form-card, .tender-card, .supplier-card, .event-card,
-  .stat-card, .summary-card, .content-block, .widget, .cell, .grid-cell,
-  .list-item, .data-row, .detail-row, .info-row, .setting-row, .supplier-row,
-  .tender-row, .event-row, .form-section, .form-group-container, .form-panel,
-  fieldset, .table-container, .table-wrapper, .data-table-container, .table-card,
-  .public-card, .auth-card, .sp-tender-event-card
-) {
-  background-color: var(--bg-card);
-  border-color: var(--border-card);
-  box-shadow: var(--shadow-card);
+ .sp-panel,.metric,.events-index-card,.sp-tender-event-card,.tender,
+ .supplier-group,.supplier-profile,.supplier-layout main,.quote-card,
+ [class*="quote-card"],.tender-ref-fields,.modal-card,.public-card,.auth-card,
+ .event-card,.setup-card,.preview-panel,.tender-plan-link-card,.tender-ref-card
+){
+ background:var(--bg-card)!important;
+ border:1px solid var(--border-card)!important;
+ box-shadow:var(--shadow-card)!important;
 }
 
-html:not(.dark):not([data-theme="dark"]) :is(.table-container, .table-wrapper, .data-table-container, .table-card) :is(table, thead, tbody, tr, th, td) {
-  border-color: var(--border-card);
-}
+html:not(.dark):not([data-theme="dark"]) :is(
+ .sp-panel,.events-index-card,.sp-tender-event-card,.tender,.supplier-group,
+ .supplier-profile,.supplier-layout main,.quote-card,[class*="quote-card"],
+ .tender-ref-fields,.modal-card,.public-card,.auth-card,.event-card
+){color:#111827!important}
 
-html:not(.dark):not([data-theme="dark"]) :is(.table-container, .table-wrapper, .data-table-container, .table-card) :is(th, td) {
-  background-color: var(--bg-card);
-}
+html:not(.dark):not([data-theme="dark"]) :is(.muted,.sp-muted,.meta,.helper-text,.secondary-text){color:#6b7280!important}
 
-html:not(.dark):not([data-theme="dark"]) :is(.card, .panel, .content-card, .dashboard-card, .section-card, .info-card, .settings-card, .form-card, .tender-card, .supplier-card, .event-card, .content-block, .public-card, .auth-card, .sp-tender-event-card) {
-  color: #111827;
-}
-
-html:not(.dark):not([data-theme="dark"]) :is(.text-muted, .muted, .secondary-text, .description, .helper-text) {
-  color: #6b7280;
-}
-/* Header/nav, branded buttons, map, images and brand colours intentionally untouched. */
+/* Preserve header/nav, planner map, branded buttons, images and brand colours. */
 </style>
 </head>
 <body>
