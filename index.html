@@ -1778,6 +1778,37 @@ body:not(:has(#plannerModule:not(.hidden))) #dashboardModule .local-backup #impo
 #dashboardModule .sp-deadlines>div{
   border-bottom-color:#c9ccd7!important;
 }
+</style><style id="sp-v133-global-cells">
+/* Site-wide surface system: stronger borders + subtle translucent shading */
+:root{--sp-cell-border:#aeb3c3;--sp-cell-fill:rgba(255,255,255,.74);--sp-cell-soft:rgba(248,248,252,.78)}
+body:not(:has(#plannerModule:not(.hidden))) :is(
+ .metric,.sp-panel,.events-index-card,.sp-tender-event-card,.tender,.supplier-group,
+ .supplier-profile,.supplier-layout main,.modal-card,.empty-state,.field input,.field textarea,.field select,
+ .supplier-directory-tools input,.supplier-directory-tools select,.quote-card,[class*="quote-card"],
+ .tender-ref-fields,.tender-ref-upload,.quote-review-note,.public-check
+){
+ border-color:var(--sp-cell-border)!important;
+}
+body:not(:has(#plannerModule:not(.hidden))) :is(
+ .metric,.sp-panel,.events-index-card,.sp-tender-event-card,.tender,.supplier-group,
+ .supplier-profile,.supplier-layout main,.modal-card,.empty-state,.quote-card,[class*="quote-card"],
+ .tender-ref-fields
+){
+ background:var(--sp-cell-fill)!important;
+ box-shadow:0 2px 8px rgba(35,38,55,.035)!important;
+}
+body:not(:has(#plannerModule:not(.hidden))) :is(
+ .field input,.field textarea,.field select,.supplier-directory-tools input,.supplier-directory-tools select,
+ .public-check
+){background:var(--sp-cell-soft)!important}
+body:not(:has(#plannerModule:not(.hidden))) :is(
+ .metric,.sp-panel,.events-index-card,.sp-tender-event-card,.tender,.supplier-group,
+ .supplier-profile,.supplier-layout main,.modal-card,.empty-state,.quote-card,[class*="quote-card"],
+ .tender-ref-fields,.tender-ref-upload
+){border-width:1.5px!important}
+body:not(:has(#plannerModule:not(.hidden))) :is(
+ .event-card,.supplier-group-list .tender,.sp-deadlines>div,.tender-list>.tender
+){border-bottom-color:#c9ccd7!important}
 </style></head>
 <body>
 
