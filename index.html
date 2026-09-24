@@ -1750,6 +1750,18 @@ body:not(:has(#plannerModule:not(.hidden))) .cloud-state{display:none!important}
  body:not(:has(#plannerModule:not(.hidden))) header .sp-global-search{max-width:300px!important}
  body:not(:has(#plannerModule:not(.hidden))) header .cloud-account{gap:6px!important}
 }
+</style><style id="sp-v131-header-final">
+body:not(:has(#plannerModule:not(.hidden))) header{display:grid!important;grid-template-columns:minmax(220px,420px) minmax(0,1fr) auto!important;align-items:center!important;column-gap:14px!important;overflow:visible!important;padding:0 18px!important}
+body:not(:has(#plannerModule:not(.hidden))) header .sp-global-search{grid-column:1!important;width:100%!important;max-width:none!important;min-width:0!important}
+body:not(:has(#plannerModule:not(.hidden))) header .sp-header-spacer{display:block!important;grid-column:2!important;min-width:0!important}
+body:not(:has(#plannerModule:not(.hidden))) header .cloud-account{grid-column:3!important;margin:0!important;display:flex!important;align-items:center!important;gap:10px!important}
+body:not(:has(#plannerModule:not(.hidden))) header .top-actions{display:none!important}
+body:not(:has(#plannerModule:not(.hidden))) header .cloud-account .cloud-state{display:inline-flex!important;position:static!important;inset:auto!important;background:transparent!important;border:0!important;padding:0!important;color:#6045f3!important;font-size:10px!important;font-weight:900!important;letter-spacing:.08em!important;text-transform:uppercase!important}
+body:not(:has(#plannerModule:not(.hidden))) #cloudState{box-shadow:none!important}
+body:not(:has(#plannerModule:not(.hidden))) .local-backup{position:static!important;display:flex!important;justify-content:flex-end!important;gap:8px!important;margin:-2px 0 14px!important}
+body:not(:has(#plannerModule:not(.hidden))) #dashboardModule .local-backup #exportBackupBtn,
+body:not(:has(#plannerModule:not(.hidden))) #dashboardModule .local-backup #importBackupBtn{display:none!important}
+@media(max-width:900px){body:not(:has(#plannerModule:not(.hidden))) header{grid-template-columns:minmax(180px,1fr) auto!important}body:not(:has(#plannerModule:not(.hidden))) header .sp-header-spacer{display:none!important}body:not(:has(#plannerModule:not(.hidden))) header .cloud-account{grid-column:2!important}}
 </style></head>
 <body>
 
