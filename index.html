@@ -1771,58 +1771,59 @@ body:not(:has(#plannerModule:not(.hidden))) :is(.events-index-card,.sp-tender-ev
 @media(max-width:700px){#tendersModule .sp-tender-workspace-bar{align-items:stretch!important}.sp-new-tender-sticky{min-width:130px!important}}
 </style>
 
-<style id="sp-v143-two-tone-ui">
-/* V143 — two-tone app UI. Visual-only. */
+<style id="sp-v144-two-tone-force">
+/* V144 — strong two-tone manager surfaces. CSS only; functionality untouched. */
 :root{
- --sp-tone-page:#e9ebf0;
- --sp-tone-surface:#ffffff;
- --sp-tone-soft:#f6f7f9;
- --sp-tone-line:#d7dae1;
- --sp-tone-line-strong:#c7cbd4;
- --sp-tone-text:#1f2430;
- --sp-tone-muted:#6f7685;
- --sp-tone-shadow:0 2px 8px rgba(28,32,42,.055),0 1px 2px rgba(28,32,42,.035);
+ --ui-canvas:#dfe3e9;
+ --ui-card:#ffffff;
+ --ui-cell:#f1f3f6;
+ --ui-border:#c7cdd6;
+ --ui-ink:#1b2029;
+ --ui-muted:#687181;
+ --ui-shadow:0 2px 7px rgba(24,31,42,.09);
 }
-html body .app:not(.hidden),
-html body .app:not(.hidden) :is(#dashboardModule,#eventsModule,#tendersModule,#suppliersModule,#budgetModule):not(.hidden){
- background:var(--sp-tone-page)!important;
+html body .app,
+html body .app > .module:not(#plannerModule),
+html body .app > section.module:not(#plannerModule),
+html body .app :is(.dashboard,.events-index,.procure){
+ background-color:var(--ui-canvas)!important;
  background-image:none!important;
 }
-html body .app:not(.hidden) :is(#dashboardModule,#eventsModule,#tendersModule,#suppliersModule,#budgetModule) :is(
- .metric,.sp-panel,.events-index-grid,.sp-tender-event-grid,.tender-list,#supplierList,#budgetRows,
- .supplier-group,.supplier-profile,.supplier-layout main,.quote-card,[class*="quote-card"],.tender-ref-fields,.event-card
+html body .app :is(.dashboard-inner,.events-index-inner,.procure-inner){
+ background:transparent!important;
+}
+html body .app :is(
+ .sp-kpis .metric,.cards .metric,.sp-panel,.events-index-grid,.sp-tender-event-grid,
+ .tender-list,#supplierList,#budgetRows,.supplier-group,.supplier-profile,.supplier-layout main,
+ .quote-card,[class*="quote-card"],.tender-ref-fields,.event-card
 ){
- background:var(--sp-tone-surface)!important;
- border:1px solid var(--sp-tone-line)!important;
- box-shadow:var(--sp-tone-shadow)!important;
+ background:var(--ui-card)!important;
+ border:1px solid var(--ui-border)!important;
+ box-shadow:var(--ui-shadow)!important;
 }
-html body .app:not(.hidden) :is(#dashboardModule,#eventsModule,#tendersModule,#suppliersModule,#budgetModule) :is(
- .events-index-card,.sp-tender-event-card,.tender,.supplier-group-list .tender,.sp-deadlines>div
+html body .app :is(
+ .events-index-card,.sp-tender-event-card,.tender,.supplier-group-list .tender,
+ .sp-deadlines>div,.sp-panel .event-card
 ){
- background:var(--sp-tone-soft)!important;
- border-color:var(--sp-tone-line)!important;
+ background:var(--ui-cell)!important;
+ border-color:var(--ui-border)!important;
 }
-html body .app:not(.hidden) :is(#dashboardModule,#eventsModule,#tendersModule,#suppliersModule,#budgetModule) :is(
- .events-index-card,.sp-tender-event-card,.tender
-):hover{
- background:var(--sp-tone-surface)!important;
- border-color:var(--sp-tone-line-strong)!important;
- box-shadow:0 5px 16px rgba(28,32,42,.08)!important;
+html body .app :is(.events-index-card,.sp-tender-event-card,.tender):hover{
+ background:#fff!important;
+ border-color:#aeb6c2!important;
+ box-shadow:0 5px 14px rgba(24,31,42,.11)!important;
 }
-html body .app:not(.hidden) :is(#dashboardModule,#eventsModule,#tendersModule,#suppliersModule,#budgetModule) :is(
- .field input,.field textarea,.field select,.supplier-directory-tools input,.supplier-directory-tools select
-){
- background:var(--sp-tone-surface)!important;
- border:1px solid var(--sp-tone-line)!important;
- color:var(--sp-tone-text)!important;
- box-shadow:inset 0 1px 1px rgba(28,32,42,.02)!important;
+html body .app :is(.field input,.field textarea,.field select,.supplier-directory-tools input,.supplier-directory-tools select){
+ background:#fff!important;
+ border:1px solid var(--ui-border)!important;
+ color:var(--ui-ink)!important;
 }
-html body .app:not(.hidden) :is(#dashboardModule,#eventsModule,#tendersModule,#suppliersModule,#budgetModule) :is(
- .section-title,.meta,.muted,.helper-text,small
-){color:var(--sp-tone-muted)!important}
-html body .app:not(.hidden) :is(#dashboardModule,#eventsModule,#tendersModule,#suppliersModule,#budgetModule) :is(h1,h2,h3,strong,b){
- color:var(--sp-tone-text);
-}
+html body .app :is(.page-head h1,.sp-dash-title h1,h2,h3){color:var(--ui-ink)!important}
+html body .app :is(.page-head p,.sp-dash-title p,.meta,.muted,.section-title,small){color:var(--ui-muted)!important}
+/* Keep primary actions visually above neutral surfaces. */
+html body .app .btn.primary,
+html body .app .sp-new-tender-sticky{box-shadow:0 2px 5px rgba(68,49,180,.18)!important}
+/* One sync indicator only. */
 html body .cloud-connected,
 html body [class*="cloud-connected"],
 html body .sp-connection{display:none!important}
