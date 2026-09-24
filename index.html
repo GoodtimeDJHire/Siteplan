@@ -1771,59 +1771,56 @@ body:not(:has(#plannerModule:not(.hidden))) :is(.events-index-card,.sp-tender-ev
 @media(max-width:700px){#tendersModule .sp-tender-workspace-bar{align-items:stretch!important}.sp-new-tender-sticky{min-width:130px!important}}
 </style>
 
-<style id="sp-v144-two-tone-force">
-/* V144 — strong two-tone manager surfaces. CSS only; functionality untouched. */
+<style id="sp-v145-photo-match">
+/* V145 — match supplied dashboard photo: subtle warm-grey canvas, white/near-white cells. Visual only. */
 :root{
- --ui-canvas:#dfe3e9;
- --ui-card:#ffffff;
- --ui-cell:#f1f3f6;
- --ui-border:#c7cdd6;
- --ui-ink:#1b2029;
- --ui-muted:#687181;
- --ui-shadow:0 2px 7px rgba(24,31,42,.09);
+ --photo-page:#f3f3f1;
+ --photo-card:#f8f8f6;
+ --photo-cell:#f5f5f3;
+ --photo-line:#d7d8d5;
+ --photo-ink:#292d33;
+ --photo-muted:#777b80;
 }
 html body .app,
 html body .app > .module:not(#plannerModule),
-html body .app > section.module:not(#plannerModule),
 html body .app :is(.dashboard,.events-index,.procure){
- background-color:var(--ui-canvas)!important;
+ background:var(--photo-page)!important;
  background-image:none!important;
 }
-html body .app :is(.dashboard-inner,.events-index-inner,.procure-inner){
- background:transparent!important;
+html body .app :is(.dashboard-inner,.events-index-inner,.procure-inner){background:transparent!important}
+html body .app :is(
+ .sp-kpis .metric,.cards .metric,.sp-panel,.events-index-grid,.sp-tender-event-grid,.tender-list,
+ #supplierList,#budgetRows,.supplier-group,.supplier-profile,.supplier-layout main,.quote-card,
+ [class*="quote-card"],.tender-ref-fields,.event-card
+){
+ background:var(--photo-card)!important;
+ border:1px solid var(--photo-line)!important;
+ box-shadow:0 1px 3px rgba(20,24,30,.035)!important;
 }
 html body .app :is(
- .sp-kpis .metric,.cards .metric,.sp-panel,.events-index-grid,.sp-tender-event-grid,
- .tender-list,#supplierList,#budgetRows,.supplier-group,.supplier-profile,.supplier-layout main,
- .quote-card,[class*="quote-card"],.tender-ref-fields,.event-card
+ .events-index-card,.sp-tender-event-card,.tender,.sp-deadlines>div,.sp-panel .event-card
 ){
- background:var(--ui-card)!important;
- border:1px solid var(--ui-border)!important;
- box-shadow:var(--ui-shadow)!important;
-}
-html body .app :is(
- .events-index-card,.sp-tender-event-card,.tender,.supplier-group-list .tender,
- .sp-deadlines>div,.sp-panel .event-card
-){
- background:var(--ui-cell)!important;
- border-color:var(--ui-border)!important;
+ background:var(--photo-cell)!important;
+ border-color:var(--photo-line)!important;
+ box-shadow:none!important;
 }
 html body .app :is(.events-index-card,.sp-tender-event-card,.tender):hover{
  background:#fff!important;
- border-color:#aeb6c2!important;
- box-shadow:0 5px 14px rgba(24,31,42,.11)!important;
+ border-color:#c9cbc8!important;
+ box-shadow:0 2px 5px rgba(20,24,30,.05)!important;
 }
 html body .app :is(.field input,.field textarea,.field select,.supplier-directory-tools input,.supplier-directory-tools select){
- background:#fff!important;
- border:1px solid var(--ui-border)!important;
- color:var(--ui-ink)!important;
+ background:#fafaf8!important;
+ border:1px solid var(--photo-line)!important;
+ color:var(--photo-ink)!important;
+ box-shadow:none!important;
 }
-html body .app :is(.page-head h1,.sp-dash-title h1,h2,h3){color:var(--ui-ink)!important}
-html body .app :is(.page-head p,.sp-dash-title p,.meta,.muted,.section-title,small){color:var(--ui-muted)!important}
-/* Keep primary actions visually above neutral surfaces. */
+html body .app :is(.page-head h1,.sp-dash-title h1,h2,h3){color:var(--photo-ink)!important}
+html body .app :is(.page-head p,.sp-dash-title p,.meta,.muted,.section-title,small){color:var(--photo-muted)!important}
+/* Keep existing brand actions; photo uses restrained surfaces rather than heavy shadows. */
 html body .app .btn.primary,
-html body .app .sp-new-tender-sticky{box-shadow:0 2px 5px rgba(68,49,180,.18)!important}
-/* One sync indicator only. */
+html body .app .sp-new-tender-sticky{box-shadow:0 1px 3px rgba(65,45,180,.14)!important}
+/* Only the header cloud status. */
 html body .cloud-connected,
 html body [class*="cloud-connected"],
 html body .sp-connection{display:none!important}
