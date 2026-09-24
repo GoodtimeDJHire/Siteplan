@@ -1769,127 +1769,49 @@ body:not(:has(#plannerModule:not(.hidden))) :is(.events-index-card,.sp-tender-ev
 #tendersModule .sp-new-tender-sticky{display:inline-flex!important;align-items:center!important;justify-content:center!important;visibility:visible!important;opacity:1!important;background:#6045f3!important;color:#fff!important;border:1px solid #6045f3!important;min-height:40px!important;padding:0 16px!important;white-space:nowrap!important;position:relative!important;z-index:5!important}
 #tendersModule .sp-tender-head-actions #newTenderBtn{display:inline-flex!important}
 @media(max-width:700px){#tendersModule .sp-tender-workspace-bar{align-items:stretch!important}.sp-new-tender-sticky{min-width:130px!important}}
-</style><style id="sp-v138-app-background">
-/* App canvas: visible cool-grey backdrop so white cells/cards read as separate surfaces */
-body:not(:has(#plannerModule:not(.hidden))) .app{background:#eef0f5!important}
-body:not(:has(#plannerModule:not(.hidden))) :is(#dashboardModule,#eventsModule,#tendersModule,#suppliersModule,#budgetModule){
- background:rgba(238,240,245,.82)!important;
+</style>
+
+<style id="sp-v142-clean-surface-system">
+/* V142 — single authoritative non-planner surface system.
+   Visual-only: no layout, sizing, spacing, content or behaviour changes. */
+:root{
+ --sp-bg:#f3f4f6;
+ --sp-card:#ffffff;
+ --sp-line:#d1d5db;
+ --sp-line-strong:#c4c7d2;
+ --sp-surface-shadow:0 1px 3px rgba(0,0,0,.06),0 1px 2px rgba(0,0,0,.04);
 }
-body:not(:has(#plannerModule:not(.hidden))) :is(.metric,.sp-panel,.events-index-card,.sp-tender-event-card,.tender,.supplier-group,.supplier-profile,.supplier-layout main,.quote-card,[class*="quote-card"],.tender-ref-fields){
- background:rgba(255,255,255,.94)!important;
- border-color:#c9cdd8!important;
-}
-</style><style id="sp-v139-canvas-contrast-fix">
-/* Force the visible workspace canvas itself grey; cards stay white */
-html body .app:not(.hidden){background:#e9ebf1!important}
-html body .app:not(.hidden) #dashboardModule:not(.hidden),
-html body .app:not(.hidden) #eventsModule:not(.hidden),
-html body .app:not(.hidden) #tendersModule:not(.hidden),
-html body .app:not(.hidden) #suppliersModule:not(.hidden),
-html body .app:not(.hidden) #budgetModule:not(.hidden){
- background:#e9ebf1!important;
- background-image:linear-gradient(rgba(255,255,255,.18),rgba(255,255,255,.18))!important;
-}
-html body .app:not(.hidden) :is(
- #dashboardModule,#eventsModule,#tendersModule,#suppliersModule,#budgetModule
-) :is(.metric,.sp-panel,.events-index-grid,.sp-tender-event-grid,.sp-tender-event-card,.tender-list,.tender,.supplier-group,.supplier-profile,.supplier-layout main,.quote-card,[class*="quote-card"],.tender-ref-fields){
- background:#fff!important;
-}
-</style><style id="sp-v140-match-reference">
-/* Match the photographed UI: soft grey canvas + faint grey cells, not stark white */
-html body .app:not(.hidden){background:#f1f2f5!important}
-html body .app:not(.hidden) #dashboardModule:not(.hidden),
-html body .app:not(.hidden) #eventsModule:not(.hidden),
-html body .app:not(.hidden) #tendersModule:not(.hidden),
-html body .app:not(.hidden) #suppliersModule:not(.hidden),
-html body .app:not(.hidden) #budgetModule:not(.hidden){background:#f1f2f5!important;background-image:none!important}
-html body .app:not(.hidden) :is(#dashboardModule,#eventsModule,#tendersModule,#suppliersModule,#budgetModule) :is(
- .metric,.sp-panel,.events-index-grid,.sp-tender-event-grid,.sp-tender-event-card,.tender-list,.tender,
- .supplier-group,.supplier-profile,.supplier-layout main,.quote-card,[class*="quote-card"],.tender-ref-fields
-){
- background:rgba(247,248,250,.82)!important;
- border-color:#d5d8e0!important;
- box-shadow:none!important;
-}
-html body .app:not(.hidden) #eventsModule .events-index-card,
-html body .app:not(.hidden) #tendersModule .sp-tender-event-card{
- background:rgba(247,248,250,.72)!important;
- border-bottom-color:#d9dce3!important;
-}
-/* Only keep sync status in the top account/header area */
-html body .sp-connection{display:none!important}
-html body .cloud-state:not(#cloudState){display:none!important}
-html body header #cloudState{display:inline-flex!important}
-</style><style id="sp-v141-definitive-grey-canvas">
-/* Definitive non-planner canvas. Intentionally opaque so no parent/underlay can wash it out. */
-html body .app:not(.hidden),
-html body .app:not(.hidden) > #dashboardModule:not(.hidden),
-html body .app:not(.hidden) > #eventsModule:not(.hidden),
-html body .app:not(.hidden) > #tendersModule:not(.hidden),
-html body .app:not(.hidden) > #suppliersModule:not(.hidden),
-html body .app:not(.hidden) > #budgetModule:not(.hidden){
- background-color:#e6e8ed!important;
+html body .app:not(.hidden){background-color:var(--sp-bg)!important;background-image:none!important}
+html body .app:not(.hidden) :is(#dashboardModule,#eventsModule,#tendersModule,#suppliersModule,#budgetModule):not(.hidden){
+ background-color:var(--sp-bg)!important;
  background-image:none!important;
 }
 html body .app:not(.hidden) :is(#dashboardModule,#eventsModule,#tendersModule,#suppliersModule,#budgetModule) :is(
- .metric,.sp-panel,.events-index-grid,.sp-tender-event-grid,.sp-tender-event-card,.tender-list,.tender,
- .supplier-group,.supplier-profile,.supplier-layout main,.quote-card,[class*="quote-card"],.tender-ref-fields
+ .metric,.sp-panel,.events-index-grid,.events-index-card,.sp-tender-event-grid,.sp-tender-event-card,
+ .tender-list,.tender,.supplier-group,.supplier-profile,.supplier-layout main,.quote-card,[class*="quote-card"],
+ .tender-ref-fields,.event-card
 ){
- background:#f7f8fa!important;
- border-color:#cdd1da!important;
+ background-color:var(--sp-card)!important;
+ border-color:var(--sp-line)!important;
+ box-shadow:var(--sp-surface-shadow)!important;
+ opacity:1!important;
 }
-/* Never render a second floating cloud badge. Header #cloudState is the only sync indicator. */
+html body .app:not(.hidden) :is(#dashboardModule,#eventsModule,#tendersModule,#suppliersModule,#budgetModule) :is(
+ .field input,.field textarea,.field select,.supplier-directory-tools input,.supplier-directory-tools select
+){
+ background-color:var(--sp-card)!important;
+ border-color:var(--sp-line)!important;
+}
+html body .app:not(.hidden) #eventsModule .events-index-card,
+html body .app:not(.hidden) #tendersModule .sp-tender-event-card{
+ background-color:var(--sp-card)!important;
+ border-color:var(--sp-line)!important;
+}
+/* One sync indicator only: the header copy. */
 html body .cloud-connected,
 html body [class*="cloud-connected"],
 html body .sp-connection{display:none!important}
-</style>
-<style>
-/* SITEPLANNZ SOFT GREY SURFACE OVERRIDE — 2026-09-24 */
-:root {
-  --bg-page:#f3f4f6;
-  --bg-card:#ffffff;
-  --border-card:#e5e7eb;
-  --shadow-card:0 1px 3px rgba(0,0,0,.06),0 1px 2px rgba(0,0,0,.04);
-  --sp-bg:var(--bg-page);
-  --sp-card:var(--bg-card);
-  --sp-line:var(--border-card);
-}
-
-/* Exact current SitePlan app surfaces. Visual properties only. */
-html:not(.dark):not([data-theme="dark"]) body,
-html:not(.dark):not([data-theme="dark"]) #app,
-html:not(.dark):not([data-theme="dark"]) .workspace,
-html:not(.dark):not([data-theme="dark"]) .dashboard,
-html:not(.dark):not([data-theme="dark"]) .procure,
-html:not(.dark):not([data-theme="dark"]) #dashboardModule,
-html:not(.dark):not([data-theme="dark"]) #eventsModule,
-html:not(.dark):not([data-theme="dark"]) #tendersModule,
-html:not(.dark):not([data-theme="dark"]) #suppliersModule,
-html:not(.dark):not([data-theme="dark"]) #budgetModule,
-html:not(.dark):not([data-theme="dark"]) .events-index {
-  background:var(--bg-page)!important;
-}
-
-html:not(.dark):not([data-theme="dark"]) :is(
- .sp-panel,.metric,.events-index-card,.sp-tender-event-card,.tender,
- .supplier-group,.supplier-profile,.supplier-layout main,.quote-card,
- [class*="quote-card"],.tender-ref-fields,.modal-card,.public-card,.auth-card,
- .event-card,.setup-card,.preview-panel,.tender-plan-link-card,.tender-ref-card
-){
- background:var(--bg-card)!important;
- border:1px solid var(--border-card)!important;
- box-shadow:var(--shadow-card)!important;
-}
-
-html:not(.dark):not([data-theme="dark"]) :is(
- .sp-panel,.events-index-card,.sp-tender-event-card,.tender,.supplier-group,
- .supplier-profile,.supplier-layout main,.quote-card,[class*="quote-card"],
- .tender-ref-fields,.modal-card,.public-card,.auth-card,.event-card
-){color:#111827!important}
-
-html:not(.dark):not([data-theme="dark"]) :is(.muted,.sp-muted,.meta,.helper-text,.secondary-text){color:#6b7280!important}
-
-/* Preserve header/nav, planner map, branded buttons, images and brand colours. */
+html body header #cloudState{display:inline-flex!important}
 </style>
 </head>
 <body>
@@ -4274,41 +4196,6 @@ document.addEventListener('DOMContentLoaded',()=>{
  new MutationObserver(cleanTenderHeader).observe(document.getElementById('tendersModule'),{childList:true,subtree:true});
 });
 </script>
-<style id="sp-final-surface-override">
-/* VFINAL-20260924 SURFACE OVERRIDE — must remain last */
-:root{--bg-page:#f3f4f6;--bg-card:#fff;--border-card:#d1d5db;--shadow-card:0 1px 3px rgba(0,0,0,.06),0 1px 2px rgba(0,0,0,.04)}
 
-/* This block is intentionally LAST so legacy versioned CSS cannot paint over it. */
-html:not(.dark):not([data-theme="dark"]) body:has(#app:not(.hidden)) :is(#dashboardModule,#eventsModule,#tendersModule,#suppliersModule,#budgetModule):not(.hidden){
- background-color:var(--bg-page)!important;
- background-image:none!important;
-}
-html:not(.dark):not([data-theme="dark"]) body:has(#app:not(.hidden)) :is(.dashboard,.procure,.events-index){
- background-color:var(--bg-page)!important;
- background-image:none!important;
-}
-html:not(.dark):not([data-theme="dark"]) body:has(#app:not(.hidden)) :is(
- .metric,.sp-panel,.events-index-card,.sp-tender-event-card,.tender,.supplier-group,.supplier-profile,
- .supplier-layout main,.quote-card,[class*="quote-card"],.tender-ref-fields,.modal-card,.public-card,.auth-card,
- .event-card,.setup-card,.preview-panel,.tender-plan-link-card,.tender-ref-card
-){
- background-color:var(--bg-card)!important;
- border-color:var(--border-card)!important;
- box-shadow:var(--shadow-card)!important;
-}
-html:not(.dark):not([data-theme="dark"]) body:has(#app:not(.hidden)) :is(
- .events-index-grid,.sp-tender-event-grid,.tender-list,#supplierList,#budgetRows
-){
- background-color:transparent!important;
- border-color:var(--border-card)!important;
- box-shadow:none!important;
-}
-html:not(.dark):not([data-theme="dark"]) body:has(#app:not(.hidden)) #eventsModule .events-index-card,
-html:not(.dark):not([data-theme="dark"]) body:has(#app:not(.hidden)) #tendersModule .sp-tender-event-card{
- background-color:var(--bg-card)!important;
- border-color:var(--border-card)!important;
- box-shadow:var(--shadow-card)!important;
-}
-</style>
 </body>
 </html>
