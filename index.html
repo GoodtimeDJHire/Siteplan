@@ -1795,6 +1795,31 @@ html body .app:not(.hidden) :is(
 ) :is(.metric,.sp-panel,.events-index-grid,.sp-tender-event-grid,.sp-tender-event-card,.tender-list,.tender,.supplier-group,.supplier-profile,.supplier-layout main,.quote-card,[class*="quote-card"],.tender-ref-fields){
  background:#fff!important;
 }
+</style><style id="sp-v140-match-reference">
+/* Match the photographed UI: soft grey canvas + faint grey cells, not stark white */
+html body .app:not(.hidden){background:#f1f2f5!important}
+html body .app:not(.hidden) #dashboardModule:not(.hidden),
+html body .app:not(.hidden) #eventsModule:not(.hidden),
+html body .app:not(.hidden) #tendersModule:not(.hidden),
+html body .app:not(.hidden) #suppliersModule:not(.hidden),
+html body .app:not(.hidden) #budgetModule:not(.hidden){background:#f1f2f5!important;background-image:none!important}
+html body .app:not(.hidden) :is(#dashboardModule,#eventsModule,#tendersModule,#suppliersModule,#budgetModule) :is(
+ .metric,.sp-panel,.events-index-grid,.sp-tender-event-grid,.sp-tender-event-card,.tender-list,.tender,
+ .supplier-group,.supplier-profile,.supplier-layout main,.quote-card,[class*="quote-card"],.tender-ref-fields
+){
+ background:rgba(247,248,250,.82)!important;
+ border-color:#d5d8e0!important;
+ box-shadow:none!important;
+}
+html body .app:not(.hidden) #eventsModule .events-index-card,
+html body .app:not(.hidden) #tendersModule .sp-tender-event-card{
+ background:rgba(247,248,250,.72)!important;
+ border-bottom-color:#d9dce3!important;
+}
+/* Only keep sync status in the top account/header area */
+html body .sp-connection{display:none!important}
+html body .cloud-state:not(#cloudState){display:none!important}
+html body header #cloudState{display:inline-flex!important}
 </style></head>
 <body>
 
