@@ -4273,5 +4273,42 @@ document.addEventListener('DOMContentLoaded',()=>{
  cleanTenderHeader();
  new MutationObserver(cleanTenderHeader).observe(document.getElementById('tendersModule'),{childList:true,subtree:true});
 });
-</script></body>
+</script>
+<style id="sp-final-surface-override">
+/* VFINAL-20260924 SURFACE OVERRIDE — must remain last */
+:root{--bg-page:#f3f4f6;--bg-card:#fff;--border-card:#d1d5db;--shadow-card:0 1px 3px rgba(0,0,0,.06),0 1px 2px rgba(0,0,0,.04)}
+
+/* This block is intentionally LAST so legacy versioned CSS cannot paint over it. */
+html:not(.dark):not([data-theme="dark"]) body:has(#app:not(.hidden)) :is(#dashboardModule,#eventsModule,#tendersModule,#suppliersModule,#budgetModule):not(.hidden){
+ background-color:var(--bg-page)!important;
+ background-image:none!important;
+}
+html:not(.dark):not([data-theme="dark"]) body:has(#app:not(.hidden)) :is(.dashboard,.procure,.events-index){
+ background-color:var(--bg-page)!important;
+ background-image:none!important;
+}
+html:not(.dark):not([data-theme="dark"]) body:has(#app:not(.hidden)) :is(
+ .metric,.sp-panel,.events-index-card,.sp-tender-event-card,.tender,.supplier-group,.supplier-profile,
+ .supplier-layout main,.quote-card,[class*="quote-card"],.tender-ref-fields,.modal-card,.public-card,.auth-card,
+ .event-card,.setup-card,.preview-panel,.tender-plan-link-card,.tender-ref-card
+){
+ background-color:var(--bg-card)!important;
+ border-color:var(--border-card)!important;
+ box-shadow:var(--shadow-card)!important;
+}
+html:not(.dark):not([data-theme="dark"]) body:has(#app:not(.hidden)) :is(
+ .events-index-grid,.sp-tender-event-grid,.tender-list,#supplierList,#budgetRows
+){
+ background-color:transparent!important;
+ border-color:var(--border-card)!important;
+ box-shadow:none!important;
+}
+html:not(.dark):not([data-theme="dark"]) body:has(#app:not(.hidden)) #eventsModule .events-index-card,
+html:not(.dark):not([data-theme="dark"]) body:has(#app:not(.hidden)) #tendersModule .sp-tender-event-card{
+ background-color:var(--bg-card)!important;
+ border-color:var(--border-card)!important;
+ box-shadow:var(--shadow-card)!important;
+}
+</style>
+</body>
 </html>
