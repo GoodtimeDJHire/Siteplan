@@ -1904,93 +1904,48 @@ body,#app,.sp-app-shell,.sp-main,#dashboardModule,#eventsModule,#tendersModule,#
 </style>
 
 <style id="sp-ui-rebuild-20260925">
-/* 2026-09-25 — full structural visual reset. Visual only: no JS/data/layout logic changed. */
-:root{
- --ui-bg:#eef1f5;--ui-surface:#ffffff;--ui-surface-2:#f7f8fa;
- --ui-border:#c9ced7;--ui-border-strong:#aeb5c1;
- --ui-text:#191c24;--ui-muted:#69707e;
- --ui-purple:#6547f5;--ui-purple-hover:#5639e8;--ui-purple-soft:#eeeaff;
- --ui-danger:#b4232a;--ui-danger-bg:#fff3f3;
- --ui-shadow:0 2px 5px rgba(16,24,40,.06);--ui-shadow-up:0 7px 18px rgba(16,24,40,.10);
-}
+/* SitePlanNZ dashboard redesign — visual only */
+:root{--ui-bg:#e8ebf0;--ui-panel:#fff;--ui-panel-soft:#f5f6f8;--ui-line:#c7ccd5;--ui-line-dark:#aeb5c0;--ui-text:#171a22;--ui-muted:#697180;--ui-purple:#6246f5;--ui-purple-dark:#5136df;--ui-purple-soft:#ece9ff;--ui-red:#b4232a;--ui-shadow:0 4px 12px rgba(18,25,38,.07)}
 html,body,.app{background:var(--ui-bg)!important;color:var(--ui-text)!important}
-header{background:#fff!important;border-bottom:1px solid var(--ui-border)!important;box-shadow:0 1px 3px rgba(16,24,40,.04)!important}
-.sp-app-nav{background:#fff!important;border-right:1px solid var(--ui-border)!important}
+header{background:#fff!important;border-bottom:1px solid var(--ui-line)!important;box-shadow:0 1px 4px rgba(18,25,38,.05)!important}
+.sp-app-nav{background:#fff!important;border-right:1px solid var(--ui-line)!important}
+.sp-app-nav .nav-tab{margin:1px 0!important;border:1px solid transparent!important}
+.sp-app-nav .nav-tab.active{background:var(--ui-purple-soft)!important;color:var(--ui-purple)!important;border-color:#ddd7ff!important}
 #dashboardModule,#eventsModule,#tendersModule,#suppliersModule,#budgetModule{background:var(--ui-bg)!important}
-.dashboard-inner,.procure-inner{background:transparent!important}
-
-/* Every major content cell gets the same visible white surface */
-#dashboardModule .metric,#dashboardModule .event-card,#dashboardModule .dashboard-empty,
-#eventsModule .events-index-card,
-#tendersModule .tender-list,#tendersModule .tender,
-#suppliersModule #supplierList,#suppliersModule .supplier-profile,#suppliersModule .supplier-group,
-#budgetModule #budgetRows,#budgetModule .budget-card,
-#tenderHistoryByEvent,.modal-card{
- background:var(--ui-surface)!important;
- border:1px solid var(--ui-border)!important;
- box-shadow:var(--ui-shadow)!important;
-}
-#dashboardModule .metric,#dashboardModule .event-card,#dashboardModule .dashboard-empty,
-#eventsModule .events-index-card,#tendersModule .tender-list,
-#suppliersModule #supplierList,#suppliersModule .supplier-profile,
-#budgetModule #budgetRows,#tenderHistoryByEvent{border-radius:14px!important}
-
-/* Inner rows remain visually distinct instead of disappearing into white */
-#tendersModule .tender,#supplierList>* ,#budgetRows>* ,#tenderHistoryByEvent>*{
- border-color:var(--ui-border)!important;
-}
-#tendersModule .tender:hover,#supplierList>*:hover,#budgetRows>*:hover{
- background:var(--ui-surface-2)!important;
-}
-
-/* Buttons: clear hierarchy and physical separation */
-.btn,.tool,.events-index-open,.supplier-subtab{
- border:1px solid var(--ui-border-strong)!important;
- background:#fff!important;color:#4c5360!important;
- box-shadow:0 1px 2px rgba(16,24,40,.04)!important;
- font-weight:800!important;
-}
-.btn:hover,.tool:hover,.events-index-open:hover{background:#f5f6f8!important;border-color:#9199a6!important}
-.btn.primary,.top-actions .btn.primary,#dashboardModule .event-actions .btn.primary{
- background:var(--ui-purple)!important;border-color:var(--ui-purple)!important;color:#fff!important;
- box-shadow:0 2px 5px rgba(101,71,245,.22)!important;
-}
-.btn.primary:hover,.top-actions .btn.primary:hover{background:var(--ui-purple-hover)!important}
-.btn.danger,#dashboardModule .dashboard-delete-event{
- background:var(--ui-danger-bg)!important;border-color:#e6aeb2!important;color:var(--ui-danger)!important;
-}
-
-/* Inputs/searches should read as controls, not blank space */
-input,select,textarea,.icon-search-wrap,.supplier-directory-tools input,.supplier-directory-tools select{
- background:#fff!important;border-color:var(--ui-border)!important;color:var(--ui-text)!important;
-}
-input:focus,select:focus,textarea:focus{border-color:#8d7cf7!important;box-shadow:0 0 0 3px rgba(101,71,245,.10)!important}
-
-/* Planner: grey workspace with contained white tool panels */
+#dashboardModule{padding:34px 38px!important}
+#dashboardModule .dashboard-inner{max-width:1180px!important;margin:0 auto!important}
+#dashboardModule .page-head{margin-bottom:26px!important}
+#dashboardModule .page-head h1:before{font-size:30px!important}
+#dashboardModule .page-head p:after{font-size:13px!important;color:var(--ui-muted)!important}
+#dashboardModule .cards{gap:14px!important;margin-bottom:16px!important}
+#dashboardModule .metric{background:#fff!important;border:1px solid var(--ui-line)!important;border-radius:14px!important;min-height:98px!important;padding:20px!important;box-shadow:var(--ui-shadow)!important}
+#dashboardModule .metric b,#dashboardModule .metric:first-child b{font-size:29px!important;color:var(--ui-text)!important}
+#dashboardModule .metric span{font-size:10px!important;color:var(--ui-muted)!important}
+#dashboardModule .event-grid{gap:14px!important}
+#dashboardModule .event-card{background:#fff!important;border:1px solid var(--ui-line)!important;border-radius:12px!important;box-shadow:var(--ui-shadow)!important;grid-template-columns:minmax(0,1fr)!important;min-height:0!important;overflow:visible!important}
+#dashboardModule .event-thumb{display:none!important}
+#dashboardModule .event-body{padding:16px 17px!important}
+#dashboardModule .event-body h3{font-size:14px!important;margin-bottom:8px!important;color:var(--ui-text)!important}
+#dashboardModule .event-meta{font-size:11px!important;color:var(--ui-muted)!important;min-height:0!important;margin-bottom:13px!important}
+#dashboardModule .event-actions{display:flex!important;grid-template-columns:none!important;gap:7px!important;margin-top:0!important;flex-wrap:wrap!important}
+#dashboardModule .event-actions .btn{width:auto!important;min-width:76px!important;min-height:34px!important;padding:7px 12px!important;border-radius:8px!important;background:#fff!important;border:1px solid var(--ui-line-dark)!important;color:#4f5663!important;box-shadow:0 1px 2px rgba(18,25,38,.05)!important}
+#dashboardModule .event-actions .btn.primary{background:var(--ui-purple)!important;border-color:var(--ui-purple)!important;color:#fff!important}
+#dashboardModule .event-actions .btn.primary:hover{background:var(--ui-purple-dark)!important}
+#dashboardModule .event-actions .btn.danger{background:#fff5f5!important;border-color:#e7b4b8!important;color:var(--ui-red)!important}
+#dashboardModule .dashboard-empty{background:#fff!important;border:1px solid var(--ui-line)!important;border-radius:14px!important}
+#dashboardModule .sp-dashboard-main,#dashboardModule .sp-dashboard-side,#dashboardModule .dashboard-panel{background:#fff!important;border:1px solid var(--ui-line)!important;border-radius:14px!important;box-shadow:var(--ui-shadow)!important}
+#dashboardModule [class*="progress"],#dashboardModule [class*="deadline"]{border-color:var(--ui-line)!important}
+.btn,.tool,.events-index-open{border:1px solid var(--ui-line-dark)!important;background:#fff!important;color:#4e5562!important;box-shadow:0 1px 2px rgba(18,25,38,.05)!important}
+.btn.primary,.top-actions .btn.primary{background:var(--ui-purple)!important;border-color:var(--ui-purple)!important;color:#fff!important}
+#eventsModule .events-index-card,#tendersModule .tender-list,#suppliersModule #supplierList,#budgetModule #budgetRows,#tenderHistoryByEvent{background:#fff!important;border:1px solid var(--ui-line)!important;border-radius:14px!important;box-shadow:var(--ui-shadow)!important}
 #plannerModule{background:var(--ui-bg)!important}
-#plannerModule .sidebar,#plannerModule .inspector{
- background:#fff!important;border:1px solid var(--ui-border)!important;
- box-shadow:var(--ui-shadow-up)!important;
-}
-#plannerModule .object-btn,#plannerModule .tool{
- background:#fff!important;border:1px solid var(--ui-border)!important;
-}
-#plannerModule .object-btn:hover{background:#f8f7ff!important;border-color:#9b8cf8!important}
+#plannerModule .sidebar,#plannerModule .inspector{background:#fff!important;border:1px solid var(--ui-line)!important;box-shadow:var(--ui-shadow)!important}
+#plannerModule .object-btn,#plannerModule .tool{background:#fff!important;border:1px solid var(--ui-line)!important}
 #plannerModule .object-btn .ico{background:var(--ui-purple-soft)!important;color:var(--ui-purple)!important}
-#plannerModule .draw-options{
- display:block!important;background:#f5f6f9!important;border:1px solid var(--ui-border)!important;
- border-radius:12px!important;padding:12px!important;
-}
-#plannerModule .map-wrap{border:1px solid var(--ui-border-strong)!important;box-shadow:var(--ui-shadow-up)!important}
-#plannerModule .planner-map-search{background:#fff!important;border:1px solid var(--ui-border-strong)!important;box-shadow:var(--ui-shadow-up)!important}
-
-/* Text hierarchy */
+#plannerModule .draw-options{display:block!important;background:var(--ui-panel-soft)!important;border:1px solid var(--ui-line)!important;border-radius:12px!important}
+#plannerModule .map-wrap,#plannerModule .planner-map-search{border:1px solid var(--ui-line-dark)!important;box-shadow:var(--ui-shadow)!important}
 .page-head h1,.event-body h3,.events-index-body h3,.tender h3{color:var(--ui-text)!important}
 .page-head p,.event-meta,.events-index-body .meta,.tender small{color:var(--ui-muted)!important}
-.section-title{color:#555d6a!important;font-weight:900!important}
-
-/* nav selected state */
-.sp-app-nav .nav-tab.active{background:var(--ui-purple-soft)!important;color:var(--ui-purple)!important}
 </style>
 </head>
 <body>
