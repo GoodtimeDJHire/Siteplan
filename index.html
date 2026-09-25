@@ -3893,9 +3893,27 @@ newEvent=async function(){
 byId('newEventBtn').onclick=newEvent;
 
 deleteEvent=async function(id){
- if(!confirm('Delete this event, its tenders and saved plan?'))return;
- if(siteplanCloudUser){const{error}=await siteplanCloud.from('events').delete().eq('id',id);if(error){toast(error.message);return}}
- events=events.filter(e=>e.id!==id);tenders=tenders.filter(t=>t.eventId!==id);if(currentEventId===id)currentEventId=events[0]?.id||'';localStorage.setItem('siteplan_current_event_id',currentEventId);localStorage.setItem('siteplan_events',JSON.stringify(events));localStorage.setItem('siteplan_tenders',JSON.stringify(tenders));renderEvents();renderTenders();
+ const evt=events.find(e=>String(e.id)===String(id));
+ if(!evt)return;
+ if(!confirm('Permanently delete "'+(evt.name||'this event')+'"? This will remove its saved map and attached tenders. This cannot be undone.'))return;
+ if(siteplanCloudUser){
+   // Delete child tenders first so event deletion works even when the DB foreign key is restrictive.
+   const childIds=tenders.filter(t=>String(t.eventId)===String(id)).map(t=>t.id).filter(Boolean);
+   for(const tenderId of childIds){
+     const {error:tenderError}=await siteplanCloud.from('tenders').delete().eq('id',tenderId);
+     if(tenderError){toast('Could not delete event: '+tenderError.message);return}
+   }
+   const {error}=await siteplanCloud.from('events').delete().eq('id',id);
+   if(error){toast('Could not delete event: '+error.message);return}
+ }
+ events=events.filter(e=>String(e.id)!==String(id));
+ tenders=tenders.filter(t=>String(t.eventId)!==String(id));
+ if(String(currentEventId)===String(id))currentEventId=events[0]?.id||'';
+ localStorage.setItem('siteplan_current_event_id',currentEventId);
+ localStorage.setItem('siteplan_events',JSON.stringify(events));
+ localStorage.setItem('siteplan_tenders',JSON.stringify(tenders));
+ renderEvents();renderTenders();renderBudget();
+ toast('Event permanently deleted');
 };
 toggleArchiveEvent=async function(id){const e=events.find(x=>x.id===id);if(!e)return;e.archived=!e.archived;if(siteplanCloudUser)await siteplanCloud.from('events').update({archived:e.archived}).eq('id',id);saveEvents();toast(e.archived?'Event archived':'Event restored')};
 
