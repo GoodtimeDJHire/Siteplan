@@ -1873,6 +1873,15 @@ html body header #cloudState{display:inline-flex!important}
 #dashboardModule .event-actions .btn{display:inline-flex!important;visibility:visible!important;opacity:1!important;width:100%!important;min-width:0!important;align-items:center!important;justify-content:center!important}
 #dashboardModule .dashboard-delete-event{display:inline-flex!important;visibility:visible!important;opacity:1!important;background:#fff1f2!important;border:1px solid #fecaca!important;color:#b42318!important;font-weight:900!important}
 </style>
+
+<style id="sp-planner-location-search">
+#plannerModule{position:relative!important}
+#plannerModule .planner-map-search{position:absolute!important;top:14px!important;left:calc(64px + 330px + 28px)!important;z-index:50!important;width:330px!important;min-height:44px!important;display:flex!important;align-items:center!important;background:#fff!important;border:1px solid #d8dbe5!important;border-radius:12px!important;box-shadow:0 3px 14px rgba(20,24,35,.12)!important;padding:0 10px 0 34px!important;box-sizing:border-box!important}
+#plannerModule .planner-map-search-label{position:absolute!important;left:12px!important;color:#667085!important;font-size:18px!important;pointer-events:none!important}
+#plannerModule #plannerPlaceHost{display:block!important;width:100%!important;min-width:0!important}
+#plannerModule #plannerPlaceHost gmp-place-autocomplete{display:block!important;width:100%!important;min-height:40px!important;--gmpx-color-surface:#fff;--gmpx-color-on-surface:#171923;--gmpx-color-on-surface-variant:#667085;--gmpx-color-outline:transparent}
+@media(max-width:1100px){#plannerModule .planner-map-search{left:90px!important;width:280px!important}}
+</style>
 </head>
 <body>
 
@@ -2002,7 +2011,7 @@ html body header #cloudState{display:inline-flex!important}
 
   <section class="module events-index hidden" id="eventsModule"><div class="events-index-inner"><div class="page-head"><div><h1>Event Maps</h1><p>Choose an event map to open and edit.</p></div><button class="btn primary" id="eventsNewEventBtn">+ New Event Map</button></div><div class="events-index-grid" id="eventsIndexGrid"></div></div></section>
 
-  <div class="workspace module hidden" id="plannerModule"><div class="planner-tools-rail"><button class="planner-rail-btn active" type="button"><span>↖</span><b>Objects</b></button><button class="planner-rail-btn" type="button" data-tool-target="zone"><span>⬡</span><b>Zones</b></button><button class="planner-rail-btn" type="button" data-tool-target="barrier"><span>╱</span><b>Barrier</b></button><button class="planner-rail-btn" type="button" data-tool-target="route"><span>➜</span><b>Route</b></button><div class="planner-rail-divider"></div><button class="planner-rail-btn planner-event-quick" type="button" onclick="openCurrentEventTenders()"><span>▤</span><b>Tenders</b></button><button class="planner-rail-btn planner-event-quick" type="button" onclick="openCurrentEventBudget()"><span>◫</span><b>Budget</b></button></div>
+  <div class="workspace module hidden" id="plannerModule"><div class="planner-map-search"><span class="planner-map-search-label">⌕</span><div class="place-host" id="plannerPlaceHost"></div></div><div class="planner-tools-rail"><button class="planner-rail-btn active" type="button"><span>↖</span><b>Objects</b></button><button class="planner-rail-btn" type="button" data-tool-target="zone"><span>⬡</span><b>Zones</b></button><button class="planner-rail-btn" type="button" data-tool-target="barrier"><span>╱</span><b>Barrier</b></button><button class="planner-rail-btn" type="button" data-tool-target="route"><span>➜</span><b>Route</b></button><div class="planner-rail-divider"></div><button class="planner-rail-btn planner-event-quick" type="button" onclick="openCurrentEventTenders()"><span>▤</span><b>Tenders</b></button><button class="planner-rail-btn planner-event-quick" type="button" onclick="openCurrentEventBudget()"><span>◫</span><b>Budget</b></button></div>
     <aside class="sidebar" id="sidebar">
       <div class="section-title">Add to map</div>
       <div class="icon-search-wrap">
@@ -2651,28 +2660,30 @@ function initApp(){
 }
 
 function setupPlaces(){
-  const host=byId('placeHost');
-  if(!host)return;
+  const hosts=[byId('placeHost'),byId('plannerPlaceHost')].filter(Boolean);
+  if(!hosts.length)return;
 
-  host.innerHTML='';
+  hosts.forEach(host=>{
+    host.innerHTML='';
+    const ac=new PlaceAutocompleteElement({});
+    ac.placeholder='Search venue or address…';
+    ac.style.width='100%';
+    ac.style.display='block';
+    host.appendChild(ac);
 
-  const ac=new PlaceAutocompleteElement({});
-  ac.placeholder='Search venue or address…';
-  ac.style.width='100%';
-  ac.style.display='block';
-  host.appendChild(ac);
-
-  ac.addEventListener('gmp-select',async ({placePrediction})=>{
-    const place=placePrediction.toPlace();
-    await place.fetchFields({fields:['displayName','formattedAddress','location','viewport']});
-    if(place.viewport){
-      map.fitBounds(place.viewport);
-    }else if(place.location){
-      map.setCenter(place.location);
-      map.setZoom(19);
-    }
-    map.setMapTypeId('satellite');
-    toast(place.displayName||'Location loaded');
+    ac.addEventListener('gmp-select',async ({placePrediction})=>{
+      const place=placePrediction.toPlace();
+      await place.fetchFields({fields:['displayName','formattedAddress','location','viewport']});
+      if(place.viewport){
+        map.fitBounds(place.viewport);
+      }else if(place.location){
+        map.setCenter(place.location);
+        map.setZoom(19);
+      }
+      map.setMapTypeId('satellite');
+      autoSave();
+      toast(place.displayName||'Location loaded');
+    });
   });
 }
 
