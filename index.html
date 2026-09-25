@@ -1904,30 +1904,93 @@ body,#app,.sp-app-shell,.sp-main,#dashboardModule,#eventsModule,#tendersModule,#
 </style>
 
 <style id="sp-ui-rebuild-20260925">
-/* Definitive surface rebuild — deliberately targets the actual V96/V97 DOM */
-:root{--ui-canvas:#eceef3;--ui-card:#fff;--ui-border:#b9bec9;--ui-border-soft:#c9cdd5;--ui-text:#1b1d25;--ui-muted:#6f7480;--ui-purple:#684cf4;--ui-purple-soft:#ece9ff}
-html,body,#app,.app{background:var(--ui-canvas)!important}
-#dashboardModule,#eventsModule,#tendersModule,#suppliersModule,#budgetModule{background:var(--ui-canvas)!important}
-#dashboardModule .dashboard-inner,#eventsModule .procure-inner,#tendersModule .procure-inner,#suppliersModule .procure-inner,#budgetModule .procure-inner{background:transparent!important}
-/* dashboard cells */
-#dashboardModule .metric,#dashboardModule .event-card,#dashboardModule .dashboard-empty{background:var(--ui-card)!important;border:1px solid var(--ui-border)!important;box-shadow:0 2px 5px rgba(20,24,35,.07)!important}
-#dashboardModule .metric{border-radius:13px!important}
-#dashboardModule .event-card{border-radius:12px!important}
-#dashboardModule .event-card:hover{border-color:#989fac!important;box-shadow:0 5px 12px rgba(20,24,35,.10)!important}
-/* dashboard buttons */
-#dashboardModule .event-actions .btn,#dashboardModule .local-backup .btn{background:#fff!important;border:1px solid var(--ui-border-soft)!important;color:#505561!important;box-shadow:0 1px 2px rgba(20,24,35,.04)!important}
-#dashboardModule .event-actions .btn.primary,#dashboardModule .local-backup .btn.primary{background:var(--ui-purple)!important;border-color:var(--ui-purple)!important;color:#fff!important}
-#dashboardModule .event-actions .btn.danger{background:#fff5f5!important;border-color:#efb9bd!important;color:#b4232a!important}
-/* event maps */
-#eventsModule .events-index-card{background:#fff!important;border:1px solid var(--ui-border)!important;box-shadow:0 2px 5px rgba(20,24,35,.07)!important}
-#eventsModule .events-index-open{background:#fff!important;border:1px solid var(--ui-border-soft)!important;color:var(--ui-purple)!important}
-/* procurement/supplier/budget cells */
-#tendersModule .tender-list,#suppliersModule #supplierList,#budgetModule #budgetRows,#tenderHistoryByEvent{background:#fff!important;border:1px solid var(--ui-border)!important;box-shadow:0 2px 5px rgba(20,24,35,.06)!important}
-#tendersModule .tender,#supplierList>* ,#budgetRows>* ,#tenderHistoryByEvent>*{border-color:var(--ui-border-soft)!important}
-#tendersModule .btn,#suppliersModule .btn,#budgetModule .btn{border-color:var(--ui-border-soft)!important}
-/* sidebar/nav separation */
-.sp-app-nav{background:#fff!important;border-right:1px solid var(--ui-border-soft)!important}
-header{background:#fff!important;border-bottom:1px solid var(--ui-border-soft)!important}
+/* 2026-09-25 — full structural visual reset. Visual only: no JS/data/layout logic changed. */
+:root{
+ --ui-bg:#eef1f5;--ui-surface:#ffffff;--ui-surface-2:#f7f8fa;
+ --ui-border:#c9ced7;--ui-border-strong:#aeb5c1;
+ --ui-text:#191c24;--ui-muted:#69707e;
+ --ui-purple:#6547f5;--ui-purple-hover:#5639e8;--ui-purple-soft:#eeeaff;
+ --ui-danger:#b4232a;--ui-danger-bg:#fff3f3;
+ --ui-shadow:0 2px 5px rgba(16,24,40,.06);--ui-shadow-up:0 7px 18px rgba(16,24,40,.10);
+}
+html,body,.app{background:var(--ui-bg)!important;color:var(--ui-text)!important}
+header{background:#fff!important;border-bottom:1px solid var(--ui-border)!important;box-shadow:0 1px 3px rgba(16,24,40,.04)!important}
+.sp-app-nav{background:#fff!important;border-right:1px solid var(--ui-border)!important}
+#dashboardModule,#eventsModule,#tendersModule,#suppliersModule,#budgetModule{background:var(--ui-bg)!important}
+.dashboard-inner,.procure-inner{background:transparent!important}
+
+/* Every major content cell gets the same visible white surface */
+#dashboardModule .metric,#dashboardModule .event-card,#dashboardModule .dashboard-empty,
+#eventsModule .events-index-card,
+#tendersModule .tender-list,#tendersModule .tender,
+#suppliersModule #supplierList,#suppliersModule .supplier-profile,#suppliersModule .supplier-group,
+#budgetModule #budgetRows,#budgetModule .budget-card,
+#tenderHistoryByEvent,.modal-card{
+ background:var(--ui-surface)!important;
+ border:1px solid var(--ui-border)!important;
+ box-shadow:var(--ui-shadow)!important;
+}
+#dashboardModule .metric,#dashboardModule .event-card,#dashboardModule .dashboard-empty,
+#eventsModule .events-index-card,#tendersModule .tender-list,
+#suppliersModule #supplierList,#suppliersModule .supplier-profile,
+#budgetModule #budgetRows,#tenderHistoryByEvent{border-radius:14px!important}
+
+/* Inner rows remain visually distinct instead of disappearing into white */
+#tendersModule .tender,#supplierList>* ,#budgetRows>* ,#tenderHistoryByEvent>*{
+ border-color:var(--ui-border)!important;
+}
+#tendersModule .tender:hover,#supplierList>*:hover,#budgetRows>*:hover{
+ background:var(--ui-surface-2)!important;
+}
+
+/* Buttons: clear hierarchy and physical separation */
+.btn,.tool,.events-index-open,.supplier-subtab{
+ border:1px solid var(--ui-border-strong)!important;
+ background:#fff!important;color:#4c5360!important;
+ box-shadow:0 1px 2px rgba(16,24,40,.04)!important;
+ font-weight:800!important;
+}
+.btn:hover,.tool:hover,.events-index-open:hover{background:#f5f6f8!important;border-color:#9199a6!important}
+.btn.primary,.top-actions .btn.primary,#dashboardModule .event-actions .btn.primary{
+ background:var(--ui-purple)!important;border-color:var(--ui-purple)!important;color:#fff!important;
+ box-shadow:0 2px 5px rgba(101,71,245,.22)!important;
+}
+.btn.primary:hover,.top-actions .btn.primary:hover{background:var(--ui-purple-hover)!important}
+.btn.danger,#dashboardModule .dashboard-delete-event{
+ background:var(--ui-danger-bg)!important;border-color:#e6aeb2!important;color:var(--ui-danger)!important;
+}
+
+/* Inputs/searches should read as controls, not blank space */
+input,select,textarea,.icon-search-wrap,.supplier-directory-tools input,.supplier-directory-tools select{
+ background:#fff!important;border-color:var(--ui-border)!important;color:var(--ui-text)!important;
+}
+input:focus,select:focus,textarea:focus{border-color:#8d7cf7!important;box-shadow:0 0 0 3px rgba(101,71,245,.10)!important}
+
+/* Planner: grey workspace with contained white tool panels */
+#plannerModule{background:var(--ui-bg)!important}
+#plannerModule .sidebar,#plannerModule .inspector{
+ background:#fff!important;border:1px solid var(--ui-border)!important;
+ box-shadow:var(--ui-shadow-up)!important;
+}
+#plannerModule .object-btn,#plannerModule .tool{
+ background:#fff!important;border:1px solid var(--ui-border)!important;
+}
+#plannerModule .object-btn:hover{background:#f8f7ff!important;border-color:#9b8cf8!important}
+#plannerModule .object-btn .ico{background:var(--ui-purple-soft)!important;color:var(--ui-purple)!important}
+#plannerModule .draw-options{
+ display:block!important;background:#f5f6f9!important;border:1px solid var(--ui-border)!important;
+ border-radius:12px!important;padding:12px!important;
+}
+#plannerModule .map-wrap{border:1px solid var(--ui-border-strong)!important;box-shadow:var(--ui-shadow-up)!important}
+#plannerModule .planner-map-search{background:#fff!important;border:1px solid var(--ui-border-strong)!important;box-shadow:var(--ui-shadow-up)!important}
+
+/* Text hierarchy */
+.page-head h1,.event-body h3,.events-index-body h3,.tender h3{color:var(--ui-text)!important}
+.page-head p,.event-meta,.events-index-body .meta,.tender small{color:var(--ui-muted)!important}
+.section-title{color:#555d6a!important;font-weight:900!important}
+
+/* nav selected state */
+.sp-app-nav .nav-tab.active{background:var(--ui-purple-soft)!important;color:var(--ui-purple)!important}
 </style>
 </head>
 <body>
