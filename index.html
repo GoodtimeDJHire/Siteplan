@@ -1942,6 +1942,23 @@ header{background:#fff!important;border-bottom:1px solid var(--m-line)!important
 #eventsModule .events-index-card,#tendersModule .tender-list,#suppliersModule #supplierList,#budgetModule #budgetRows,#tenderHistoryByEvent{background:#fff!important;border:1px solid var(--m-line)!important;border-radius:11px!important;box-shadow:var(--m-shadow)!important}
 #plannerModule .object-btn,#plannerModule .tool{background:#fff!important;border:1px solid var(--m-line)!important}#plannerModule .object-btn .ico{background:var(--m-soft)!important;color:var(--m-purple)!important}
 @media(max-width:1000px){.sp-dash-grid{grid-template-columns:1fr!important}.sp-dash-side{grid-template-columns:1fr 1fr!important}.sp-dash-lower{grid-template-columns:1fr!important}.sp-kpis{grid-template-columns:repeat(2,1fr)!important}}
+</style><style id="sp-approved-mockup-final">
+/* Exact approved dashboard composition — final cascade */
+body:not(:has(#plannerModule:not(.hidden))) .app{grid-template-columns:200px minmax(0,1fr)!important}
+body:not(:has(#plannerModule:not(.hidden))) .sp-app-nav{width:auto!important;padding:20px 12px!important}
+body:not(:has(#plannerModule:not(.hidden))) header{grid-column:2!important;padding:0 24px!important}
+#dashboardModule{padding:30px 42px 42px!important;background:linear-gradient(135deg,#f4f7fa,#e9eff6)!important}
+#dashboardModule .dashboard-inner{max-width:1260px!important}
+.sp-kpis .metric{border:1px solid #cbd4df!important;box-shadow:0 4px 12px rgba(31,45,65,.08)!important}
+.sp-panel{border:1px solid #cbd4df!important;box-shadow:0 4px 12px rgba(31,45,65,.08)!important}
+#dashboardModule .event-card{border:1px solid #cbd4df!important;background:#fff!important}
+#dashboardModule .event-body{min-height:118px!important;grid-template-columns:minmax(0,1fr) 160px!important;padding:15px 16px!important}
+#dashboardModule .event-body h3{font-size:15px!important}
+#dashboardModule .event-meta{font-size:11px!important;align-self:start!important}
+#dashboardModule .event-actions{grid-template-columns:1fr!important}
+#dashboardModule .event-actions .btn{height:28px!important}
+.sp-dash-lower{display:grid!important}
+@media(min-width:1200px){.sp-dash-grid{grid-template-columns:minmax(0,1.55fr) 390px!important}.sp-dash-lower{grid-template-columns:repeat(3,minmax(0,1fr))!important}}
 </style>
 </head>
 <body>
