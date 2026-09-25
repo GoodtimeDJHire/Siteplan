@@ -3832,6 +3832,8 @@ async function cloudLoadAll(){
    localStorage.setItem('siteplan_events',JSON.stringify(events));
    localStorage.setItem('siteplan_suppliers',JSON.stringify(suppliers));
    localStorage.setItem('siteplan_tenders',JSON.stringify(tenders));
+   const syncedEvent=activeEvent();
+   if(syncedEvent?.plan){loadPlanData(syncedEvent.plan);byId('eventName').value=syncedEvent.name||syncedEvent.plan.eventName||'Untitled Event';eventBudget=Number(syncedEvent.budget||0)}
    renderEvents();renderSuppliers();renderTenders();renderBudget();
    cloudStatus('Cloud synced',true);
  }catch(e){console.error(e);cloudStatus('Sync error');toast('Cloud sync failed: '+e.message)}
