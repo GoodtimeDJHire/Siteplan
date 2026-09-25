@@ -3866,6 +3866,8 @@ async function cloudMigrateBrowserData(){
 
 function queueCloudEventSave(){
  if(!siteplanCloudUser)return;
+ // Do not let stale planner/localStorage state overwrite cloud event metadata while the dashboard is syncing.
+ if(cloudLoading)return;
  clearTimeout(cloudSaveTimer);
  cloudSaveTimer=setTimeout(async()=>{
    const e=activeEvent();if(!e)return;
