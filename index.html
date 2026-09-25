@@ -1960,7 +1960,18 @@ body:not(:has(#plannerModule:not(.hidden))) header{grid-column:2!important;paddi
 .sp-dash-lower{display:grid!important}
 @media(min-width:1200px){.sp-dash-grid{grid-template-columns:minmax(0,1.55fr) 390px!important}.sp-dash-lower{grid-template-columns:repeat(3,minmax(0,1fr))!important}}
 </style>
-</head>
+<style id="sp-event-card-correction">
+/* Correct Recent Events cards: full-width rows, not squeezed side-by-side tiles */
+#dashboardModule .sp-events-panel .event-grid{display:flex!important;flex-direction:column!important;gap:10px!important;width:100%!important}
+#dashboardModule .sp-events-panel .event-card{display:block!important;width:100%!important;min-width:0!important;min-height:96px!important}
+#dashboardModule .sp-events-panel .event-body{display:grid!important;grid-template-columns:minmax(0,1fr) 132px!important;grid-template-rows:auto auto!important;column-gap:18px!important;row-gap:8px!important;align-items:center!important;padding:16px 18px!important;min-height:96px!important}
+#dashboardModule .sp-events-panel .event-body h3{grid-column:1!important;grid-row:1!important;white-space:normal!important;word-break:normal!important;overflow-wrap:normal!important;font-size:14px!important;line-height:1.25!important}
+#dashboardModule .sp-events-panel .event-meta{grid-column:1!important;grid-row:2!important;white-space:normal!important;font-size:10px!important}
+#dashboardModule .sp-events-panel .event-actions{grid-column:2!important;grid-row:1/3!important;display:grid!important;grid-template-columns:1fr 1fr!important;gap:6px!important;width:132px!important;align-self:center!important}
+#dashboardModule .sp-events-panel .event-actions .btn{width:63px!important;min-width:0!important;height:30px!important;padding:0 5px!important;font-size:9px!important;white-space:nowrap!important}
+#dashboardModule .sp-events-panel .event-actions .btn.danger{font-size:8px!important}
+@media(max-width:760px){#dashboardModule .sp-events-panel .event-body{grid-template-columns:1fr!important}#dashboardModule .sp-events-panel .event-actions{grid-column:1!important;grid-row:3!important;width:100%!important;grid-template-columns:repeat(2,1fr)!important}#dashboardModule .sp-events-panel .event-actions .btn{width:100%!important}}
+</style></head>
 <body>
 
 <section class="marketing-home" id="marketingHome">
