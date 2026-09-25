@@ -1882,6 +1882,10 @@ html body header #cloudState{display:inline-flex!important}
 #plannerModule #plannerPlaceHost gmp-place-autocomplete{display:block!important;width:100%!important;min-height:40px!important;--gmpx-color-surface:#fff;--gmpx-color-on-surface:#171923;--gmpx-color-on-surface-variant:#667085;--gmpx-color-outline:transparent}
 @media(max-width:1100px){#plannerModule .planner-map-search{left:90px!important;width:280px!important}}
 </style>
+
+<style id="sp-marquee-tool-force-visible">
+#objectGrid .object-btn[data-search*="marquee"]{display:flex!important;visibility:visible!important;opacity:1!important;order:-999!important}
+</style>
 </head>
 <body>
 
@@ -2084,7 +2088,7 @@ html body header #cloudState{display:inline-flex!important}
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 const OBJECT_TYPES = [
-  ['stage','▰','Stage','#ef4444'],['dj','DJ','DJ Booth','#111827'],['foh','FOH','FOH','#111827'],['speaker','◖','Speaker','#dc2626'],
+  ['stage','▰','Stage','#ef4444'],['marquee','__TENT__','Marquee','#64748b'],['dj','DJ','DJ Booth','#111827'],['foh','FOH','FOH','#111827'],['speaker','◖','Speaker','#dc2626'],
   ['sub','▣','Subwoofer','#dc2626'],['delay','DLY','Delay Speaker','#dc2626'],['screen','SCR','Video Screen','#8b5cf6'],['ledwall','LED','LED Wall','#8b5cf6'],
   ['lightingtower','LT','Lighting Tower','#eab308'],['followspot','FS','Follow Spot','#eab308'],['camera','CAM','Camera / Media','#111827'],['broadcast','OB','Broadcast / OB','#111827'],
 
@@ -2092,7 +2096,7 @@ const OBJECT_TYPES = [
   ['hospitality','HOS','Hospitality','#f59e0b'],['greenroom','GR','Green Room','#8b5cf6'],['dressing','DR','Dressing Room','#8b5cf6'],
 
   ['toilet','🚻','Toilets','#2563eb'],['accessible','♿','Accessible WC','#0ea5e9'],['water','💧','Water','#0ea5e9'],['bin','BIN','Waste / Bin','#22c55e'],
-  ['power','PWR','Power Point','#eab308'],['generator','⚡','Generator','#eab308'],['fuel','FUEL','Fuel Store','#f97316'],['marquee','__TENT__','Marquee','#64748b'],
+  ['power','PWR','Power Point','#eab308'],['generator','⚡','Generator','#eab308'],['fuel','FUEL','Fuel Store','#f97316'],
 
   ['security','S','Security','#7c3aed'],['firstaid','✚','First Aid','#ef4444'],['ambulance','AMB','Ambulance','#ef4444'],['fire','🧯','Fire Point','#ef4444'],
   ['eventcontrol','EC','Event Control','#7c3aed'],['lostchild','LC','Lost Child Point','#f59e0b'],['assembly','ASM','Assembly Point','#22c55e'],
