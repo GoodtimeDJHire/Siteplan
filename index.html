@@ -1886,6 +1886,14 @@ html body header #cloudState{display:inline-flex!important}
 <style id="sp-marquee-tool-force-visible">
 #objectGrid .object-btn[data-search*="marquee"]{display:flex!important;visibility:visible!important;opacity:1!important;order:-999!important}
 </style>
+
+<style id="sp-dashboard-contrast-fix">
+/* Restore clear two-tone app surfaces without changing layout */
+#dashboardModule,#eventsModule,#tendersModule,#suppliersModule,#budgetModule{background:#f3f4f6!important}
+#dashboardModule .event-card,#dashboardModule .dash-card,#dashboardModule .dashboard-card,#eventsModule .events-index-card,#tendersModule .tender-card,#suppliersModule .supplier-card,#budgetModule .budget-card{background:#fff!important;border-color:#cbd0da!important;box-shadow:0 1px 3px rgba(16,24,40,.08)!important}
+#dashboardModule .event-card,#eventsModule .events-index-card{border:1.5px solid #c5cad4!important}
+#dashboardModule .event-actions .btn,#eventsModule .events-index-open{border-color:#c5cad4!important}
+</style>
 </head>
 <body>
 
