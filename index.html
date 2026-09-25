@@ -2018,6 +2018,12 @@ html body header #cloudState{display:inline-flex!important}
   <span class="icon-search-symbol">⌕</span>
   <input id="iconSearch" class="icon-search" type="search" placeholder="Search map icons…" autocomplete="off" />
 </div>
+      <div class="draw-options">
+        <div class="section-title">Drawing colour</div>
+        <div class="colour-palette" id="colourPalette"></div>
+        <div class="draw-help">Areas finish at 50% transparency. Select an existing zone, route or barrier and click a colour above to recolour it.</div>
+        <div class="draw-actions"><button class="tool" id="finishDraw">✓ Finish</button><button class="tool" id="cancelDraw">× Cancel</button></div>
+      </div>
 <div class="object-grid" id="objectGrid"></div>
       <div class="section-title">Draw</div>
       <div class="tool-list">
@@ -2025,12 +2031,7 @@ html body header #cloudState{display:inline-flex!important}
         <button class="tool" data-tool="barrier">╱ Barrier / Fence</button>
         <button class="tool" data-tool="route">➜ Route / Flow</button>
       </div>
-      <div class="draw-options">
-        <div class="section-title">Drawing colour</div>
-        <div class="colour-palette" id="colourPalette"></div>
-        <div class="draw-help">Areas finish at 50% transparency. Select an existing zone, route or barrier and click a colour above to recolour it.</div>
-        <div class="draw-actions"><button class="tool" id="finishDraw">✓ Finish</button><button class="tool" id="cancelDraw">× Cancel</button></div>
-      </div>
+
     </aside>
 
     <main class="map-wrap">
