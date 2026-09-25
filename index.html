@@ -1902,6 +1902,33 @@ body,#app,.sp-app-shell,.sp-main,#dashboardModule,#eventsModule,#tendersModule,#
 #dashboardModule .stat-card,#dashboardModule .event-card,#dashboardModule .dash-card,#dashboardModule .dashboard-card,#dashboardModule .recent-events,#dashboardModule .progress-card,#dashboardModule .deadline-card,#dashboardModule [class*="metric-card"],#eventsModule .events-index-card,#tendersModule .tender-card,#suppliersModule .supplier-card,#budgetModule .budget-card{background:#fff!important;border:1.5px solid #b8bec9!important;box-shadow:0 2px 6px rgba(16,24,40,.09)!important}
 #dashboardModule .event-row,#dashboardModule .recent-event-row{border-color:#c4c9d2!important}
 </style>
+
+<style id="sp-ui-rebuild-20260925">
+/* Definitive surface rebuild — deliberately targets the actual V96/V97 DOM */
+:root{--ui-canvas:#eceef3;--ui-card:#fff;--ui-border:#b9bec9;--ui-border-soft:#c9cdd5;--ui-text:#1b1d25;--ui-muted:#6f7480;--ui-purple:#684cf4;--ui-purple-soft:#ece9ff}
+html,body,#app,.app{background:var(--ui-canvas)!important}
+#dashboardModule,#eventsModule,#tendersModule,#suppliersModule,#budgetModule{background:var(--ui-canvas)!important}
+#dashboardModule .dashboard-inner,#eventsModule .procure-inner,#tendersModule .procure-inner,#suppliersModule .procure-inner,#budgetModule .procure-inner{background:transparent!important}
+/* dashboard cells */
+#dashboardModule .metric,#dashboardModule .event-card,#dashboardModule .dashboard-empty{background:var(--ui-card)!important;border:1px solid var(--ui-border)!important;box-shadow:0 2px 5px rgba(20,24,35,.07)!important}
+#dashboardModule .metric{border-radius:13px!important}
+#dashboardModule .event-card{border-radius:12px!important}
+#dashboardModule .event-card:hover{border-color:#989fac!important;box-shadow:0 5px 12px rgba(20,24,35,.10)!important}
+/* dashboard buttons */
+#dashboardModule .event-actions .btn,#dashboardModule .local-backup .btn{background:#fff!important;border:1px solid var(--ui-border-soft)!important;color:#505561!important;box-shadow:0 1px 2px rgba(20,24,35,.04)!important}
+#dashboardModule .event-actions .btn.primary,#dashboardModule .local-backup .btn.primary{background:var(--ui-purple)!important;border-color:var(--ui-purple)!important;color:#fff!important}
+#dashboardModule .event-actions .btn.danger{background:#fff5f5!important;border-color:#efb9bd!important;color:#b4232a!important}
+/* event maps */
+#eventsModule .events-index-card{background:#fff!important;border:1px solid var(--ui-border)!important;box-shadow:0 2px 5px rgba(20,24,35,.07)!important}
+#eventsModule .events-index-open{background:#fff!important;border:1px solid var(--ui-border-soft)!important;color:var(--ui-purple)!important}
+/* procurement/supplier/budget cells */
+#tendersModule .tender-list,#suppliersModule #supplierList,#budgetModule #budgetRows,#tenderHistoryByEvent{background:#fff!important;border:1px solid var(--ui-border)!important;box-shadow:0 2px 5px rgba(20,24,35,.06)!important}
+#tendersModule .tender,#supplierList>* ,#budgetRows>* ,#tenderHistoryByEvent>*{border-color:var(--ui-border-soft)!important}
+#tendersModule .btn,#suppliersModule .btn,#budgetModule .btn{border-color:var(--ui-border-soft)!important}
+/* sidebar/nav separation */
+.sp-app-nav{background:#fff!important;border-right:1px solid var(--ui-border-soft)!important}
+header{background:#fff!important;border-bottom:1px solid var(--ui-border-soft)!important}
+</style>
 </head>
 <body>
 
