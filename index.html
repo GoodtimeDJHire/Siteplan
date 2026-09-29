@@ -4042,15 +4042,24 @@ async function cloudMigrateBrowserData(){
  toast('Browser data moved to SitePlan Cloud');
 }
 
-function queueCloudEventSave(){
- if(!siteplanCloudUser)return;
- // Do not let stale planner/localStorage state overwrite cloud event metadata while the dashboard is syncing.
- if(cloudLoading)return;
- clearTimeout(cloudSaveTimer);
- cloudSaveTimer=setTimeout(async()=>{
-   const e=activeEvent();if(!e)return;
-   const payload={name:e.name||'Untitled Event',venue:e.location||null,event_date:e.eventDate||null,archived:!!e.archived,plan_data:e.plan||{},budget_data:[{total:Number(e.budget)||0}]};
-   const {error}=await siteplanCloud.from('events').update(payload).eq('id',e.id);
+const cloudEventSaveTimers={};
+function queueCloudEventSave(eventId=currentEventId){
+ if(!siteplanCloudUser||cloudLoading||!eventId)return;
+ const e=events.find(x=>String(x.id)===String(eventId));if(!e)return;
+ const snapshot={
+   id:e.id,
+   name:e.name||'Untitled Event',
+   venue:e.location||null,
+   event_date:e.eventDate||null,
+   archived:!!e.archived,
+   plan_data:JSON.parse(JSON.stringify(e.plan||{})),
+   budget_data:[{total:Number(e.budget)||0}]
+ };
+ clearTimeout(cloudEventSaveTimers[eventId]);
+ cloudEventSaveTimers[eventId]=setTimeout(async()=>{
+   const {id,...payload}=snapshot;
+   const {error}=await siteplanCloud.from('events').update(payload).eq('id',id);
+   delete cloudEventSaveTimers[eventId];
    if(error){console.error(error);cloudStatus('Save error')}else cloudStatus('Saved',true);
  },450);
 }
