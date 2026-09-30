@@ -2991,17 +2991,43 @@ function addMarker(type,position,data={}){
 
 function setupIconSearch(){
   const input=byId('iconSearch');
-  if(!input)return;
+  const grid=byId('objectGrid');
+  if(!input||!grid)return;
+
+  const normalise=v=>String(v||'').toLowerCase().replace(/[^a-z0-9]+/g,' ').trim();
+  const aliases={
+    wc:'toilet toilets portable toilet accessible wc urinal',
+    loo:'toilet toilets portable toilet wc',
+    rubbish:'waste bin recycling skip dumpster',
+    trash:'waste bin recycling skip dumpster',
+    tent:'marquee',
+    fence:'crowd barrier heras fence gate',
+    audio:'speaker subwoofer delay sound desk',
+    sound:'speaker subwoofer delay sound desk dj booth',
+    medical:'first aid ambulance medic medical post',
+    entrance:'entry pedestrian vehicle gate',
+    carpark:'parking accessible parking staff parking',
+    drinks:'bar beer cocktail water coffee',
+    foodtruck:'food vendor catering'
+  };
 
   const apply=()=>{
-    const q=input.value.trim().toLowerCase();
-    document.querySelectorAll('#objectGrid .object-btn').forEach(btn=>{
-      const hay=(btn.dataset.search||btn.textContent||'').toLowerCase();
-      btn.classList.toggle('icon-search-hidden',!!q && !hay.includes(q));
+    const raw=normalise(input.value);
+    const terms=raw.split(/\s+/).filter(Boolean);
+    grid.querySelectorAll('.object-btn').forEach(btn=>{
+      let hay=normalise((btn.dataset.search||'')+' '+(btn.textContent||''));
+      for(const [key,value] of Object.entries(aliases)){
+        if(hay.includes(key)||normalise(value).split(' ').some(x=>x&&hay.includes(x))) hay+=' '+key+' '+value;
+      }
+      const match=!terms.length||terms.every(term=>hay.includes(term));
+      btn.classList.toggle('icon-search-hidden',!match);
+      btn.style.setProperty('display',match?'flex':'none','important');
     });
   };
 
   input.addEventListener('input',apply);
+  input.addEventListener('search',apply);
+  input.addEventListener('keyup',apply);
   input.addEventListener('keydown',e=>{
     if(e.key==='Escape'){
       input.value='';
@@ -3009,6 +3035,7 @@ function setupIconSearch(){
       input.blur();
     }
   });
+  apply();
 }
 
 function buildColourPalette(){
