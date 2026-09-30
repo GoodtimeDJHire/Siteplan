@@ -2065,6 +2065,10 @@ body{background:#f3f5f8!important;color:#182230!important}
 .readonly-builder-stats .stat b{color:#6045f3!important}
 #quoteModalContent:has(.readonly-builder-shell){background:#fff!important;border:1px solid #d7dee8!important}
 @media(max-width:900px){.readonly-builder-head{padding:14px 16px!important}.readonly-builder-head-actions{width:auto!important}}
+</style><style id="sp-dashboard-view-all-links">
+.sp-panel-head .sp-view-all{appearance:none;border:0;background:transparent;padding:4px 0;margin:0;color:#6045f3;font:inherit;font-size:11px;font-weight:850;cursor:pointer;white-space:nowrap}
+.sp-panel-head .sp-view-all:hover{text-decoration:underline;color:#4d32e6}
+.sp-panel-head .sp-view-all:focus-visible{outline:2px solid #6045f3;outline-offset:3px;border-radius:3px}
 </style></head>
 <body>
 
@@ -2184,16 +2188,16 @@ body{background:#f3f5f8!important;color:#182230!important}
  <div class="metric"><i>◷</i><div><b id="dashSupplierCount">0</b><span>Suppliers</span></div></div>
 </div>
 <div class="sp-dash-grid">
- <section class="sp-panel sp-events-panel"><div class="sp-panel-head"><h2>Recent Events</h2><span>View all →</span></div><div class="event-grid" id="eventGrid"></div></section>
+ <section class="sp-panel sp-events-panel"><div class="sp-panel-head"><h2>Recent Events</h2><button class="sp-view-all" type="button" onclick="switchModule('events')">View all →</button></div><div class="event-grid" id="eventGrid"></div></section>
  <div class="sp-dash-side">
-  <section class="sp-panel"><div class="sp-panel-head"><h2>Event Progress</h2><span>View all →</span></div><div class="sp-progress"><div class="sp-donut"><strong id="spProgressTotal">0</strong><small>Events</small></div><div class="sp-legend"><div><i class="p1"></i>Planning <b id="spPlanning">0</b></div><div><i class="p2"></i>Tenders <b id="spTenderEvents">0</b></div><div><i class="p3"></i>Confirmed <b id="spConfirmed">0</b></div><div><i class="p4"></i>Completed <b id="spCompleted">0</b></div></div></div></section>
-  <section class="sp-panel"><div class="sp-panel-head"><h2>Upcoming Deadlines</h2><span>View all →</span></div><div id="spDeadlines" class="sp-deadlines"><div><i>▣</i><p><b>Open tender activity</b><small>Review current event tenders</small></p><em>Open</em></div><div><i>◇</i><p><b>Supplier quotes</b><small>Check incoming submissions</small></p><em>View</em></div><div><i>✓</i><p><b>Finalise site plans</b><small>Keep event plans current</small></p><em>Plan</em></div></div></section>
+  <section class="sp-panel"><div class="sp-panel-head"><h2>Event Progress</h2><button class="sp-view-all" type="button" onclick="switchModule('events')">View all →</button></div><div class="sp-progress"><div class="sp-donut"><strong id="spProgressTotal">0</strong><small>Events</small></div><div class="sp-legend"><div><i class="p1"></i>Planning <b id="spPlanning">0</b></div><div><i class="p2"></i>Tenders <b id="spTenderEvents">0</b></div><div><i class="p3"></i>Confirmed <b id="spConfirmed">0</b></div><div><i class="p4"></i>Completed <b id="spCompleted">0</b></div></div></div></section>
+  <section class="sp-panel"><div class="sp-panel-head"><h2>Upcoming Deadlines</h2><button class="sp-view-all" type="button" onclick="switchModule('tenders')">View all →</button></div><div id="spDeadlines" class="sp-deadlines"><div><i>▣</i><p><b>Open tender activity</b><small>Review current event tenders</small></p><em>Open</em></div><div><i>◇</i><p><b>Supplier quotes</b><small>Check incoming submissions</small></p><em>View</em></div><div><i>✓</i><p><b>Finalise site plans</b><small>Keep event plans current</small></p><em>Plan</em></div></div></section>
  </div>
 </div>
 <div class="sp-dash-lower">
- <section class="sp-panel"><div class="sp-panel-head"><h2>Recent Tenders</h2><span>View all →</span></div><div class="sp-mini-list" id="spRecentTenders"></div></section>
- <section class="sp-panel"><div class="sp-panel-head"><h2>Recent Supplier Quotes</h2><span>View all →</span></div><div class="sp-mini-list" id="spRecentQuotes"></div></section>
- <section class="sp-panel"><div class="sp-panel-head"><h2>Budget Overview</h2><span>View all →</span></div><div class="sp-budget-overview"><div><b>Site Infrastructure</b><span><i style="width:80%"></i></span><em>80%</em></div><div><b>Waste Management</b><span><i style="width:60%"></i></span><em>60%</em></div><div><b>Security</b><span><i style="width:40%"></i></span><em>40%</em></div><div><b>Other</b><span><i style="width:30%"></i></span><em>30%</em></div></div></section>
+ <section class="sp-panel"><div class="sp-panel-head"><h2>Recent Tenders</h2><button class="sp-view-all" type="button" onclick="switchModule('tenders')">View all →</button></div><div class="sp-mini-list" id="spRecentTenders"></div></section>
+ <section class="sp-panel"><div class="sp-panel-head"><h2>Recent Supplier Quotes</h2><button class="sp-view-all" type="button" onclick="switchModule('tenders')">View all →</button></div><div class="sp-mini-list" id="spRecentQuotes"></div></section>
+ <section class="sp-panel"><div class="sp-panel-head"><h2>Budget Overview</h2><button class="sp-view-all" type="button" onclick="switchModule('budget')">View all →</button></div><div class="sp-budget-overview"><div><b>Site Infrastructure</b><span><i style="width:80%"></i></span><em>80%</em></div><div><b>Waste Management</b><span><i style="width:60%"></i></span><em>60%</em></div><div><b>Security</b><span><i style="width:40%"></i></span><em>40%</em></div><div><b>Other</b><span><i style="width:30%"></i></span><em>30%</em></div></div></section>
 </div>
 </div></section>
 
