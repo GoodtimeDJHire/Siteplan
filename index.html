@@ -2853,7 +2853,7 @@ function initApp(){
     clearSelection();
   });
   map.addListener('zoom_changed',()=>requestAnimationFrame(refreshGroundMarkerSizes));
-  restorePlan(); refreshGroundMarkerSizes(); updateStats(); resetHistory(); renderEvents(); switchModule('dashboard');
+  restorePlan(); refreshGroundMarkerSizes(); updateStats(); resetHistory(); renderEvents(); switchModule('dashboard','replace');
 }
 
 function setupPlaces(){
@@ -3542,7 +3542,30 @@ function renderEventsIndex(){const grid=byId('eventsIndexGrid');if(!grid)return;
 function openEventFromIndex(id){openEvent(id)}
 function openCurrentEventTenders(){if(!currentEventId){toast('Choose an event map first');switchModule('events');return}tenderEventOpen=true;byId('tenderEventIndex')?.classList.add('hidden');byId('tenderEventWorkspace')?.classList.remove('hidden');const ev=activeEvent();if(byId('tenderWorkspaceTitle'))byId('tenderWorkspaceTitle').textContent=ev?.name||'Event';switchModule('tenders');renderTenders()}
 function openCurrentEventBudget(){if(!currentEventId){toast('Choose an event map first');switchModule('events');return}switchModule('budget');renderBudget()}
-function switchModule(name){document.querySelectorAll('.module').forEach(x=>x.classList.add('hidden'));byId(name+'Module').classList.remove('hidden');byId('newEventBtn').onclick=newEvent;byId('eventsNewEventBtn').onclick=newEvent;document.querySelectorAll('.nav-tab').forEach(x=>x.classList.toggle('active',x.dataset.module===name));document.querySelector('.search-wrap').style.display=name==='planner'?'flex':'none';byId('eventName').style.display=name==='planner'?'':'none';byId('saveBtn').style.display=name==='planner'?'':'none';byId('clearBtn').style.display=name==='planner'?'':'none';byId('printBtn').style.display=name==='planner'?'':'none';if(name==='dashboard')renderEvents();if(name==='events')renderEventsIndex();if(name==='tenders')renderTenders();if(name==='budget')renderBudget()}
+function switchModule(name,historyMode='push'){
+  const target=byId(name+'Module');if(!target)return;
+  document.querySelectorAll('.module').forEach(x=>x.classList.add('hidden'));target.classList.remove('hidden');
+  byId('newEventBtn').onclick=newEvent;byId('eventsNewEventBtn').onclick=newEvent;
+  document.querySelectorAll('.nav-tab').forEach(x=>x.classList.toggle('active',x.dataset.module===name));
+  document.querySelector('.search-wrap').style.display=name==='planner'?'flex':'none';
+  byId('eventName').style.display=name==='planner'?'':'none';byId('saveBtn').style.display=name==='planner'?'':'none';byId('clearBtn').style.display=name==='planner'?'':'none';byId('printBtn').style.display=name==='planner'?'':'none';
+  if(name==='dashboard')renderEvents();if(name==='events')renderEventsIndex();if(name==='tenders')renderTenders();if(name==='budget')renderBudget();
+  const state={siteplan:true,module:name,eventId:name==='planner'?currentEventId:null};
+  const url=new URL(location.href);url.searchParams.set('view',name);
+  if(name==='planner'&&currentEventId)url.searchParams.set('event',currentEventId);else url.searchParams.delete('event');
+  if(historyMode==='replace')history.replaceState(state,'',url);else if(historyMode!=='none'){const cur=history.state;if(!cur||cur.module!==name||cur.eventId!==state.eventId)history.pushState(state,'',url);}
+}
+window.addEventListener('popstate',e=>{
+  const state=e.state;
+  const params=new URL(location.href).searchParams;
+  const name=state?.siteplan?state.module:(params.get('view')||'dashboard');
+  const eventId=state?.eventId||params.get('event');
+  if(name==='planner'&&eventId&&events.some(ev=>String(ev.id)===String(eventId))){
+    currentEventId=eventId;localStorage.setItem('siteplan_current_event_id',eventId);
+    const ev=activeEvent();loadPlanData(ev?.plan);byId('eventName').value=ev?.name||'Untitled Event';eventBudget=Number(ev?.budget||0);renderTenders();renderBudget();resetHistory();
+  }
+  switchModule(name,'none');
+});
 function addReqRow(name='',qty='',unit=''){const d=document.createElement('div');d.className='req-row';d.innerHTML=`<input class="rname" placeholder="Requirement" value="${name}"><input class="rqty" placeholder="Qty" value="${qty}"><input class="runit" placeholder="Unit" value="${unit}"><button class="btn danger" type="button">×</button>`;d.querySelector('button').onclick=()=>d.remove();byId('reqRows').appendChild(d)}
 function openTender(){
  editingTenderId='';
