@@ -2103,6 +2103,42 @@ body{background:#f3f5f8!important;color:#182230!important}
  /* Read-only */
  .readonly-builder-head{display:block!important;padding:14px!important}.readonly-builder-head-actions{margin-top:10px!important;display:flex!important;flex-wrap:wrap!important}.readonly-builder-workspace{grid-template-columns:1fr!important}.readonly-builder-inspector{display:none!important}.readonly-builder-map-wrap{min-height:70dvh!important}
 }
+</style><style id="sp-mobile-iphone-refine-20261003">
+@media(max-width:760px){
+ /* kill desktop shell sizing that is still winning in cascade */
+ body:not(:has(#plannerModule:not(.hidden))) .app{display:block!important;width:100%!important;min-width:0!important;padding:0!important}
+ body:not(:has(#plannerModule:not(.hidden))) header{position:sticky!important;top:0!important;height:54px!important;min-height:54px!important;width:100%!important;z-index:900!important;background:#fff!important}
+ body:not(:has(#plannerModule:not(.hidden))) .module{width:100%!important;max-width:100%!important;margin:0!important;box-sizing:border-box!important}
+ #dashboardModule{padding:16px 12px 86px!important;background:#f3f5f8!important}
+ #dashboardModule .dashboard-inner{width:100%!important;max-width:none!important;margin:0!important}
+ .sp-dash-title{margin:4px 0 12px!important}.sp-dash-title h1{font-size:26px!important;letter-spacing:-.04em!important}.sp-dash-title p{font-size:14px!important;margin-top:4px!important}
+ .local-backup{display:flex!important;margin:0 0 12px!important}.local-backup #exportBackupBtn,.local-backup #importBackupBtn{display:none!important}.local-backup #newEventBtn{width:100%!important;min-height:46px!important;font-size:15px!important}
+ /* KPI = compact 2x2, not four squeezed columns */
+ #dashboardModule .cards.sp-kpis{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:8px!important;margin:0 0 12px!important}
+ #dashboardModule .sp-kpis .metric{display:flex!important;align-items:center!important;gap:10px!important;width:auto!important;min-width:0!important;min-height:72px!important;padding:11px!important;border-radius:12px!important}
+ #dashboardModule .sp-kpis .metric i{width:34px!important;height:34px!important;min-width:34px!important;border-radius:9px!important}
+ #dashboardModule .sp-kpis .metric b{font-size:22px!important;margin:0!important}#dashboardModule .sp-kpis .metric span{font-size:9px!important;line-height:1.15!important}
+ .sp-dash-grid,.sp-dash-lower{gap:10px!important}.sp-panel{border-radius:12px!important}.sp-panel-head{padding:13px 14px!important}.sp-panel-head h2{font-size:16px!important}
+ #dashboardModule .sp-events-panel .event-grid{gap:8px!important;padding:0 10px 10px!important}
+ #dashboardModule .sp-events-panel .event-card{border-radius:10px!important}
+ #dashboardModule .sp-events-panel .event-body{padding:14px!important}
+ #dashboardModule .sp-events-panel .event-body h3{font-size:16px!important;line-height:1.25!important}
+ #dashboardModule .sp-events-panel .event-actions{grid-template-columns:1fr 1fr!important;gap:6px!important;margin-top:11px!important}
+ #dashboardModule .sp-events-panel .event-actions .btn{min-height:38px!important;padding:7px!important;font-size:11px!important}
+ /* Bottom nav: target inner wrapper; previous rule only sized the aside */
+ body:not(:has(#plannerModule:not(.hidden))) .sp-app-nav{display:block!important;position:fixed!important;left:0!important;right:0!important;bottom:0!important;top:auto!important;width:100%!important;height:auto!important;min-height:64px!important;padding:0!important;border:0!important;border-top:1px solid #d7dee8!important;background:#fff!important;z-index:1200!important}
+ body:not(:has(#plannerModule:not(.hidden))) .sp-app-nav .sp-nav-main{display:grid!important;grid-template-columns:repeat(5,minmax(0,1fr))!important;gap:0!important;width:100%!important;padding:5px 4px calc(5px + env(safe-area-inset-bottom))!important}
+ body:not(:has(#plannerModule:not(.hidden))) .sp-app-nav .nav-tab{display:flex!important;width:auto!important;min-width:0!important;height:54px!important;flex-direction:column!important;justify-content:center!important;align-items:center!important;gap:2px!important;padding:4px 1px!important;border-radius:9px!important;font-size:8px!important;line-height:1!important}
+ body:not(:has(#plannerModule:not(.hidden))) .sp-app-nav .nav-tab span{display:block!important;width:auto!important;font-size:15px!important}
+ body:not(:has(#plannerModule:not(.hidden))) .sp-app-nav .nav-tab.active{font-size:8px!important}
+ /* hide less-useful dashboard panels on first mobile screen; still accessible from nav */
+ #dashboardModule .sp-dash-side{display:none!important}
+ #dashboardModule .sp-dash-lower{margin-top:10px!important}
+}
+@media(max-width:390px){
+ .sp-dash-title h1{font-size:24px!important}
+ #dashboardModule{padding-left:10px!important;padding-right:10px!important}
+}
 </style></head>
 <body>
 
