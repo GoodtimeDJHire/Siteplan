@@ -4668,5 +4668,11 @@ document.addEventListener('DOMContentLoaded',()=>{
 </script>
 
 <!-- SITEPLANNZ_PRODUCTION_REVISION_20260930_0922 -->
-<script src="https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.min.js"></script><script src="./stageplan.js"></script><script>(function(){function i(){document.querySelectorAll('[data-module="stageplan"]').forEach(function(b){if(b.dataset.spBound)return;b.dataset.spBound='1';b.addEventListener('click',function(){if(typeof window.switchModule==='function')window.switchModule('stageplan');else{document.querySelectorAll('.module').forEach(function(x){x.classList.add('hidden')});var m=document.getElementById('stageplanModule');if(m)m.classList.remove('hidden')}if(window.StagePlan)window.StagePlan.show()})})}if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',i);else i();var old=window.switchModule;if(typeof old==='function')window.switchModule=function(name){var r=old.apply(this,arguments);if(name==='stageplan'&&window.StagePlan)window.StagePlan.show();return r}})();</script></body>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js"}}</script>
+<script type="module">
+import * as THREE from "three";
+window.THREE = THREE;
+await import("./stageplan.js");
+window.dispatchEvent(new Event("stageplan-engine-ready"));
+</script><script>(function(){function i(){document.querySelectorAll('[data-module="stageplan"]').forEach(function(b){if(b.dataset.spBound)return;b.dataset.spBound='1';b.addEventListener('click',function(){if(typeof window.switchModule==='function')window.switchModule('stageplan');else{document.querySelectorAll('.module').forEach(function(x){x.classList.add('hidden')});var m=document.getElementById('stageplanModule');if(m)m.classList.remove('hidden')}if(window.StagePlan)window.StagePlan.show();else window.addEventListener('stageplan-engine-ready',function(){if(window.StagePlan)window.StagePlan.show()},{once:true})})})}if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',i);else i();var old=window.switchModule;if(typeof old==='function')window.switchModule=function(name){var r=old.apply(this,arguments);if(name==='stageplan'&&window.StagePlan)window.StagePlan.show();return r}})();</script></body>
 </html>
