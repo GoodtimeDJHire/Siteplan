@@ -3845,6 +3845,7 @@ function renderReadOnlyPlanMap(containerId,plan,full=false){
   const roMap=new google.maps.Map(host,{
     center,
     zoom:Number(plan.zoom)||18,
+    mapId:'DEMO_MAP_ID',
     mapTypeId:google.maps.MapTypeId.SATELLITE,
     tilt:0,
     disableDefaultUI:false,
