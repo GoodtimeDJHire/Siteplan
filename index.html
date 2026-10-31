@@ -4023,7 +4023,25 @@ function renderReadOnlyPlanMap(containerId,plan,full=false){
     if(!validPos(m.position))return;
     const pos=cleanPos(m.position);extend(pos);
     const meta=OBJECT_TYPES.find(x=>x[0]===m.type)||[m.type,'•',m.name||m.type,'#ef4444'];
-    new ReadOnlyMarkerOverlay(m,pos,meta);
+    // Shared maps use the exact same AdvancedMarker renderer as the editor.
+    // OverlayView pixel projections previously caused icon drift and visual mismatches.
+    const content=markerContent({type:m.type,name:m.name||meta[2]});
+    const sharedMarker=new AdvancedMarkerElement({
+      map:roMap,position:pos,content,gmpDraggable:false,title:m.name||meta[2]
+    });
+    const resizeSharedMarker=()=>{
+      const px=normalMarkerPixelsForZoom(roMap.getZoom()||19);
+      content.style.setProperty('--ground-icon-size',px+'px');
+      content.style.width=px+'px';
+      content.style.height=px+'px';
+    };
+    resizeSharedMarker();
+    roMap.addListener('zoom_changed',resizeSharedMarker);
+    sharedMarker.addListener('click',()=>{
+      const rows=[];
+      if(m.dimensions)rows.push(['Dimensions',m.dimensions]);
+      inspect(meta[2]||m.type||'Site object',m.name||meta[2],rows);
+    });
   });
 
   if(hasBounds){
