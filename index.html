@@ -4046,11 +4046,10 @@ function renderReadOnlyPlanMap(containerId,plan,full=false){
   });
 
   if(hasBounds){
-    roMap.fitBounds(bounds,70);
-    google.maps.event.addListenerOnce(roMap,'idle',()=>{
-      const preferred=Math.max(15,Number(plan.zoom)||19);
-      if((roMap.getZoom()||0)>preferred)roMap.setZoom(preferred);
-    });
+    // Preserve the saved editor camera rather than reframing around every object.
+    // fitBounds on narrow screens previously changed zoom and made layouts appear scattered.
+    roMap.setCenter(center);
+    roMap.setZoom(Number(plan.zoom)||18);
   }else{
     roMap.setCenter(center);roMap.setZoom(Number(plan.zoom)||18);
   }
