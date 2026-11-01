@@ -2189,6 +2189,11 @@ body{background:#f3f5f8!important;color:#182230!important}
  body:has(#plannerModule:not(.hidden)) .sp-app-nav .nav-tab[data-module="events"]:after{content:"Map";font-size:9px!important}
  body:has(#plannerModule:not(.hidden)) .sp-app-nav .nav-tab[data-module="events"].active{background:#ebe7ff!important;color:#5c42ed!important}
 }
+</style><style>
+#plannerModule .map-size-control{position:absolute;top:12px;left:50%;transform:translateX(-50%);z-index:100;grid-template-columns:auto minmax(80px,160px) 58px auto;align-items:center;gap:8px;background:#fff;color:#182230;padding:12px 14px;border:1px solid #d7dee8;border-radius:10px;box-shadow:0 3px 16px #0002;max-width:calc(100% - 28px);box-sizing:border-box;font-size:12px}
+.map-size-control strong{grid-column:1/-1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#plannerModule .map-size-control input{min-width:0;width:100%;box-sizing:border-box;color:#182230;background:#fff;accent-color:#6554e8}.map-size-control input[type=number]{padding:5px;border:1px solid #c9d0dc;border-radius:5px}
+@media print{#plannerModule .map-size-control{display:none!important}}
 </style></head>
 <body>
 
@@ -2362,6 +2367,12 @@ body{background:#f3f5f8!important;color:#182230!important}
 
     <main class="map-wrap">
       <div id="map" class="map"></div>
+      <div id="iconSizeField" style="display:none" class="map-size-control">
+        <strong id="sizeSelectionName"></strong>
+        <label id="sizeControlLabel" for="selIconSize">Icon size</label>
+        <input id="selIconSize" type="range" min="8" max="96" step="1" value="34" aria-label="Selected item size" />
+        <input id="selIconSizeNumber" type="number" min="8" max="96" step="1" value="34" aria-label="Size in pixels" /><span>px</span>
+      </div>
       <div class="map-tip" id="mapTip">Click the map to place item</div>
       <div class="draw-banner" id="drawBanner"><span id="drawBannerText">Drawing area</span><button class="btn primary" id="finishDrawTop">Finish</button><button class="btn" id="cancelDrawTop">Cancel</button></div>
       <div class="stats">
@@ -2376,7 +2387,6 @@ body{background:#f3f5f8!important;color:#182230!important}
       <div class="empty" id="emptyInspector">Select a map object, barrier or zone to edit it.</div>
       <div class="selection-card" id="selectionCard">
         <div class="field"><label>Name</label><input id="selName" /></div>
-        <div class="field" id="iconSizeField" style="display:none"><label for="selIconSize">Icon size (px)</label><input id="selIconSize" type="range" min="16" max="96" step="2" value="34" /><output id="selIconSizeValue" for="selIconSize">34 px</output><small style="display:block">Size stays fixed as you zoom.</small></div>
         <div class="field" id="dimensionField"><label>Dimensions / notes</label><input id="selDimensions" placeholder="e.g. 8m × 6m" /></div>
         <div id="marqueeSizeFields" style="display:none">
           <div class="field"><label>Marquee length (m)</label><input id="selMarqueeLength" type="number" min="1" max="100" step="0.5" placeholder="e.g. 12" /></div>
@@ -3095,14 +3105,18 @@ function markerContent(item){
 }
 function markerIconSize(value){
   const n=Number(value);
-  return Number.isFinite(n)&&n>0?Math.max(16,Math.min(96,n)):34;
+  return Number.isFinite(n)&&n>0?Math.max(8,Math.min(96,n)):34;
 }
 function normalMarkerPixelsForZoom(zoom,iconSize=34){
   return markerIconSize(iconSize);
 }
 function applyGroundMarkerSize(item,mapRef=map){
-  if(!item?.content||item.type==='marquee'||item.type==='label')return;
-  const px=markerIconSize(item.iconSize);
+  if(!item?.content||item.type==='marquee')return;
+  const px=markerIconSize(item.iconSize??(item.type==='label'?11:34));
+  if(item.type==='label'){
+    item.content.querySelector('.ml')?.style.setProperty('font-size',px+'px','important');
+    return;
+  }
   item.content.style.setProperty('--ground-icon-size',px+'px');
   item.content.style.width=px+'px';
   item.content.style.height=px+'px';
@@ -3123,7 +3137,7 @@ function addMarker(type,position,data={}){
     type,
     name:data.name||meta[2],
     dimensions:data.dimensions||'',
-    iconSize:markerIconSize(data.iconSize),
+    iconSize:markerIconSize(data.iconSize??(type==='label'?11:34)),
     position:{
       lat:typeof position.lat==='function'?position.lat():Number(position.lat),
       lng:typeof position.lng==='function'?position.lng():Number(position.lng)
@@ -3345,12 +3359,14 @@ function selectItem(item){
   refreshInspector();
 }
 function refreshInspector(){
-  const empty=byId('emptyInspector'),card=byId('selectionCard');if(!selected){empty.style.display='block';card.classList.remove('show');return}
+  const empty=byId('emptyInspector'),card=byId('selectionCard');byId('iconSizeField').style.display='none';if(!selected){empty.style.display='block';card.classList.remove('show');return}
   empty.style.display='none';card.classList.add('show');byId('selName').value=selected.name||'';byId('selType').value=selected.type;byId('selDimensions').value=selected.dimensions||'';byId('selMeasure').value=measurement(selected)||'—';byId('dimensionField').style.display=(selected.marker||selected.type==='marquee')?'block':'none';
   const isMarquee=selected.type==='marquee';
-  byId('iconSizeField').style.display=selected.marker&&!isMarquee&&selected.type!=='label'?'block':'none';
+  byId('iconSizeField').style.display=selected.marker&&!isMarquee?'grid':'none';
+  byId('sizeSelectionName').textContent=selected.name||selected.type;
+  byId('sizeControlLabel').textContent=selected.type==='label'?'Text size':'Icon size';
   byId('selIconSize').value=markerIconSize(selected.iconSize);
-  byId('selIconSizeValue').textContent=markerIconSize(selected.iconSize)+' px';
+  byId('selIconSizeNumber').value=markerIconSize(selected.iconSize);
   byId('marqueeSizeFields').style.display=isMarquee?'block':'none';
   if(isMarquee){const s=marqueeSize(selected);byId('selMarqueeLength').value=s.length;byId('selMarqueeWidth').value=s.width;if(byId('selMarqueeRotation'))byId('selMarqueeRotation').value=Number(selected.marqueeRotation)||0;}
   byId('shapeColourField').style.display=(selected.marker||selected.type==='marquee')?'none':'block';if(!selected.marker&&selected.type!=='marquee')byId('selColour').value=selected.color||'#ff8a00';if(!selected.marker&&selected.type!=='marquee'){
@@ -3522,12 +3538,18 @@ function wireUI(){
   byId('finishDraw').onclick=finishDrawing;byId('cancelDraw').onclick=()=>cancelDrawing(true);byId('finishDrawTop').onclick=finishDrawing;byId('cancelDrawTop').onclick=()=>cancelDrawing(true);byId('saveBtn').onclick=()=>savePlan(true);byId('clearBtn').onclick=clearPlan;byId('printBtn').onclick=()=>{const p=byId('plannerModule');if(p)p.dataset.printTitle=(byId('eventName')?.value||activeEvent()?.name||'Site Plan')+' · SitePlanNZ';setTimeout(()=>window.print(),80)};
   byId('deleteBtn').onclick=deleteSelected;byId('duplicateBtn').onclick=duplicateSelected;
   byId('selName').addEventListener('input',e=>{if(!selected)return;selected.name=e.target.value;if(selected.content){selected.content.querySelector('.ml').textContent=selected.name;selected.marker.title=selected.name}updateStats();autoSave()});
-  byId('selIconSize').addEventListener('input',e=>{
-    if(!selected?.marker||selected.type==='marquee'||selected.type==='label')return;
+  const resizeSelectedItem=e=>{
+    if(!selected?.marker||selected.type==='marquee')return;
+    if(e.target.value==='')return;
     selected.iconSize=markerIconSize(e.target.value);
-    byId('selIconSizeValue').textContent=selected.iconSize+' px';
+    byId('selIconSize').value=selected.iconSize;
+    byId('selIconSizeNumber').value=selected.iconSize;
     applyGroundMarkerSize(selected);autoSave();
-  });
+  };
+  byId('selIconSize').addEventListener('input',resizeSelectedItem);
+  byId('selIconSizeNumber').addEventListener('input',resizeSelectedItem);
+  byId('iconSizeField').addEventListener('click',e=>e.stopPropagation());
+  byId('iconSizeField').addEventListener('pointerdown',e=>e.stopPropagation());
   byId('selDimensions').addEventListener('input',e=>{
     if(!selected)return;
     selected.dimensions=e.target.value;
@@ -4043,7 +4065,7 @@ function renderReadOnlyPlanMap(containerId,plan,full=false){
       map:roMap,position:pos,content,anchorLeft:'-50%',anchorTop:'-50%',gmpDraggable:false,title:m.name||meta[2]
     });
     const resizeSharedMarker=()=>{
-      applyGroundMarkerSize({type:m.type,iconSize:m.iconSize,content},roMap);
+      applyGroundMarkerSize({type:m.type,iconSize:m.iconSize??(m.type==='label'?11:34),content},roMap);
     };
     resizeSharedMarker();
     roMap.addListener('zoom_changed',resizeSharedMarker);
