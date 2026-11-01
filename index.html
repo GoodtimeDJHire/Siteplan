@@ -2376,6 +2376,7 @@ body{background:#f3f5f8!important;color:#182230!important}
       <div class="empty" id="emptyInspector">Select a map object, barrier or zone to edit it.</div>
       <div class="selection-card" id="selectionCard">
         <div class="field"><label>Name</label><input id="selName" /></div>
+        <div class="field" id="iconSizeField" style="display:none"><label for="selIconSize">Icon size (px)</label><input id="selIconSize" type="range" min="16" max="96" step="2" value="34" /><output id="selIconSizeValue" for="selIconSize">34 px</output><small style="display:block">Size stays fixed as you zoom.</small></div>
         <div class="field" id="dimensionField"><label>Dimensions / notes</label><input id="selDimensions" placeholder="e.g. 8m × 6m" /></div>
         <div id="marqueeSizeFields" style="display:none">
           <div class="field"><label>Marquee length (m)</label><input id="selMarqueeLength" type="number" min="1" max="100" step="0.5" placeholder="e.g. 12" /></div>
@@ -2464,7 +2465,7 @@ function serialisePlanState(){
     center:map?{lat:map.getCenter().lat(),lng:map.getCenter().lng()}:null,
     zoom:map?.getZoom?.()||18,
     markers:markers.map(m=>({
-      id:m.id,type:m.type,name:m.name,dimensions:m.dimensions||'',
+      id:m.id,type:m.type,name:m.name,dimensions:m.dimensions||'',iconSize:markerIconSize(m.iconSize),
       marqueeLength:m.marqueeLength||null,marqueeWidth:m.marqueeWidth||null,marqueeRotation:m.marqueeRotation||0,
       position:m.position
     })),
@@ -3092,15 +3093,16 @@ function markerContent(item){
   el.innerHTML=`<div class="mi">${meta[1]}</div><div class="ml">${item.name||meta[2]}</div>`;
   return el;
 }
-function normalMarkerPixelsForZoom(zoom){
-  const referenceZoom=19;
-  const referencePixels=34;
-  const px=referencePixels*Math.pow(2,(Number(zoom)||referenceZoom)-referenceZoom);
-  return Math.max(7,Math.min(58,px));
+function markerIconSize(value){
+  const n=Number(value);
+  return Number.isFinite(n)&&n>0?Math.max(16,Math.min(96,n)):34;
+}
+function normalMarkerPixelsForZoom(zoom,iconSize=34){
+  return markerIconSize(iconSize);
 }
 function applyGroundMarkerSize(item,mapRef=map){
-  if(!item?.content||item.type==='marquee')return;
-  const px=normalMarkerPixelsForZoom(mapRef?.getZoom?.()||19);
+  if(!item?.content||item.type==='marquee'||item.type==='label')return;
+  const px=markerIconSize(item.iconSize);
   item.content.style.setProperty('--ground-icon-size',px+'px');
   item.content.style.width=px+'px';
   item.content.style.height=px+'px';
@@ -3121,13 +3123,14 @@ function addMarker(type,position,data={}){
     type,
     name:data.name||meta[2],
     dimensions:data.dimensions||'',
+    iconSize:markerIconSize(data.iconSize),
     position:{
       lat:typeof position.lat==='function'?position.lat():Number(position.lat),
       lng:typeof position.lng==='function'?position.lng():Number(position.lng)
     }
   };
   const content=markerContent(item);
-  const marker=new AdvancedMarkerElement({map,position:item.position,content,gmpDraggable:true,title:item.name});
+  const marker=new AdvancedMarkerElement({map,position:item.position,content,anchorLeft:'-50%',anchorTop:'-50%',gmpDraggable:true,title:item.name});
   item.marker=marker;item.content=content;
   applyGroundMarkerSize(item,map);
 
@@ -3345,6 +3348,9 @@ function refreshInspector(){
   const empty=byId('emptyInspector'),card=byId('selectionCard');if(!selected){empty.style.display='block';card.classList.remove('show');return}
   empty.style.display='none';card.classList.add('show');byId('selName').value=selected.name||'';byId('selType').value=selected.type;byId('selDimensions').value=selected.dimensions||'';byId('selMeasure').value=measurement(selected)||'—';byId('dimensionField').style.display=(selected.marker||selected.type==='marquee')?'block':'none';
   const isMarquee=selected.type==='marquee';
+  byId('iconSizeField').style.display=selected.marker&&!isMarquee&&selected.type!=='label'?'block':'none';
+  byId('selIconSize').value=markerIconSize(selected.iconSize);
+  byId('selIconSizeValue').textContent=markerIconSize(selected.iconSize)+' px';
   byId('marqueeSizeFields').style.display=isMarquee?'block':'none';
   if(isMarquee){const s=marqueeSize(selected);byId('selMarqueeLength').value=s.length;byId('selMarqueeWidth').value=s.width;if(byId('selMarqueeRotation'))byId('selMarqueeRotation').value=Number(selected.marqueeRotation)||0;}
   byId('shapeColourField').style.display=(selected.marker||selected.type==='marquee')?'none':'block';if(!selected.marker&&selected.type!=='marquee')byId('selColour').value=selected.color||'#ff8a00';if(!selected.marker&&selected.type!=='marquee'){
@@ -3383,7 +3389,7 @@ function copySelected(){
         marqueeLength:Number(selected.marqueeLength)||10,
         marqueeWidth:Number(selected.marqueeWidth)||5,
         marqueeRotation:Number(selected.marqueeRotation)||0,
-        dimensions:selected.dimensions||''
+        dimensions:selected.dimensions||'',iconSize:markerIconSize(selected.iconSize)
       }
     };
   }else if(selected.marker){
@@ -3392,7 +3398,7 @@ function copySelected(){
       data:{
         type:selected.type,
         name:selected.name,
-        dimensions:selected.dimensions||''
+        dimensions:selected.dimensions||'',iconSize:markerIconSize(selected.iconSize)
       }
     };
   }else if(selected.overlay){
@@ -3435,7 +3441,7 @@ function pasteCopied(){
       : map.getCenter().toJSON();
     const pos=geoOffset(base,2,2);
     const d=copiedElement.data;
-    addMarker(d.type,pos,{name:d.name,dimensions:d.dimensions});
+    addMarker(d.type,pos,{name:d.name,dimensions:d.dimensions,iconSize:d.iconSize});
   }else if(copiedElement.kind==='shape'){
     const d=copiedElement.data;
     const pts=d.points.map(offsetPoint);
@@ -3469,7 +3475,7 @@ function duplicateSelected(){
   }
   if(selected.marker){
     const p={lat:selected.position.lat+.00002,lng:selected.position.lng+.00002};
-    addMarker(selected.type,p,{name:selected.name,dimensions:selected.dimensions});
+    addMarker(selected.type,p,{name:selected.name,dimensions:selected.dimensions,iconSize:selected.iconSize});
   }else{
     const pts=selected.points.map(p=>({lat:p.lat+.00002,lng:p.lng+.00002}));
     createShape({...selected,id:crypto.randomUUID(),points:pts,overlay:undefined});
@@ -3487,7 +3493,7 @@ function updateStats(){
 
 function serializePlan(){
   return {version:2,eventName:byId('eventName').value,center:{lat:map.getCenter().lat(),lng:map.getCenter().lng()},zoom:map.getZoom(),markers:markers.map(m=>({
-      id:m.id,type:m.type,name:m.name,dimensions:m.dimensions||'',
+      id:m.id,type:m.type,name:m.name,dimensions:m.dimensions||'',iconSize:markerIconSize(m.iconSize),
       marqueeLength:m.marqueeLength||null,marqueeWidth:m.marqueeWidth||null,marqueeRotation:m.marqueeRotation||0,
       position:m.position
     })),shapes:shapes.map(s=>({id:s.id,type:s.type,name:s.name,color:s.color,fillOpacity:s.fillOpacity,points:s.overlay.getPath().getArray().map(p=>({lat:p.lat(),lng:p.lng()}))}))};
@@ -3516,6 +3522,12 @@ function wireUI(){
   byId('finishDraw').onclick=finishDrawing;byId('cancelDraw').onclick=()=>cancelDrawing(true);byId('finishDrawTop').onclick=finishDrawing;byId('cancelDrawTop').onclick=()=>cancelDrawing(true);byId('saveBtn').onclick=()=>savePlan(true);byId('clearBtn').onclick=clearPlan;byId('printBtn').onclick=()=>{const p=byId('plannerModule');if(p)p.dataset.printTitle=(byId('eventName')?.value||activeEvent()?.name||'Site Plan')+' · SitePlanNZ';setTimeout(()=>window.print(),80)};
   byId('deleteBtn').onclick=deleteSelected;byId('duplicateBtn').onclick=duplicateSelected;
   byId('selName').addEventListener('input',e=>{if(!selected)return;selected.name=e.target.value;if(selected.content){selected.content.querySelector('.ml').textContent=selected.name;selected.marker.title=selected.name}updateStats();autoSave()});
+  byId('selIconSize').addEventListener('input',e=>{
+    if(!selected?.marker||selected.type==='marquee'||selected.type==='label')return;
+    selected.iconSize=markerIconSize(e.target.value);
+    byId('selIconSizeValue').textContent=selected.iconSize+' px';
+    applyGroundMarkerSize(selected);autoSave();
+  });
   byId('selDimensions').addEventListener('input',e=>{
     if(!selected)return;
     selected.dimensions=e.target.value;
@@ -3982,7 +3994,7 @@ function renderReadOnlyPlanMap(containerId,plan,full=false){
       const p=this.getProjection().fromLatLngToDivPixel(this.pos);
       if(p){
         if(this.markerData.type!=='marquee'){
-          const px=normalMarkerPixelsForZoom(roMap.getZoom()||19);
+          const px=normalMarkerPixelsForZoom(roMap.getZoom()||19,this.markerData.iconSize);
           const sm=this.div.querySelector('.site-marker');
           if(sm){
             sm.style.setProperty('--ground-icon-size',px+'px');
@@ -4028,13 +4040,10 @@ function renderReadOnlyPlanMap(containerId,plan,full=false){
     // OverlayView pixel projections previously caused icon drift and visual mismatches.
     const content=markerContent({type:m.type,name:m.name||meta[2]});
     const sharedMarker=new AdvancedMarkerElement({
-      map:roMap,position:pos,content,gmpDraggable:false,title:m.name||meta[2]
+      map:roMap,position:pos,content,anchorLeft:'-50%',anchorTop:'-50%',gmpDraggable:false,title:m.name||meta[2]
     });
     const resizeSharedMarker=()=>{
-      const px=normalMarkerPixelsForZoom(roMap.getZoom()||19);
-      content.style.setProperty('--ground-icon-size',px+'px');
-      content.style.width=px+'px';
-      content.style.height=px+'px';
+      applyGroundMarkerSize({type:m.type,iconSize:m.iconSize,content},roMap);
     };
     resizeSharedMarker();
     roMap.addListener('zoom_changed',resizeSharedMarker);
