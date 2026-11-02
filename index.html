@@ -2200,6 +2200,14 @@ body{background:#f3f5f8!important;color:#182230!important}
 .site-marker.portaloo-marker .mi svg{display:block!important;width:100%!important;height:125%!important;flex-shrink:0;overflow:visible;filter:drop-shadow(0 1px 1px #0005)}
 .site-marker.portaloo-marker.selected .mi svg{filter:drop-shadow(0 0 2px #fff) drop-shadow(0 0 2px #2563eb)}
 .site-marker.portaloo-marker .ml{top:112%!important}
+</style><style id="portaloo-grid-style">
+.site-marker.portaloo-marker{width:var(--toilet-width)!important;min-width:var(--toilet-width)!important;max-width:var(--toilet-width)!important;height:var(--toilet-height)!important;min-height:var(--toilet-height)!important;max-height:var(--toilet-height)!important}
+.site-marker.portaloo-marker .mi{position:absolute!important;left:50%!important;top:50%!important;transform-origin:center center!important}
+.site-marker.portaloo-marker .mi svg{width:100%!important;height:100%!important}
+.site-marker.portaloo-marker .ml{top:100%!important}
+#toiletGridControls{grid-column:1/-1;grid-template-columns:repeat(4,minmax(48px,1fr));gap:7px;border-top:1px solid #e2e8f0;padding-top:9px}
+#toiletGridControls label{font-size:10px;display:grid;gap:4px}#toiletGridControls button{grid-column:1/3;font-size:11px;padding:6px}#toiletGridControls small{grid-column:1/-1;font-size:10px;color:#475569}
+#plannerModule .map-size-control{max-height:calc(100% - 80px);overflow:auto}
 </style></head>
 <body>
 
@@ -2378,6 +2386,14 @@ body{background:#f3f5f8!important;color:#182230!important}
         <label id="sizeControlLabel" for="selIconSize">Icon size</label>
         <input id="selIconSize" type="range" min="8" max="96" step="1" value="34" aria-label="Selected item size" />
         <input id="selIconSizeNumber" type="number" min="8" max="96" step="1" value="34" aria-label="Size in pixels" /><span>px</span>
+        <div id="toiletGridControls" class="toilet-grid-controls" style="display:none">
+          <label>Rows <input id="toiletRows" type="number" min="1" max="10" step="1" value="1" /></label>
+          <label>Columns <input id="toiletColumns" type="number" min="1" max="10" step="1" value="1" /></label>
+          <label>Gap <input id="toiletGap" type="number" min="0" max="40" step="1" value="8" /></label>
+          <label>Rotation ° <input id="toiletRotation" type="number" min="0" max="359" step="5" value="0" /></label>
+          <button type="button" class="btn" id="toiletTurn90">Rotate 90°</button>
+          <small id="toiletGridCount">1 toilet · arrows show doors · drag block to move</small>
+        </div>
       </div>
       <div class="map-tip" id="mapTip">Click the map to place item</div>
       <div class="draw-banner" id="drawBanner"><span id="drawBannerText">Drawing area</span><button class="btn primary" id="finishDrawTop">Finish</button><button class="btn" id="cancelDrawTop">Cancel</button></div>
@@ -2481,7 +2497,7 @@ function serialisePlanState(){
     center:map?{lat:map.getCenter().lat(),lng:map.getCenter().lng()}:null,
     zoom:map?.getZoom?.()||18,
     markers:markers.map(m=>({
-      id:m.id,type:m.type,name:m.name,dimensions:m.dimensions||'',iconSize:markerIconSize(m.iconSize),iconSizeZoom:m.iconSizeZoom??19,
+      id:m.id,type:m.type,name:m.name,dimensions:m.dimensions||'',iconSize:markerIconSize(m.iconSize),iconSizeZoom:m.iconSizeZoom??19,toiletLayout:isToiletItem(m)?toiletLayout(m.toiletLayout):undefined,
       marqueeLength:m.marqueeLength||null,marqueeWidth:m.marqueeWidth||null,marqueeRotation:m.marqueeRotation||0,
       position:m.position
     })),
@@ -3104,12 +3120,38 @@ function refreshAllMarquees(){
 }
 function installMarqueeResize(item){return}
 
+function isToiletItem(item){return item?.type==='toilet'||item?.type==='portabletoilet'}
+function toiletLayout(data={}){
+  const bounded=(v,d,min,max)=>Number.isFinite(Number(v))?Math.max(min,Math.min(max,Number(v))):d;
+  return {rows:Math.round(bounded(data.rows,1,1,10)),columns:Math.round(bounded(data.columns,1,1,10)),rotation:((bounded(data.rotation,0,-3600,3600)%360)+360)%360,gap:bounded(data.gap,8,0,40)};
+}
+function toiletGridSVG(data){
+  const g=toiletLayout(data),w=g.columns*40+(g.columns-1)*g.gap,h=g.rows*50+(g.rows-1)*g.gap;
+  const cabin='<rect x="1" y="1" width="38" height="42" rx="3" fill="#0e7490" stroke="#fff" stroke-width="1.5"/><rect x="5" y="5" width="30" height="32" rx="2" fill="#38b7d3" stroke="#164e63"/><path d="M9 10h22M9 14h22" stroke="#e0f2fe" stroke-width="2"/><path d="M7 42h26" stroke="#fff" stroke-width="3"/><path d="M20 44v5m-3-3 3 3 3-3" stroke="#fff" stroke-width="1.5" fill="none"/><text x="20" y="29" text-anchor="middle" fill="#083344" font-family="Arial,sans-serif" font-size="10" font-weight="900">WC</text>';
+  let units='';for(let r=0;r<g.rows;r++)for(let c=0;c<g.columns;c++)units+='<g transform="translate('+c*(40+g.gap)+' '+r*(50+g.gap)+')">'+cabin+'</g>';
+  return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 '+w+' '+h+'" aria-label="'+g.rows+' rows by '+g.columns+' columns of portable toilets; arrows indicate door direction">'+units+'</svg>';
+}
+function applyToiletLayout(item){
+  const g=toiletLayout(item.toiletLayout),unit=markerIconSize(item.iconSize),factor=unit/50;
+  const w=(g.columns*40+(g.columns-1)*g.gap)*factor,h=(g.rows*50+(g.rows-1)*g.gap)*factor;
+  const rad=g.rotation*Math.PI/180,bw=Math.abs(w*Math.cos(rad))+Math.abs(h*Math.sin(rad)),bh=Math.abs(w*Math.sin(rad))+Math.abs(h*Math.cos(rad));
+  const el=item.content,mi=el.querySelector('.mi');
+  el.style.setProperty('--toilet-width',bw+'px');el.style.setProperty('--toilet-height',bh+'px');
+  mi.style.setProperty('width',w+'px','important');mi.style.setProperty('height',h+'px','important');
+  mi.style.setProperty('transform','translate(-50%,-50%) rotate('+g.rotation+'deg)','important');
+}
+function redrawToiletGrid(item){
+  if(!isToiletItem(item)||!item.content)return;
+  item.content.querySelector('.mi').innerHTML=toiletGridSVG(item.toiletLayout);
+  applyGroundMarkerSize(item);
+}
+
 function markerContent(item){
   const meta=OBJECT_TYPES.find(x=>x[0]===item.type)||[item.type,'•',item.type,'#ef4444'];
   const el=document.createElement('div');
   el.className='site-marker'+(['toilet','portabletoilet'].includes(item.type)?' portaloo-marker':'');
   el.style.setProperty('--marker',meta[3]||'#ef4444');
-  el.innerHTML=`<div class="mi">${['toilet','portabletoilet'].includes(item.type)?portableToiletIcon():meta[1]}</div><div class="ml">${item.name||meta[2]}</div>`;
+  el.innerHTML=`<div class="mi">${['toilet','portabletoilet'].includes(item.type)?toiletGridSVG(item.toiletLayout):meta[1]}</div><div class="ml">${item.name||meta[2]}</div>`;
   return el;
 }
 function markerIconSize(value){
@@ -3131,6 +3173,7 @@ function applyGroundMarkerSize(item,mapRef=map){
     item.content.querySelector('.ml')?.style.setProperty('font-size',px+'px','important');
     return;
   }
+  if(isToiletItem(item)){applyToiletLayout(item);return;}
   item.content.style.setProperty('--ground-icon-size',px+'px');
   item.content.style.width=px+'px';
   item.content.style.height=px+'px';
@@ -3151,6 +3194,7 @@ function addMarker(type,position,data={}){
     type,
     name:data.name||meta[2],
     dimensions:data.dimensions||'',
+    toiletLayout:isToiletItem({type})?toiletLayout(data.toiletLayout):undefined,
     iconSize:markerIconSize(data.iconSize??(type==='label'?11:34)),
     iconSizeZoom:data.iconSizeZoom??(isRestoringPlan?19:(map?.getZoom?.()??19)),
     position:{
@@ -3377,6 +3421,12 @@ function refreshInspector(){
   const empty=byId('emptyInspector'),card=byId('selectionCard');byId('iconSizeField').style.display='none';if(!selected){empty.style.display='block';card.classList.remove('show');return}
   empty.style.display='none';card.classList.add('show');byId('selName').value=selected.name||'';byId('selType').value=selected.type;byId('selDimensions').value=selected.dimensions||'';byId('selMeasure').value=measurement(selected)||'—';byId('dimensionField').style.display=(selected.marker||selected.type==='marquee')?'block':'none';
   const isMarquee=selected.type==='marquee';
+  byId('toiletGridControls').style.display=isToiletItem(selected)?'grid':'none';
+  if(isToiletItem(selected)){
+    const g=toiletLayout(selected.toiletLayout);
+    byId('toiletRows').value=g.rows;byId('toiletColumns').value=g.columns;byId('toiletGap').value=g.gap;byId('toiletRotation').value=g.rotation;
+    byId('toiletGridCount').textContent=(g.rows*g.columns)+' toilet'+(g.rows*g.columns===1?'':'s')+' · arrows show doors · drag block to move';
+  }
   byId('iconSizeField').style.display=selected.marker&&!isMarquee?'grid':'none';
   byId('sizeSelectionName').textContent=selected.name||selected.type;
   byId('sizeControlLabel').textContent=selected.type==='label'?'Text size':'Icon size';
@@ -3420,7 +3470,7 @@ function copySelected(){
         marqueeLength:Number(selected.marqueeLength)||10,
         marqueeWidth:Number(selected.marqueeWidth)||5,
         marqueeRotation:Number(selected.marqueeRotation)||0,
-        dimensions:selected.dimensions||'',iconSize:markerIconSize(selected.iconSize),iconSizeZoom:selected.iconSizeZoom??19
+        dimensions:selected.dimensions||'',iconSize:markerIconSize(selected.iconSize),iconSizeZoom:selected.iconSizeZoom??19,toiletLayout:isToiletItem(selected)?toiletLayout(selected.toiletLayout):undefined
       }
     };
   }else if(selected.marker){
@@ -3429,7 +3479,7 @@ function copySelected(){
       data:{
         type:selected.type,
         name:selected.name,
-        dimensions:selected.dimensions||'',iconSize:markerIconSize(selected.iconSize),iconSizeZoom:selected.iconSizeZoom??19
+        dimensions:selected.dimensions||'',iconSize:markerIconSize(selected.iconSize),iconSizeZoom:selected.iconSizeZoom??19,toiletLayout:isToiletItem(selected)?toiletLayout(selected.toiletLayout):undefined
       }
     };
   }else if(selected.overlay){
@@ -3472,7 +3522,7 @@ function pasteCopied(){
       : map.getCenter().toJSON();
     const pos=geoOffset(base,2,2);
     const d=copiedElement.data;
-    addMarker(d.type,pos,{name:d.name,dimensions:d.dimensions,iconSize:d.iconSize,iconSizeZoom:d.iconSizeZoom});
+    addMarker(d.type,pos,{name:d.name,dimensions:d.dimensions,iconSize:d.iconSize,iconSizeZoom:d.iconSizeZoom,toiletLayout:d.toiletLayout});
   }else if(copiedElement.kind==='shape'){
     const d=copiedElement.data;
     const pts=d.points.map(offsetPoint);
@@ -3506,7 +3556,7 @@ function duplicateSelected(){
   }
   if(selected.marker){
     const p={lat:selected.position.lat+.00002,lng:selected.position.lng+.00002};
-    addMarker(selected.type,p,{name:selected.name,dimensions:selected.dimensions,iconSize:selected.iconSize,iconSizeZoom:selected.iconSizeZoom});
+    addMarker(selected.type,p,{name:selected.name,dimensions:selected.dimensions,iconSize:selected.iconSize,iconSizeZoom:selected.iconSizeZoom,toiletLayout:selected.toiletLayout});
   }else{
     const pts=selected.points.map(p=>({lat:p.lat+.00002,lng:p.lng+.00002}));
     createShape({...selected,id:crypto.randomUUID(),points:pts,overlay:undefined});
@@ -3515,16 +3565,16 @@ function duplicateSelected(){
 }
 
 function updateStats(){
-  byId('objectCount').textContent=markers.length;
+  byId('objectCount').textContent=markers.reduce((total,m)=>total+(isToiletItem(m)?toiletLayout(m.toiletLayout).rows*toiletLayout(m.toiletLayout).columns:1),0);
   let b=0,a=0;shapes.forEach(s=>{const path=s.overlay.getPath().getArray();if(s.type==='barrier')b+=google.maps.geometry.spherical.computeLength(path);if(s.type==='zone')a+=google.maps.geometry.spherical.computeArea(path)});
   byId('barrierTotal').textContent=fmtM(b);byId('zoneTotal').textContent=fmtArea(a);
-  const counts={};markers.forEach(m=>counts[m.name]=(counts[m.name]||0)+1);shapes.forEach(s=>counts[s.name]=(counts[s.name]||0)+1);
+  const counts={};markers.forEach(m=>counts[m.name]=(counts[m.name]||0)+(isToiletItem(m)?toiletLayout(m.toiletLayout).rows*toiletLayout(m.toiletLayout).columns:1));shapes.forEach(s=>counts[s.name]=(counts[s.name]||0)+1);
   byId('summaryRows').innerHTML=Object.entries(counts).sort((a,b)=>a[0].localeCompare(b[0])).map(([k,v])=>`<div class="summary-row"><span>${k}</span><strong>${v}</strong></div>`).join('')||'<div class="empty">No objects added yet.</div>';
 }
 
 function serializePlan(){
   return {version:2,eventName:byId('eventName').value,center:{lat:map.getCenter().lat(),lng:map.getCenter().lng()},zoom:map.getZoom(),markers:markers.map(m=>({
-      id:m.id,type:m.type,name:m.name,dimensions:m.dimensions||'',iconSize:markerIconSize(m.iconSize),iconSizeZoom:m.iconSizeZoom??19,
+      id:m.id,type:m.type,name:m.name,dimensions:m.dimensions||'',iconSize:markerIconSize(m.iconSize),iconSizeZoom:m.iconSizeZoom??19,toiletLayout:isToiletItem(m)?toiletLayout(m.toiletLayout):undefined,
       marqueeLength:m.marqueeLength||null,marqueeWidth:m.marqueeWidth||null,marqueeRotation:m.marqueeRotation||0,
       position:m.position
     })),shapes:shapes.map(s=>({id:s.id,type:s.type,name:s.name,color:s.color,fillOpacity:s.fillOpacity,points:s.overlay.getPath().getArray().map(p=>({lat:p.lat(),lng:p.lng()}))}))};
@@ -3564,6 +3614,13 @@ function wireUI(){
   };
   byId('selIconSize').addEventListener('input',resizeSelectedItem);
   byId('selIconSizeNumber').addEventListener('input',resizeSelectedItem);
+  const changeToiletGrid=()=>{
+    if(!isToiletItem(selected))return;
+    selected.toiletLayout=toiletLayout({rows:byId('toiletRows').value,columns:byId('toiletColumns').value,gap:byId('toiletGap').value,rotation:byId('toiletRotation').value});
+    redrawToiletGrid(selected);refreshInspector();updateStats();autoSave();
+  };
+  ['toiletRows','toiletColumns','toiletGap','toiletRotation'].forEach(id=>byId(id).addEventListener('change',changeToiletGrid));
+  byId('toiletTurn90').addEventListener('click',()=>{byId('toiletRotation').value=(Number(byId('toiletRotation').value)+90)%360;changeToiletGrid()});
   byId('iconSizeField').addEventListener('click',e=>e.stopPropagation());
   byId('iconSizeField').addEventListener('pointerdown',e=>e.stopPropagation());
   byId('selDimensions').addEventListener('input',e=>{
@@ -4076,12 +4133,12 @@ function renderReadOnlyPlanMap(containerId,plan,full=false){
     const meta=OBJECT_TYPES.find(x=>x[0]===m.type)||[m.type,'•',m.name||m.type,'#ef4444'];
     // Shared maps use the exact same AdvancedMarker renderer as the editor.
     // OverlayView pixel projections previously caused icon drift and visual mismatches.
-    const content=markerContent({type:m.type,name:m.name||meta[2]});
+    const content=markerContent({...m,name:m.name||meta[2]});
     const sharedMarker=new AdvancedMarkerElement({
       map:roMap,position:pos,content,anchorLeft:'-50%',anchorTop:'-50%',gmpDraggable:false,title:m.name||meta[2]
     });
     const resizeSharedMarker=()=>{
-      applyGroundMarkerSize({type:m.type,iconSize:m.iconSize??(m.type==='label'?11:34),iconSizeZoom:m.iconSizeZoom??19,content},roMap);
+      applyGroundMarkerSize({type:m.type,iconSize:m.iconSize??(m.type==='label'?11:34),iconSizeZoom:m.iconSizeZoom??19,toiletLayout:isToiletItem(m)?toiletLayout(m.toiletLayout):undefined,content},roMap);
     };
     resizeSharedMarker();
     roMap.addListener('zoom_changed',resizeSharedMarker);
