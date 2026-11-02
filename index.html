@@ -2194,6 +2194,12 @@ body{background:#f3f5f8!important;color:#182230!important}
 .map-size-control strong{grid-column:1/-1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 #plannerModule .map-size-control input{min-width:0;width:100%;box-sizing:border-box;color:#182230;background:#fff;accent-color:#6554e8}.map-size-control input[type=number]{padding:5px;border:1px solid #c9d0dc;border-radius:5px}
 @media print{#plannerModule .map-size-control{display:none!important}}
+</style><style id="portaloo-map-icon">
+.site-marker.portaloo-marker{background:transparent!important;border:0!important;border-radius:0!important;box-shadow:none!important;overflow:visible!important}
+.site-marker.portaloo-marker .mi{overflow:visible!important}
+.site-marker.portaloo-marker .mi svg{display:block!important;width:100%!important;height:125%!important;flex-shrink:0;overflow:visible;filter:drop-shadow(0 1px 1px #0005)}
+.site-marker.portaloo-marker.selected .mi svg{filter:drop-shadow(0 0 2px #fff) drop-shadow(0 0 2px #2563eb)}
+.site-marker.portaloo-marker .ml{top:112%!important}
 </style></head>
 <body>
 
@@ -3029,7 +3035,10 @@ function setupPlaces(){
   });
 }
 
+function portableToiletIcon(){return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 76" fill="none" role="img" aria-label="Portable toilet, door at front"><path d="M12 15L42 10L54 17V65L42 72L12 66Z" fill="#155e75" stroke="#102f44" stroke-width="2" stroke-linejoin="round"/><path d="M42 17L54 19V65L42 72Z" fill="#0c4a6e"/><path d="M12 17H42V70L12 65Z" fill="#229ec0" stroke="#12445c" stroke-width="1.5"/><path d="M15 23H38V64L15 61Z" fill="#38b7d3" stroke="#0b526c" stroke-width="1.8"/><path d="M18 43V57M22 44V58M27 44V59M31 45V59" stroke="#1688a8" stroke-width="1.3"/><path d="M9 16L21 7H44L56 16L43 21L9 19Z" fill="#f0f4f5" stroke="#243d4c" stroke-width="2" stroke-linejoin="round"/><path d="M9 16L43 17L56 16M43 17V21" stroke="#a6b6c1" stroke-width="1.5"/><path d="M45 27L51 25M45 31L51 29M45 35L51 33" stroke="#042f49" stroke-width="2"/><rect x="19" y="27" width="14" height="10" rx="2" fill="white"/><text x="26" y="34.2" text-anchor="middle" fill="#0c4a6e" font-family="Arial,sans-serif" font-size="7" font-weight="900">WC</text><rect x="33" y="41" width="3" height="8" rx="1" fill="#f8fafc" stroke="#12445c" stroke-width=".8"/><path d="M10 65L42 70L55 64V69L42 75L10 69Z" fill="#334155" stroke="#142c3e" stroke-width="1.5"/><path d="M22 69L30 70" stroke="#f8fafc" stroke-width="2" stroke-linecap="round"/></svg>`;}
+
 function eventObjectIcon(type){
+ if(type==='toilet'||type==='portabletoilet')return portableToiletIcon();
  const common='viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"';
  const P={
  text:'<path d="M5 5h14M12 5v14M8 19h8"/>',stage:'<path d="M4 17h16M6 17V9h12v8M8 9V6h8v3"/>',dj:'<rect x="3" y="8" width="18" height="10" rx="2"/><circle cx="8" cy="13" r="2.5"/><circle cx="16" cy="13" r="2.5"/><path d="M12 10v6"/>',foh:'<path d="M4 19h16M6 19V7h12v12M9 10h6M9 13h6M9 16h6"/>',
@@ -3098,9 +3107,9 @@ function installMarqueeResize(item){return}
 function markerContent(item){
   const meta=OBJECT_TYPES.find(x=>x[0]===item.type)||[item.type,'•',item.type,'#ef4444'];
   const el=document.createElement('div');
-  el.className='site-marker';
+  el.className='site-marker'+(['toilet','portabletoilet'].includes(item.type)?' portaloo-marker':'');
   el.style.setProperty('--marker',meta[3]||'#ef4444');
-  el.innerHTML=`<div class="mi">${meta[1]}</div><div class="ml">${item.name||meta[2]}</div>`;
+  el.innerHTML=`<div class="mi">${['toilet','portabletoilet'].includes(item.type)?portableToiletIcon():meta[1]}</div><div class="ml">${item.name||meta[2]}</div>`;
   return el;
 }
 function markerIconSize(value){
