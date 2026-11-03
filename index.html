@@ -2365,7 +2365,7 @@ body{background:#f3f5f8!important;color:#182230!important}
 </div>
       <div class="draw-options">
         <div class="section-title">Drawing colour</div>
-        <div class="colour-palette" id="colourPalette"></div>
+        <div class="colour-palette" id="colourPalette"></div><div style="display:flex;align-items:center;gap:10px;margin:10px 0"><label for="customDrawColour" style="font-size:11px;font-weight:800">Custom colour</label><input id="customDrawColour" type="color" value="#ff8a00" title="Choose any drawing colour" aria-label="Choose any drawing colour" style="width:52px;height:38px;padding:2px;cursor:pointer;border-radius:8px"><span id="customColourHex" style="font-size:11px">#FF8A00</span></div>
         <div class="draw-help">Areas finish at 50% transparency. Select an existing zone, route or barrier and click a colour above to recolour it.</div>
         <div class="draw-actions"><button class="tool" id="finishDraw">✓ Finish</button><button class="tool" id="cancelDraw">× Cancel</button></div>
       </div>
@@ -3274,6 +3274,19 @@ function setupIconSearch(){
   apply();
 }
 
+function applyDrawingColour(c){
+  if(!/^#[0-9a-f]{6}$/i.test(c))return;
+  currentDrawColour=c;
+  document.querySelectorAll('.colour-swatch').forEach(x=>x.classList.toggle('active',x.title.toLowerCase()===c.toLowerCase()));
+  const picker=byId('customDrawColour');if(picker)picker.value=c;
+  const hex=byId('customColourHex');if(hex)hex.textContent=c.toUpperCase();
+  if(selected?.overlay && selected.type!=='marquee'){
+    selected.color=c;selected.overlay.setOptions({strokeColor:c,...(selected.type==='zone'?{fillColor:c,fillOpacity:selected.fillOpacity??0.5}:{})});
+    if(byId('selColour'))byId('selColour').value=c;
+    autoSave();refreshInspector();
+  }
+  if(tempShape)tempShape.setOptions({strokeColor:c,...(drawMode==='zone'?{fillColor:c}:{})});
+}
 function buildColourPalette(){
   const host=byId('colourPalette');
   if(!host)return;
@@ -3285,37 +3298,7 @@ function buildColourPalette(){
     b.style.background=c;
     b.title=c;
 
-    const applyColour=ev=>{
-      if(ev){
-        ev.preventDefault();
-        ev.stopPropagation();
-      }
-
-      currentDrawColour=c;
-      document.querySelectorAll('.colour-swatch').forEach(x=>x.classList.toggle('active',x===b));
-
-      // Existing selected zone / route / barrier.
-      if(selected && selected.overlay && selected.type!=='marquee'){
-        selected.color=c;
-        selected.overlay.setOptions({
-          strokeColor:c,
-          ...(selected.type==='zone'?{fillColor:c,fillOpacity:selected.fillOpacity??0.5}: {})
-        });
-        if(byId('selColour'))byId('selColour').value=c;
-        autoSave();
-        refreshInspector();
-        toast('Colour updated');
-        return;
-      }
-
-      // Drawing in progress / next shape.
-      if(tempShape){
-        tempShape.setOptions({
-          strokeColor:c,
-          ...(drawMode==='zone'?{fillColor:c}: {})
-        });
-      }
-    };
+    const applyColour=ev=>{ev.preventDefault();ev.stopPropagation();applyDrawingColour(c)};
 
     b.addEventListener('pointerdown',applyColour);
     host.appendChild(b);
@@ -3420,6 +3403,7 @@ function selectItem(item){
 function refreshInspector(){
   const empty=byId('emptyInspector'),card=byId('selectionCard');byId('iconSizeField').style.display='none';if(!selected){empty.style.display='block';card.classList.remove('show');return}
   empty.style.display='none';card.classList.add('show');byId('selName').value=selected.name||'';byId('selType').value=selected.type==='barrier'?(selected.name||'Barrier / Fence'):selected.type;byId('selDimensions').value=selected.dimensions||'';byId('selMeasure').value=measurement(selected)||'—';byId('dimensionField').style.display=(selected.marker||selected.type==='marquee')?'block':'none';
+  if(selected.overlay && selected.color){byId('customDrawColour').value=selected.color;byId('customColourHex').textContent=selected.color.toUpperCase()}
   const isMarquee=selected.type==='marquee';
   byId('toiletGridControls').style.display=isToiletItem(selected)?'grid':'none';
   if(isToiletItem(selected)){
@@ -3602,6 +3586,7 @@ function wireUI(){
   byId('redoBtn').onclick=redo;
   updateUndoRedoButtons();
   document.querySelectorAll('[data-tool]').forEach(b=>b.onclick=()=>setDrawMode(b.dataset.tool));
+  byId('customDrawColour').addEventListener('input',e=>applyDrawingColour(e.target.value));
 
   byId('finishDraw').onclick=finishDrawing;byId('cancelDraw').onclick=()=>cancelDrawing(true);byId('finishDrawTop').onclick=finishDrawing;byId('cancelDrawTop').onclick=()=>cancelDrawing(true);byId('saveBtn').onclick=()=>savePlan(true);byId('clearBtn').onclick=clearPlan;byId('printBtn').onclick=()=>{const p=byId('plannerModule');if(p)p.dataset.printTitle=(byId('eventName')?.value||activeEvent()?.name||'Site Plan')+' · SitePlanNZ';setTimeout(()=>window.print(),80)};
   byId('deleteBtn').onclick=deleteSelected;byId('duplicateBtn').onclick=duplicateSelected;
