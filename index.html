@@ -2373,7 +2373,7 @@ body{background:#f3f5f8!important;color:#182230!important}
       <div class="section-title">Draw</div>
       <div class="tool-list">
         <button class="tool" data-tool="zone">⬡ Coloured Area / Zone</button>
-        <button class="tool" data-tool="barrier">╱ Barrier / Fence</button>
+        <button class="tool" data-tool="barrier">╱ Draw Fencing / Barrier</button><div class="field" style="margin:0 0 8px"><label for="fenceKind">Fence type</label><select id="fenceKind" style="width:100%;padding:10px;border-radius:9px"><option value="Bike Rack Barrier">Bike Rack Barrier</option><option value="High Fence">High Fence</option><option value="Barrier / Fence">Other Barrier / Fence</option></select></div>
         <button class="tool" data-tool="route">➜ Route / Flow</button>
       </div>
 
@@ -3326,7 +3326,7 @@ function setDrawMode(mode){
   shapes.forEach(s=>{if(s.overlay?.setEditable)s.overlay.setEditable(false)});
   map.setOptions({draggableCursor:'crosshair',disableDoubleClickZoom:true});
   byId('mapTip').classList.remove('show');byId('drawBanner').classList.add('show');
-  byId('drawBannerText').textContent=mode==='zone'?'Draw coloured area · click each corner':mode==='barrier'?'Draw barrier / fence line':'Draw route / flow line';
+  byId('drawBannerText').textContent=mode==='zone'?'Draw coloured area · click each corner':mode==='barrier'?'Draw '+byId('fenceKind').value+' · click along the fence':'Draw route / flow line';
   drawClickListener=map.addListener('click',e=>{if(!drawMode)return;addDrawPoint(e.latLng)});
   drawDblClickListener=map.addListener('dblclick',e=>{if(!drawMode)return;google.maps.event.trigger(map,'click',e);setTimeout(finishDrawing,0)});
 }
@@ -3350,7 +3350,7 @@ function clearTemp(){if(tempShape){tempShape.setMap(null);tempShape=null}}
 function finishDrawing(){
   if(!drawMode)return;
   const min=drawMode==='zone'?3:2;if(drawPoints.length<min){toast(`Add at least ${min} points`);return}
-  const type=drawMode; const shapeData={id:crypto.randomUUID(),type,name:type==='zone'?'Event Zone':type==='route'?'Access Route':'Barrier / Fence',points:[...drawPoints],color:currentDrawColour,fillOpacity:type==='zone'?.5:0};
+  const type=drawMode; const shapeData={id:crypto.randomUUID(),type,name:type==='zone'?'Event Zone':type==='route'?'Access Route':byId('fenceKind').value,points:[...drawPoints],color:currentDrawColour,fillOpacity:type==='zone'?.5:0};
   createShape(shapeData); const completed=shapes[shapes.length-1]; cancelDrawing(false); selectItem(completed); updateStats();autoSave();toast(type==='zone'?'Area created · 50% transparent':'Line created');
 
   shapes.forEach(s=>{if(s.overlay?.setEditable)s.overlay.setEditable(s===selected)});
@@ -3419,7 +3419,7 @@ function selectItem(item){
 }
 function refreshInspector(){
   const empty=byId('emptyInspector'),card=byId('selectionCard');byId('iconSizeField').style.display='none';if(!selected){empty.style.display='block';card.classList.remove('show');return}
-  empty.style.display='none';card.classList.add('show');byId('selName').value=selected.name||'';byId('selType').value=selected.type;byId('selDimensions').value=selected.dimensions||'';byId('selMeasure').value=measurement(selected)||'—';byId('dimensionField').style.display=(selected.marker||selected.type==='marquee')?'block':'none';
+  empty.style.display='none';card.classList.add('show');byId('selName').value=selected.name||'';byId('selType').value=selected.type==='barrier'?(selected.name||'Barrier / Fence'):selected.type;byId('selDimensions').value=selected.dimensions||'';byId('selMeasure').value=measurement(selected)||'—';byId('dimensionField').style.display=(selected.marker||selected.type==='marquee')?'block':'none';
   const isMarquee=selected.type==='marquee';
   byId('toiletGridControls').style.display=isToiletItem(selected)?'grid':'none';
   if(isToiletItem(selected)){
@@ -3569,7 +3569,9 @@ function updateStats(){
   let b=0,a=0;shapes.forEach(s=>{const path=s.overlay.getPath().getArray();if(s.type==='barrier')b+=google.maps.geometry.spherical.computeLength(path);if(s.type==='zone')a+=google.maps.geometry.spherical.computeArea(path)});
   byId('barrierTotal').textContent=fmtM(b);byId('zoneTotal').textContent=fmtArea(a);
   const counts={};markers.forEach(m=>counts[m.name]=(counts[m.name]||0)+(isToiletItem(m)?toiletLayout(m.toiletLayout).rows*toiletLayout(m.toiletLayout).columns:1));shapes.forEach(s=>counts[s.name]=(counts[s.name]||0)+1);
-  byId('summaryRows').innerHTML=Object.entries(counts).sort((a,b)=>a[0].localeCompare(b[0])).map(([k,v])=>`<div class="summary-row"><span>${k}</span><strong>${v}</strong></div>`).join('')||'<div class="empty">No objects added yet.</div>';
+  const fenceTotals={};shapes.filter(s=>s.type==='barrier').forEach(s=>{const k=s.name||'Barrier / Fence';fenceTotals[k]=(fenceTotals[k]||0)+google.maps.geometry.spherical.computeLength(s.overlay.getPath().getArray())});
+  const fenceRows=Object.entries(fenceTotals).sort((a,b)=>a[0].localeCompare(b[0])).map(([k,v])=>`<div class="summary-row"><span>${k} required</span><strong>${fmtM(v)}</strong></div>`).join('');
+  byId('summaryRows').innerHTML=(fenceRows?`<div style="font-weight:800;margin:12px 0 6px">Fencing requirements</div>${fenceRows}<div class="summary-row"><span>Total fencing</span><strong>${fmtM(b)}</strong></div><hr style="border:0;border-top:1px solid var(--line)">`:'')+(Object.entries(counts).sort((a,b)=>a[0].localeCompare(b[0])).map(([k,v])=>`<div class="summary-row"><span>${k}</span><strong>${v}</strong></div>`).join('')||'<div class="empty">No objects added yet.</div>');
 }
 
 function serializePlan(){
@@ -3600,6 +3602,7 @@ function wireUI(){
   byId('redoBtn').onclick=redo;
   updateUndoRedoButtons();
   document.querySelectorAll('[data-tool]').forEach(b=>b.onclick=()=>setDrawMode(b.dataset.tool));
+  byId('fenceKind').addEventListener('change',()=>{if(drawMode==='barrier')byId('drawBannerText').textContent='Draw '+byId('fenceKind').value+' · click along the fence'});
   byId('finishDraw').onclick=finishDrawing;byId('cancelDraw').onclick=()=>cancelDrawing(true);byId('finishDrawTop').onclick=finishDrawing;byId('cancelDrawTop').onclick=()=>cancelDrawing(true);byId('saveBtn').onclick=()=>savePlan(true);byId('clearBtn').onclick=clearPlan;byId('printBtn').onclick=()=>{const p=byId('plannerModule');if(p)p.dataset.printTitle=(byId('eventName')?.value||activeEvent()?.name||'Site Plan')+' · SitePlanNZ';setTimeout(()=>window.print(),80)};
   byId('deleteBtn').onclick=deleteSelected;byId('duplicateBtn').onclick=duplicateSelected;
   byId('selName').addEventListener('input',e=>{if(!selected)return;selected.name=e.target.value;if(selected.content){selected.content.querySelector('.ml').textContent=selected.name;selected.marker.title=selected.name}updateStats();autoSave()});
