@@ -4414,19 +4414,30 @@ deleteEvent=async function(id){
  const evt=events.find(e=>String(e.id)===String(id));
  if(!evt)return;
  if(!confirm('Permanently delete "'+(evt.name||'this event')+'"? This will remove its saved map and attached tenders. This cannot be undone.'))return;
+ const targetId=String(id);
  if(siteplanCloudUser){
-   // Delete child tenders first so event deletion works even when the DB foreign key is restrictive.
-   const childIds=tenders.filter(t=>String(t.eventId)===String(id)).map(t=>t.id).filter(Boolean);
-   for(const tenderId of childIds){
-     const {error:tenderError}=await siteplanCloud.from('tenders').delete().eq('id',tenderId);
-     if(tenderError){toast('Could not delete event: '+tenderError.message);return}
-   }
-   const {error}=await siteplanCloud.from('events').delete().eq('id',id);
-   if(error){toast('Could not delete event: '+error.message);return}
+   // Do not hide the card until the server confirms deletion. Supabase may return
+   // no error but delete zero rows when a row policy prevents deletion.
+   try{
+     const {data:existing,error:lookupError}=await siteplanCloud.from('events').select('id,owner_id').eq('id',targetId).maybeSingle();
+     if(lookupError)throw lookupError;
+     if(!existing)throw new Error('This event is not accessible in your cloud account. Refresh and try again.');
+     if(String(existing.owner_id)!==String(siteplanCloudUser.id))throw new Error('You do not own this event.');
+     // Stop a pending autosave from racing with deletion.
+     if(cloudEventSaveTimers[targetId]){clearTimeout(cloudEventSaveTimers[targetId]);delete cloudEventSaveTimers[targetId]}
+     const {error:tenderError}=await siteplanCloud.from('tenders').delete().eq('event_id',targetId);
+     if(tenderError)throw tenderError;
+     const {data:deleted,error:deleteError}=await siteplanCloud.from('events').delete().eq('id',targetId).eq('owner_id',siteplanCloudUser.id).select('id');
+     if(deleteError)throw deleteError;
+     if(!deleted?.some(row=>String(row.id)===targetId))throw new Error('Cloud database did not confirm deletion. Check event delete permissions.');
+     const {data:remaining,error:verifyError}=await siteplanCloud.from('events').select('id').eq('id',targetId);
+     if(verifyError)throw verifyError;
+     if(remaining?.length)throw new Error('Event still exists in the cloud after deletion.');
+   }catch(error){console.error('SitePlan event deletion failed',error);toast('Delete failed: '+(error.message||error));return}
  }
- events=events.filter(e=>String(e.id)!==String(id));
- tenders=tenders.filter(t=>String(t.eventId)!==String(id));
- if(String(currentEventId)===String(id))currentEventId=events[0]?.id||'';
+ events=events.filter(e=>String(e.id)!==targetId);
+ tenders=tenders.filter(t=>String(t.eventId)!==targetId);
+ if(String(currentEventId)===targetId)currentEventId=events[0]?.id||'';
  localStorage.setItem('siteplan_current_event_id',currentEventId);
  localStorage.setItem('siteplan_events',JSON.stringify(events));
  localStorage.setItem('siteplan_tenders',JSON.stringify(tenders));
