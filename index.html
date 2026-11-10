@@ -2447,7 +2447,7 @@ const OBJECT_TYPES = [
   ['sub','▣','Subwoofer','#dc2626'],['delay','DLY','Delay Speaker','#dc2626'],['screen','SCR','Video Screen','#8b5cf6'],['ledwall','LED','LED Wall','#8b5cf6'],
   ['lightingtower','LT','Lighting Tower','#eab308'],['followspot','FS','Follow Spot','#eab308'],['camera','CAM','Camera / Media','#111827'],['broadcast','OB','Broadcast / OB','#111827'],
 
-  ['bar','BAR','Bar','#f97316'],['food','🍴','Food / Vendor','#f97316'],['merch','MER','Merchandise','#f97316'],['vip','VIP','VIP','#f59e0b'],
+  ['bar','BAR','Bar','#f97316'],['table','TABLE','Round Table','#0284c7'],['barleaner','LEANER','Bar Leaner','#f97316'],['food','🍴','Food / Vendor','#f97316'],['merch','MER','Merchandise','#f97316'],['vip','VIP','VIP','#f59e0b'],
   ['hospitality','HOS','Hospitality','#f59e0b'],['greenroom','GR','Green Room','#8b5cf6'],['dressing','DR','Dressing Room','#8b5cf6'],
 
   ['toilet','🚻','Toilets','#2563eb'],['accessible','♿','Accessible WC','#0ea5e9'],['water','💧','Water','#0ea5e9'],['bin','BIN','Waste / Bin','#22c55e'],
@@ -2646,7 +2646,7 @@ function marqueeRotatePoint(item){
 function marqueeLabelPoint(item){
   const W=Number(item.marqueeWidth)||5;
   const r=Number(item.marqueeRotation)||0;
-  const p=rotateXY(0,W/2+1.2,r);
+  const p=rotateXY(0,-W/2-1.2,r);
   return geoOffset(item.position,p.x,p.y);
 }
 function updateMarqueeOverlay(item){
@@ -2664,7 +2664,7 @@ function updateMarqueeOverlay(item){
     item.marqueeHandles.forEach((h,i)=>{h.position=corners[i]});
   }
   if(item.marqueeRotateHandle)item.marqueeRotateHandle.position=marqueeRotatePoint(item);
-  if(item.marqueeLabel)item.marqueeLabel.position=marqueeLabelPoint(item);
+  if(item.marqueeLabel){item.marqueeLabel.position=marqueeLabelPoint(item);if(item.marqueeLabelText)item.marqueeLabelText.textContent=(Number(item.marqueeLength)||10)+' × '+(Number(item.marqueeWidth)||5)+' m';}
 }
 function clearMarqueeControls(item){
   (item?.marqueeHandles||[]).forEach(h=>h.map=null);
@@ -2762,7 +2762,8 @@ function buildMarqueeControls(item){
 
   const labelEl=document.createElement('div');
   labelEl.className='geo-marquee-label';
-  labelEl.textContent=item.name||'Marquee';
+  labelEl.textContent=(Number(item.marqueeLength)||10)+' × '+(Number(item.marqueeWidth)||5)+' m';
+  item.marqueeLabelText=labelEl;
 
   item.marqueeLabel=new AdvancedMarkerElement({
     map,position:marqueeLabelPoint(item),content:labelEl,gmpDraggable:false,zIndex:999
@@ -3056,6 +3057,9 @@ function portableToiletIcon(){return `<svg xmlns="http://www.w3.org/2000/svg" vi
 function eventObjectIcon(type){
  if(type==='toilet'||type==='portabletoilet')return portableToiletIcon();
  const common='viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"';
+ if(type==='table')return '<svg '+common+'><circle cx="12" cy="12" r="5"/><circle cx="12" cy="3" r="1.5"/><circle cx="19.8" cy="7.5" r="1.5"/><circle cx="19.8" cy="16.5" r="1.5"/><circle cx="12" cy="21" r="1.5"/><circle cx="4.2" cy="16.5" r="1.5"/><circle cx="4.2" cy="7.5" r="1.5"/></svg>';
+ if(type==='barleaner')return '<svg '+common+'><path d="M3 7h18l-2 5H5zM6 12l1 8m11-8-1 8M8 20h2m4 0h2"/><circle cx="7" cy="16" r="1.5"/><circle cx="17" cy="16" r="1.5"/></svg>';
+
  const P={
  text:'<path d="M5 5h14M12 5v14M8 19h8"/>',stage:'<path d="M4 17h16M6 17V9h12v8M8 9V6h8v3"/>',dj:'<rect x="3" y="8" width="18" height="10" rx="2"/><circle cx="8" cy="13" r="2.5"/><circle cx="16" cy="13" r="2.5"/><path d="M12 10v6"/>',foh:'<path d="M4 19h16M6 19V7h12v12M9 10h6M9 13h6M9 16h6"/>',
  speaker:'<rect x="7" y="3" width="10" height="18" rx="1"/><circle cx="12" cy="8" r="2"/><circle cx="12" cy="15" r="3"/>',sub:'<rect x="5" y="4" width="14" height="16" rx="1"/><circle cx="12" cy="12" r="5"/>',delay:'<rect x="8" y="3" width="8" height="16"/><circle cx="12" cy="8" r="1.5"/><circle cx="12" cy="14" r="2.5"/><path d="M6 21h12"/>',screen:'<rect x="3" y="4" width="18" height="13" rx="1"/><path d="M8 21h8M12 17v4"/>',ledwall:'<rect x="3" y="4" width="18" height="14"/><path d="M7 4v14M12 4v14M17 4v14M3 9h18M3 14h18"/>',
@@ -3146,12 +3150,25 @@ function redrawToiletGrid(item){
   applyGroundMarkerSize(item);
 }
 
+function furnitureMarkerSVG(type){
+  if(type==='table'){
+    const seats=Array.from({length:8},(_,i)=>{const a=(Math.PI*2*i/8)-Math.PI/2,cx=50+39*Math.cos(a),cy=50+39*Math.sin(a);return `<g><circle cx="${cx.toFixed(1)}" cy="${cy.toFixed(1)}" r="6.5" fill="#e2e8f0" stroke="#64748b" stroke-width="2"/><path d="M${(cx-3.2).toFixed(1)} ${(cy-9.5).toFixed(1)}h6.4" stroke="#64748b" stroke-width="2" stroke-linecap="round"/></g>`}).join('');
+    return `<svg viewBox="0 0 100 100" aria-hidden="true">${seats}<circle cx="50" cy="50" r="28" fill="#0ea5e9" stroke="#075985" stroke-width="2.5"/></svg>`;
+  }
+  if(type==='barleaner')return '<svg viewBox="0 0 100 80" aria-hidden="true"><g fill="#e2e8f0" stroke="#64748b" stroke-width="2"><circle cx="22" cy="15" r="7"/><circle cx="50" cy="15" r="7"/><circle cx="78" cy="15" r="7"/><circle cx="22" cy="66" r="7"/><circle cx="50" cy="66" r="7"/><circle cx="78" cy="66" r="7"/></g><rect x="8" y="29" width="84" height="22" rx="8" fill="#fb923c" stroke="#9a3412" stroke-width="2.5"/><path d="M17 40h66" stroke="#fff7ed" stroke-width="2"/></svg>';
+  return '';
+}
 function markerContent(item){
   const meta=OBJECT_TYPES.find(x=>x[0]===item.type)||[item.type,'•',item.type,'#ef4444'];
   const el=document.createElement('div');
-  el.className='site-marker'+(['toilet','portabletoilet'].includes(item.type)?' portaloo-marker':'');
+  el.className='site-marker'+(['toilet','portabletoilet'].includes(item.type)?' portaloo-marker':'')+(['table','barleaner'].includes(item.type)?` ${item.type}-marker`:'');
   el.style.setProperty('--marker',meta[3]||'#ef4444');
-  el.innerHTML=`<div class="mi">${['toilet','portabletoilet'].includes(item.type)?toiletGridSVG(item.toiletLayout):meta[1]}</div><div class="ml">${item.name||meta[2]}</div>`;
+  const furniture=['table','barleaner'].includes(item.type);
+  el.innerHTML=`<div class="mi">${item.type==='table'||item.type==='barleaner'?furnitureMarkerSVG(item.type):(['toilet','portabletoilet'].includes(item.type)?toiletGridSVG(item.toiletLayout):meta[1])}</div><div class="ml">${item.name||meta[2]}</div>`;
+  if(item.type==='table'){
+    const number=document.createElement('span');number.className='table-number';number.textContent=item.name||'';
+    el.querySelector('.mi').appendChild(number);
+  }
   return el;
 }
 function markerIconSize(value){
@@ -3192,10 +3209,10 @@ function addMarker(type,position,data={}){
   const item={
     id:data.id||crypto.randomUUID(),
     type,
-    name:data.name||meta[2],
+    name:data.name||(type==='table'?String(markers.filter(m=>m.type==='table').length+1):meta[2]),
     dimensions:data.dimensions||'',
     toiletLayout:isToiletItem({type})?toiletLayout(data.toiletLayout):undefined,
-    iconSize:markerIconSize(data.iconSize??(type==='label'?11:34)),
+    iconSize:markerIconSize(data.iconSize??(type==='label'?11:(type==='table'||type==='barleaner'?48:34))),
     iconSizeZoom:data.iconSizeZoom??(isRestoringPlan?19:(map?.getZoom?.()??19)),
     position:{
       lat:typeof position.lat==='function'?position.lat():Number(position.lat),
@@ -3590,7 +3607,7 @@ function wireUI(){
 
   byId('finishDraw').onclick=finishDrawing;byId('cancelDraw').onclick=()=>cancelDrawing(true);byId('finishDrawTop').onclick=finishDrawing;byId('cancelDrawTop').onclick=()=>cancelDrawing(true);byId('saveBtn').onclick=()=>savePlan(true);byId('clearBtn').onclick=clearPlan;byId('printBtn').onclick=()=>{const p=byId('plannerModule');if(p)p.dataset.printTitle=(byId('eventName')?.value||activeEvent()?.name||'Site Plan')+' · SitePlanNZ';setTimeout(()=>window.print(),80)};
   byId('deleteBtn').onclick=deleteSelected;byId('duplicateBtn').onclick=duplicateSelected;
-  byId('selName').addEventListener('input',e=>{if(!selected)return;selected.name=e.target.value;if(selected.content){selected.content.querySelector('.ml').textContent=selected.name;selected.marker.title=selected.name}updateStats();autoSave()});
+  byId('selName').addEventListener('input',e=>{if(!selected)return;selected.name=e.target.value;if(selected.content){const label=selected.content.querySelector('.ml');if(label)label.textContent=selected.name;const tableNumber=selected.content.querySelector('.table-number');if(tableNumber)tableNumber.textContent=selected.name;selected.marker.title=selected.name}updateStats();autoSave()});
   const resizeSelectedItem=e=>{
     if(!selected?.marker||selected.type==='marquee')return;
     if(e.target.value==='')return;
@@ -4809,5 +4826,13 @@ import * as THREE from "three";
 window.THREE = THREE;
 await import("./stageplan.js");
 window.dispatchEvent(new Event("stageplan-engine-ready"));
-</script><script>(function(){function i(){document.querySelectorAll('[data-module="stageplan"]').forEach(function(b){if(b.dataset.spBound)return;b.dataset.spBound='1';b.addEventListener('click',function(){if(typeof window.switchModule==='function')window.switchModule('stageplan');else{document.querySelectorAll('.module').forEach(function(x){x.classList.add('hidden')});var m=document.getElementById('stageplanModule');if(m)m.classList.remove('hidden')}if(window.StagePlan)window.StagePlan.show();else window.addEventListener('stageplan-engine-ready',function(){if(window.StagePlan)window.StagePlan.show()},{once:true})})})}if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',i);else i();var old=window.switchModule;if(typeof old==='function')window.switchModule=function(name){var r=old.apply(this,arguments);if(name==='stageplan'&&window.StagePlan)window.StagePlan.show();return r}})();</script></body>
+</script><script>(function(){function i(){document.querySelectorAll('[data-module="stageplan"]').forEach(function(b){if(b.dataset.spBound)return;b.dataset.spBound='1';b.addEventListener('click',function(){if(typeof window.switchModule==='function')window.switchModule('stageplan');else{document.querySelectorAll('.module').forEach(function(x){x.classList.add('hidden')});var m=document.getElementById('stageplanModule');if(m)m.classList.remove('hidden')}if(window.StagePlan)window.StagePlan.show();else window.addEventListener('stageplan-engine-ready',function(){if(window.StagePlan)window.StagePlan.show()},{once:true})})})}if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',i);else i();var old=window.switchModule;if(typeof old==='function')window.switchModule=function(name){var r=old.apply(this,arguments);if(name==='stageplan'&&window.StagePlan)window.StagePlan.show();return r}})();</script><style id="siteplan-furniture-clarity">
+.site-marker.table-marker,.site-marker.barleaner-marker{padding:0!important;background:transparent!important;border:0!important;border-radius:0!important;box-shadow:none!important;overflow:visible!important;filter:none!important}
+.site-marker.table-marker .mi,.site-marker.barleaner-marker .mi{position:relative;width:100%;height:100%;display:block!important;background:transparent!important;border-radius:0!important;color:inherit!important}
+.site-marker.table-marker .mi svg,.site-marker.barleaner-marker .mi svg{display:block;width:100%;height:100%;overflow:visible}
+.site-marker.table-marker .table-number{position:absolute;inset:0;display:grid;place-items:center;color:#fff;font-size:10px;font-weight:900;line-height:1;text-shadow:0 1px 2px rgba(0,0,0,.55);pointer-events:none}
+.site-marker.table-marker .ml{display:none!important}
+.geo-marquee-label{padding:3px 6px!important;border:1px solid #111!important;border-radius:4px!important;background:#fff!important;color:#111!important;font-size:11px!important;font-weight:900!important;line-height:1.2!important;white-space:nowrap!important;box-shadow:0 1px 5px rgba(0,0,0,.4)!important}
+</style>
+</body>
 </html>
