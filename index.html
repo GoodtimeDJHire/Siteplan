@@ -2948,16 +2948,75 @@ function renderEvents(){
     return `<article class="event-card${e.archived?' archived':''}"><div class="event-body"><h3>${esc(e.name||'Untitled Event')}</h3><div class="event-meta">${details||new Date(e.updated||e.created).toLocaleDateString()}</div><div class="event-actions"><button class="btn primary" onclick="openEvent('${e.id}')">Open</button><button class="btn" onclick="duplicateEvent('${e.id}')">Duplicate</button><button class="btn" onclick="toggleArchiveEvent('${e.id}')">${e.archived?'Restore':'Archive'}</button><button class="btn danger dashboard-delete-event" onclick="deleteEvent('${e.id}')">Delete Event</button></div></div></article>`  }).join(''):'<div class="dashboard-empty" style="grid-column:1/-1"><b>No events yet.</b><br>Create your first event and start a site plan.</div>';
 }
 
-function duplicateEvent(id){
+async function duplicateEvent(id){
   savePlan(false);
-  const src=events.find(e=>e.id===id); if(!src)return;
-  const nid=crypto.randomUUID().slice(0,8);
+  const src=events.find(e=>String(e.id)===String(id)); if(!src)return;
   const copy=JSON.parse(JSON.stringify(src));
-  copy.id=nid;copy.name=(src.name||'Untitled Event')+' Copy';copy.created=new Date().toISOString();copy.updated=copy.created;copy.archived=false;
-  if(copy.plan){copy.plan.eventName=copy.name;(copy.plan.markers||[]).forEach(x=>x.id=crypto.randomUUID());(copy.plan.shapes||[]).forEach(x=>x.id=crypto.randomUUID())}
-  events.unshift(copy);
-  tenders.filter(t=>t.eventId===id).forEach(t=>{const nt=JSON.parse(JSON.stringify(t));nt.id=crypto.randomUUID().slice(0,8);nt.eventId=nid;nt.eventName=copy.name;nt.status='Draft';nt.quotes=[];nt.created=new Date().toISOString();tenders.unshift(nt)});
-  saveTenders();saveEvents();toast('Event duplicated');
+  copy.id=crypto.randomUUID();
+  copy.name=(src.name||'Untitled Event')+' Copy';
+  copy.created=new Date().toISOString();copy.updated=copy.created;copy.archived=false;
+  if(copy.plan){
+    copy.plan.eventName=copy.name;
+    (copy.plan.markers||[]).forEach(x=>x.id=crypto.randomUUID());
+    (copy.plan.shapes||[]).forEach(x=>x.id=crypto.randomUUID());
+  }
+
+  const sourceTenders=tenders.filter(t=>String(t.eventId)===String(id));
+  let newEvent=copy;
+  if(siteplanCloudUser){
+    try{
+      const {data,error}=await siteplanCloud.from('events').insert({
+        owner_id:siteplanCloudUser.id,
+        name:copy.name,
+        venue:copy.location||null,
+        event_date:copy.eventDate||null,
+        status:'active',
+        archived:false,
+        plan_data:copy.plan||{},
+        budget_data:[{total:Number(copy.budget)||0}]
+      }).select().single();
+      if(error)throw error;
+      newEvent=cloudEventToLocal(data);
+
+      for(const t of sourceTenders){
+        const row={
+          owner_id:siteplanCloudUser.id,
+          event_id:newEvent.id,
+          title:t.title||'Tender',
+          category:t.category||'Custom',
+          brief:t.brief||null,
+          due_at:t.due?new Date(t.due+'T23:59:59').toISOString():null,
+          status:'draft',
+          region:t.region||null,
+          attendance:Number(t.attendance)||0,
+          estimated_value:Number(t.estimatedValue)||0,
+          requirements_json:t.requirements||[],
+          include_site_plan:t.attachPlan!==false
+        };
+        const result=await siteplanCloud.from('tenders').insert(row).select('*,events(name,venue,event_date),tender_submissions(id,company_name,contact_name,email,price,answers,notes,inclusions,exclusions,status,submitted_at)').single();
+        if(result.error){console.error('Could not duplicate event tender',result.error);continue}
+        tenders.unshift(cloudTenderToLocal(result.data));
+      }
+    }catch(error){
+      console.error('SitePlan event duplication failed',error);
+      toast('Duplicate failed: '+(error.message||error));
+      return;
+    }
+  }else{
+    events.unshift(newEvent);
+    sourceTenders.forEach(t=>{
+      const nt=JSON.parse(JSON.stringify(t));
+      nt.id=crypto.randomUUID();nt.eventId=copy.id;nt.eventName=copy.name;
+      nt.status='Draft';nt.quotes=[];nt.created=new Date().toISOString();
+      tenders.unshift(nt);
+    });
+  }
+  if(siteplanCloudUser)events.unshift(newEvent);
+  localStorage.setItem('siteplan_current_event_id',currentEventId);
+  localStorage.setItem('siteplan_events',JSON.stringify(events));
+  saveTenders();
+  renderEvents();renderTenders();
+  toast('Event duplicated');
 }
 function toggleArchiveEvent(id){
   const e=events.find(x=>x.id===id);if(!e)return;e.archived=!e.archived;e.updated=new Date().toISOString();saveEvents();toast(e.archived?'Event archived':'Event restored');
@@ -2984,7 +3043,7 @@ function importLocalBackup(file){
 }
 function newEvent(){
   const name=prompt('Event name','New Event'); if(name===null)return;
-  savePlan(false); const id=crypto.randomUUID().slice(0,8);events.unshift({id,name:name.trim()||'New Event',created:new Date().toISOString(),updated:new Date().toISOString(),plan:null,budget:0});currentEventId=id;localStorage.setItem('siteplan_current_event_id',id);saveEvents();clearVisualPlan();byId('eventName').value=name.trim()||'New Event';switchModule('planner');autoSave();resetHistory();
+  savePlan(false); const id=crypto.randomUUID();events.unshift({id,name:name.trim()||'New Event',created:new Date().toISOString(),updated:new Date().toISOString(),plan:null,budget:0});currentEventId=id;localStorage.setItem('siteplan_current_event_id',id);saveEvents();clearVisualPlan();byId('eventName').value=name.trim()||'New Event';switchModule('planner');autoSave();resetHistory();
 }
 function clearVisualPlan(){markers.forEach(m=>{if(m.type==='marquee'){clearMarqueeControls(m);m.marqueeLabel?.setMap(null);m.marqueeOverlay?.setMap(null);(m.marqueeRoofLines||[]).forEach(l=>l.setMap(null))}else m.marker.map=null});shapes.forEach(s=>s.overlay.setMap(null));markers=[];shapes=[];selected=null;refreshInspector();updateStats()}
 function loadPlanData(d){
@@ -4449,15 +4508,13 @@ deleteEvent=async function(id){
  if(!evt)return;
  if(!confirm('Permanently delete "'+(evt.name||'this event')+'"? This will remove its saved map and attached tenders. This cannot be undone.'))return;
  const targetId=String(id);
- if(siteplanCloudUser){
-   // Do not hide the card until the server confirms deletion. Supabase may return
-   // no error but delete zero rows when a row policy prevents deletion.
+ const isUuid=/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(targetId);
+ if(siteplanCloudUser&&isUuid){
    try{
      const {data:existing,error:lookupError}=await siteplanCloud.from('events').select('id,owner_id').eq('id',targetId).maybeSingle();
      if(lookupError)throw lookupError;
      if(!existing)throw new Error('This event is not accessible in your cloud account. Refresh and try again.');
      if(String(existing.owner_id)!==String(siteplanCloudUser.id))throw new Error('You do not own this event.');
-     // Stop a pending autosave from racing with deletion.
      if(cloudEventSaveTimers[targetId]){clearTimeout(cloudEventSaveTimers[targetId]);delete cloudEventSaveTimers[targetId]}
      const {error:tenderError}=await siteplanCloud.from('tenders').delete().eq('event_id',targetId);
      if(tenderError)throw tenderError;
@@ -4468,6 +4525,11 @@ deleteEvent=async function(id){
      if(verifyError)throw verifyError;
      if(remaining?.length)throw new Error('Event still exists in the cloud after deletion.');
    }catch(error){console.error('SitePlan event deletion failed',error);toast('Delete failed: '+(error.message||error));return}
+ }else if(siteplanCloudUser){
+   // Older browser-only duplicates used 8-character ids and were never inserted into cloud.
+   // Remove those locally without sending a non-UUID value to the events table.
+   const pending=cloudEventSaveTimers[targetId];
+   if(pending){clearTimeout(pending);delete cloudEventSaveTimers[targetId]}
  }
  events=events.filter(e=>String(e.id)!==targetId);
  tenders=tenders.filter(t=>String(t.eventId)!==targetId);
@@ -4476,7 +4538,7 @@ deleteEvent=async function(id){
  localStorage.setItem('siteplan_events',JSON.stringify(events));
  localStorage.setItem('siteplan_tenders',JSON.stringify(tenders));
  renderEvents();renderTenders();renderBudget();
- toast('Event permanently deleted');
+ toast(siteplanCloudUser&&!isUuid?'Local duplicate removed':'Event permanently deleted');
 };
 toggleArchiveEvent=async function(id){const e=events.find(x=>x.id===id);if(!e)return;e.archived=!e.archived;if(siteplanCloudUser)await siteplanCloud.from('events').update({archived:e.archived}).eq('id',id);saveEvents();toast(e.archived?'Event archived':'Event restored')};
 
