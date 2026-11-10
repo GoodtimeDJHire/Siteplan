@@ -3296,7 +3296,7 @@ function applyDrawingColour(c){
   const picker=byId('customDrawColour');if(picker)picker.value=c;
   const hex=byId('customColourHex');if(hex)hex.textContent=c.toUpperCase();
   if(selected?.overlay && selected.type!=='marquee'){
-    selected.color=c;selected.overlay.setOptions({strokeColor:c,...(selected.type==='zone'?{fillColor:c,fillOpacity:selected.fillOpacity??0.5}:{})});
+    selected.color=c;const fenceKind=fenceKindForShape(selected.type,selected.name);selected.overlay.setOptions({strokeColor:c,...(fenceKind?{icons:fenceSymbols(fenceKind,c)}:{}),...(selected.type==='zone'?{fillColor:c,fillOpacity:selected.fillOpacity??0.5}:{})});
     if(byId('selColour'))byId('selColour').value=c;
     autoSave();refreshInspector();
   }
@@ -3339,10 +3339,27 @@ function addVertexDot(position){
   const m=new AdvancedMarkerElement({map,position,content:el,gmpClickable:false,zIndex:999});drawVertexMarkers.push(m);
 }
 function clearVertexDots(){drawVertexMarkers.forEach(m=>m.map=null);drawVertexMarkers=[]}
+function fenceKindForShape(type,name){
+  if(type!=='barrier')return null;
+  if(name==='Crowd Barrier'||name==='Bike Rack Barrier')return 'crowd';
+  if(name==='High Fence')return 'high';
+  return null;
+}
+function fenceSymbols(kind,color){
+  if(!kind)return [];
+  const path=kind==='crowd'
+    ? 'M-10,-7 L10,-7 L10,5 L-10,5 Z M-14,8 L-10,5 L-6,8 M6,8 L10,5 L14,8'
+    : 'M-12,-8 L-12,8 M12,-8 L12,8 M-12,-8 L12,-8 M-12,8 L12,8 M-12,-8 L12,8 M-12,8 L12,-8';
+  return [{icon:{path,scale:1,strokeColor:color,strokeWeight:2.2,fillOpacity:0},offset:'0',repeat:kind==='crowd'?'30px':'32px'}];
+}
 function renderTempShape(){
   clearTemp(); if(drawPoints.length<1)return;
   if(drawMode==='zone') tempShape=new google.maps.Polygon({map,paths:drawPoints,strokeColor:currentDrawColour,strokeWeight:3,fillColor:currentDrawColour,fillOpacity:.20,clickable:false,zIndex:50});
-  else tempShape=new google.maps.Polyline({map,path:drawPoints,strokeColor:currentDrawColour,strokeWeight:5,clickable:false,zIndex:50,icons:drawMode==='route'?[{icon:{path:google.maps.SymbolPath.FORWARD_CLOSED_ARROW,scale:3,strokeColor:currentDrawColour,fillColor:currentDrawColour,fillOpacity:1},offset:'20%',repeat:'70px'}]:[]});
+  else {
+    const fenceKind=drawMode==='barrier-crowd'?'crowd':drawMode==='barrier-high'?'high':null;
+    const icons=drawMode==='route'?[{icon:{path:google.maps.SymbolPath.FORWARD_CLOSED_ARROW,scale:3,strokeColor:currentDrawColour,fillColor:currentDrawColour,fillOpacity:1},offset:'20%',repeat:'70px'}]:fenceSymbols(fenceKind,currentDrawColour);
+    tempShape=new google.maps.Polyline({map,path:drawPoints,strokeColor:currentDrawColour,strokeWeight:fenceKind?2.5:5,clickable:false,zIndex:50,icons});
+  }
 }
 function clearTemp(){if(tempShape){tempShape.setMap(null);tempShape=null}}
 function finishDrawing(){
@@ -3363,9 +3380,10 @@ function cancelDrawing(showTip=false){
 
 function createShape(data){
   const isZone=data.type==='zone'; const color=data.color||'#ff8a00';
-  const opts={map,editable:false,draggable:false,strokeColor:color,strokeOpacity:1,strokeWeight:data.type==='barrier'?5:4,zIndex:20};
-  const routeIcons=data.type==='route'?[{icon:{path:google.maps.SymbolPath.FORWARD_CLOSED_ARROW,scale:3.2,strokeColor:color,fillColor:color,fillOpacity:1,strokeWeight:1},offset:'18%',repeat:'70px'}]:[];
-  const overlay=isZone?new google.maps.Polygon({...opts,paths:data.points,fillColor:color,fillOpacity:data.fillOpacity ?? .5}):new google.maps.Polyline({...opts,path:data.points,icons:routeIcons});
+  const fenceKind=fenceKindForShape(data.type,data.name);
+  const opts={map,editable:false,draggable:false,strokeColor:color,strokeOpacity:1,strokeWeight:fenceKind?2.5:data.type==='barrier'?5:4,zIndex:20};
+  const lineIcons=data.type==='route'?[{icon:{path:google.maps.SymbolPath.FORWARD_CLOSED_ARROW,scale:3.2,strokeColor:color,fillColor:color,fillOpacity:1,strokeWeight:1},offset:'18%',repeat:'70px'}]:fenceSymbols(fenceKind,color);
+  const overlay=isZone?new google.maps.Polygon({...opts,paths:data.points,fillColor:color,fillOpacity:data.fillOpacity ?? .5}):new google.maps.Polyline({...opts,path:data.points,icons:lineIcons});
   const item={...data,color,fillOpacity:isZone?(data.fillOpacity ?? .5):0,overlay};shapes.push(item);overlay.addListener('click',e=>{
     if(drawMode && e?.latLng){
       addDrawPoint(e.latLng);
