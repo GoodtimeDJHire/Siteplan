@@ -3441,7 +3441,7 @@ function createShape(data){
   const isZone=data.type==='zone'; const color=data.color||'#ff8a00';
   const fenceKind=fenceKindForShape(data.type,data.name);
   const baseZIndex=isZone?20:fenceKind?45:data.type==='route'?35:30;
-  const opts={map,editable:false,draggable:false,strokeColor:color,strokeOpacity:1,strokeWeight:fenceKind?3.5:data.type==='barrier'?5:4,zIndex:baseZIndex};
+  const opts={map,editable:false,draggable:false,clickable:true,strokeColor:color,strokeOpacity:fenceKind?.01:1,strokeWeight:fenceKind?28:data.type==='barrier'?8:5,zIndex:baseZIndex};
   const lineIcons=data.type==='route'?[{icon:{path:google.maps.SymbolPath.FORWARD_CLOSED_ARROW,scale:3.2,strokeColor:color,fillColor:color,fillOpacity:1,strokeWeight:1},offset:'18%',repeat:'70px'}]:fenceSymbols(fenceKind,color);
   const overlay=isZone?new google.maps.Polygon({...opts,paths:data.points,fillColor:color,fillOpacity:data.fillOpacity ?? .5}):new google.maps.Polyline({...opts,path:data.points,icons:lineIcons});
   const item={...data,color,fillOpacity:isZone?(data.fillOpacity ?? .5):0,overlay,baseZIndex};shapes.push(item);overlay.addListener('click',e=>{
