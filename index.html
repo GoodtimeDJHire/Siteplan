@@ -2551,7 +2551,7 @@ function restoreHistoryJSON(json){
   try{
     clearSelection();
     markers.forEach(m=>{try{if(m.type==='marquee'){clearMarqueeControls(m);m.marqueeLabel?.setMap(null);m.marqueeOverlay?.setMap(null);(m.marqueeRoofLines||[]).forEach(l=>l.setMap(null))}else m.marker.map=null}catch(e){}});
-    shapes.forEach(s=>{try{s.overlay.setMap(null)}catch(e){}});
+    shapes.forEach(s=>{try{s.overlay.setMap(null);s.hitOverlay?.setMap(null)}catch(e){}});
     markers=[];
     shapes=[];
 
@@ -3045,7 +3045,7 @@ function newEvent(){
   const name=prompt('Event name','New Event'); if(name===null)return;
   savePlan(false); const id=crypto.randomUUID();events.unshift({id,name:name.trim()||'New Event',created:new Date().toISOString(),updated:new Date().toISOString(),plan:null,budget:0});currentEventId=id;localStorage.setItem('siteplan_current_event_id',id);saveEvents();clearVisualPlan();byId('eventName').value=name.trim()||'New Event';switchModule('planner');autoSave();resetHistory();
 }
-function clearVisualPlan(){markers.forEach(m=>{if(m.type==='marquee'){clearMarqueeControls(m);m.marqueeLabel?.setMap(null);m.marqueeOverlay?.setMap(null);(m.marqueeRoofLines||[]).forEach(l=>l.setMap(null))}else m.marker.map=null});shapes.forEach(s=>s.overlay.setMap(null));markers=[];shapes=[];selected=null;refreshInspector();updateStats()}
+function clearVisualPlan(){markers.forEach(m=>{if(m.type==='marquee'){clearMarqueeControls(m);m.marqueeLabel?.setMap(null);m.marqueeOverlay?.setMap(null);(m.marqueeRoofLines||[]).forEach(l=>l.setMap(null))}else m.marker.map=null});shapes.forEach(s=>{s.overlay.setMap(null);s.hitOverlay?.setMap(null)});markers=[];shapes=[];selected=null;refreshInspector();updateStats()}
 function loadPlanData(d){
   clearVisualPlan();
   if(!d)return;
@@ -3447,25 +3447,26 @@ function createShape(data){
   const isZone=data.type==='zone'; const color=data.color||'#ff8a00';
   const fenceKind=fenceKindForShape(data.type,data.name);
   const baseZIndex=isZone?20:fenceKind?45:data.type==='route'?35:30;
-  const opts={map,editable:false,draggable:false,clickable:true,strokeColor:color,strokeOpacity:fenceKind?.01:1,strokeWeight:fenceKind?28:data.type==='barrier'?8:5,zIndex:baseZIndex};
+  const opts={map,editable:false,draggable:false,clickable:true,strokeColor:color,strokeOpacity:1,strokeWeight:fenceKind?2.5:data.type==='barrier'?5:4,zIndex:baseZIndex};
   const lineIcons=data.type==='route'?[{icon:{path:google.maps.SymbolPath.FORWARD_CLOSED_ARROW,scale:3.2,strokeColor:color,fillColor:color,fillOpacity:1,strokeWeight:1},offset:'18%',repeat:'70px'}]:fenceSymbols(fenceKind,color);
   const overlay=isZone?new google.maps.Polygon({...opts,paths:data.points,fillColor:color,fillOpacity:data.fillOpacity ?? .5}):new google.maps.Polyline({...opts,path:data.points,icons:lineIcons});
-  const item={...data,color,fillOpacity:isZone?(data.fillOpacity ?? .5):0,overlay,baseZIndex};shapes.push(item);overlay.addListener('click',e=>{
+  const item={...data,color,fillOpacity:isZone?(data.fillOpacity ?? .5):0,overlay,baseZIndex};
+  if(fenceKind){
+    item.hitOverlay=new google.maps.Polyline({map,path:data.points,clickable:true,strokeColor:color,strokeOpacity:.01,strokeWeight:28,zIndex:baseZIndex+1});
+  }
+  shapes.push(item);
+  const handleShapeClick=e=>{
     e?.stop?.();
-    if(drawMode && e?.latLng){
-      addDrawPoint(e.latLng);
-      return;
-    }
-    if(pendingObjectType && e?.latLng){
-      handleMapClick(e.latLng);
-      return;
-    }
+    if(drawMode && e?.latLng){addDrawPoint(e.latLng);return}
+    if(pendingObjectType && e?.latLng){handleMapClick(e.latLng);return}
     selectItem(item);
-  });
+  };
+  overlay.addListener('click',handleShapeClick);
+  item.hitOverlay?.addListener('click',handleShapeClick);
   const path=overlay.getPath();path.addListener('set_at',()=>shapeChanged(item));path.addListener('insert_at',()=>shapeChanged(item));path.addListener('remove_at',()=>shapeChanged(item));overlay.addListener('dragend',()=>shapeChanged(item));
   return item;
 }
-function shapeChanged(item){item.points=item.overlay.getPath().getArray().map(p=>({lat:p.lat(),lng:p.lng()}));updateStats();if(selected===item)refreshInspector();autoSave()}
+function shapeChanged(item){item.points=item.overlay.getPath().getArray().map(p=>({lat:p.lat(),lng:p.lng()}));if(item.hitOverlay)item.hitOverlay.setPath(item.points);updateStats();if(selected===item)refreshInspector();autoSave()}
 
 function measurement(item){
   if(item.type==='marquee'){
@@ -3544,7 +3545,7 @@ function deleteSelected(){
     item.marker.map=null;
     markers=markers.filter(x=>x!==item);
   }else{
-    item.overlay.setMap(null);
+    item.overlay.setMap(null);item.hitOverlay?.setMap(null);
     shapes=shapes.filter(x=>x!==item);
   }
   updateStats();
@@ -3683,7 +3684,7 @@ function autoSave(){
 function restorePlan(){ensureCurrentEvent();const e=activeEvent();if(e?.plan){loadPlanData(e.plan);byId('eventName').value=e.name||e.plan.eventName||'Untitled Event';eventBudget=Number(e.budget||0);return}const raw=localStorage.getItem('siteplan_current_plan');if(!raw)return;try{const d=JSON.parse(raw);loadPlanData(d)}catch(e){console.warn(e)}}
 
 function clearPlan(){
-  if(!confirm('Clear all objects and drawings from this plan?'))return;markers.forEach(m=>{if(m.type==='marquee'){clearMarqueeControls(m);m.marqueeLabel?.setMap(null);m.marqueeOverlay?.setMap(null);(m.marqueeRoofLines||[]).forEach(l=>l.setMap(null))}else m.marker.map=null});shapes.forEach(s=>s.overlay.setMap(null));markers=[];shapes=[];selected=null;refreshInspector();updateStats();autoSave();toast('Plan cleared')
+  if(!confirm('Clear all objects and drawings from this plan?'))return;markers.forEach(m=>{if(m.type==='marquee'){clearMarqueeControls(m);m.marqueeLabel?.setMap(null);m.marqueeOverlay?.setMap(null);(m.marqueeRoofLines||[]).forEach(l=>l.setMap(null))}else m.marker.map=null});shapes.forEach(s=>{s.overlay.setMap(null);s.hitOverlay?.setMap(null)});markers=[];shapes=[];selected=null;refreshInspector();updateStats();autoSave();toast('Plan cleared')
 
 }
 
