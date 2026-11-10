@@ -3440,10 +3440,11 @@ function cancelDrawing(showTip=false){
 function createShape(data){
   const isZone=data.type==='zone'; const color=data.color||'#ff8a00';
   const fenceKind=fenceKindForShape(data.type,data.name);
-  const opts={map,editable:false,draggable:false,strokeColor:color,strokeOpacity:1,strokeWeight:fenceKind?2.5:data.type==='barrier'?5:4,zIndex:20};
+  const baseZIndex=isZone?20:fenceKind?45:data.type==='route'?35:30;
+  const opts={map,editable:false,draggable:false,strokeColor:color,strokeOpacity:1,strokeWeight:fenceKind?3.5:data.type==='barrier'?5:4,zIndex:baseZIndex};
   const lineIcons=data.type==='route'?[{icon:{path:google.maps.SymbolPath.FORWARD_CLOSED_ARROW,scale:3.2,strokeColor:color,fillColor:color,fillOpacity:1,strokeWeight:1},offset:'18%',repeat:'70px'}]:fenceSymbols(fenceKind,color);
   const overlay=isZone?new google.maps.Polygon({...opts,paths:data.points,fillColor:color,fillOpacity:data.fillOpacity ?? .5}):new google.maps.Polyline({...opts,path:data.points,icons:lineIcons});
-  const item={...data,color,fillOpacity:isZone?(data.fillOpacity ?? .5):0,overlay};shapes.push(item);overlay.addListener('click',e=>{
+  const item={...data,color,fillOpacity:isZone?(data.fillOpacity ?? .5):0,overlay,baseZIndex};shapes.push(item);overlay.addListener('click',e=>{
     if(drawMode && e?.latLng){
       addDrawPoint(e.latLng);
       return;
@@ -3454,7 +3455,7 @@ function createShape(data){
     }
     selectItem(item);
   });
-  const path=overlay.getPath();path.addListener('set_at',()=>shapeChanged(item));path.addListener('insert_at',()=>shapeChanged(item));path.addListener('remove_at',()=>shapeChanged(item));
+  const path=overlay.getPath();path.addListener('set_at',()=>shapeChanged(item));path.addListener('insert_at',()=>shapeChanged(item));path.addListener('remove_at',()=>shapeChanged(item));overlay.addListener('dragend',()=>shapeChanged(item));
   return item;
 }
 function shapeChanged(item){item.points=item.overlay.getPath().getArray().map(p=>({lat:p.lat(),lng:p.lng()}));updateStats();if(selected===item)refreshInspector();autoSave()}
@@ -3472,13 +3473,19 @@ function clearSelection(){
   if(selected?.content)selected.content.classList.remove('selected');
   if(selected?.type==='marquee')setMarqueeSelected(selected,false);
   if(selected?.overlay?.setEditable)selected.overlay.setEditable(false);
+  if(selected?.overlay?.setDraggable)selected.overlay.setDraggable(false);
+  if(selected?.overlay?.setZIndex&&selected.baseZIndex!=null)selected.overlay.setZIndex(selected.baseZIndex);
   selected=null;
   refreshInspector();
 }
 function selectItem(item){
   if(selected?.content)selected.content.classList.remove('selected');
   if(selected?.type==='marquee'&&selected!==item)setMarqueeSelected(selected,false);
-  if(selected?.overlay?.setEditable && selected!==item)selected.overlay.setEditable(false);
+  if(selected?.overlay&&selected!==item){
+    if(selected.overlay.setEditable)selected.overlay.setEditable(false);
+    if(selected.overlay.setDraggable)selected.overlay.setDraggable(false);
+    if(selected.overlay.setZIndex&&selected.baseZIndex!=null)selected.overlay.setZIndex(selected.baseZIndex);
+  }
 
   selected=item;
 
@@ -3487,7 +3494,9 @@ function selectItem(item){
     clearMarqueeControls(item);
     setMarqueeSelected(item,true);
   }else if(item.overlay?.setEditable){
+    item.overlay.setZIndex?.(item.type==='barrier'?100:(item.baseZIndex??30));
     item.overlay.setEditable(true);
+    item.overlay.setDraggable?.(true);
   }
 
   refreshInspector();
