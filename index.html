@@ -3445,6 +3445,7 @@ function createShape(data){
   const lineIcons=data.type==='route'?[{icon:{path:google.maps.SymbolPath.FORWARD_CLOSED_ARROW,scale:3.2,strokeColor:color,fillColor:color,fillOpacity:1,strokeWeight:1},offset:'18%',repeat:'70px'}]:fenceSymbols(fenceKind,color);
   const overlay=isZone?new google.maps.Polygon({...opts,paths:data.points,fillColor:color,fillOpacity:data.fillOpacity ?? .5}):new google.maps.Polyline({...opts,path:data.points,icons:lineIcons});
   const item={...data,color,fillOpacity:isZone?(data.fillOpacity ?? .5):0,overlay,baseZIndex};shapes.push(item);overlay.addListener('click',e=>{
+    e?.stop?.();
     if(drawMode && e?.latLng){
       addDrawPoint(e.latLng);
       return;
@@ -3474,7 +3475,7 @@ function clearSelection(){
   if(selected?.type==='marquee')setMarqueeSelected(selected,false);
   if(selected?.overlay?.setEditable)selected.overlay.setEditable(false);
   if(selected?.overlay?.setDraggable)selected.overlay.setDraggable(false);
-  if(selected?.overlay?.setZIndex&&selected.baseZIndex!=null)selected.overlay.setZIndex(selected.baseZIndex);
+  if(selected?.overlay?.setZIndex&&selected.baseZIndex!=null)selected.overlay.setOptions({zIndex:selected.baseZIndex});
   selected=null;
   refreshInspector();
 }
@@ -3494,7 +3495,7 @@ function selectItem(item){
     clearMarqueeControls(item);
     setMarqueeSelected(item,true);
   }else if(item.overlay?.setEditable){
-    item.overlay.setZIndex?.(item.type==='barrier'?100:(item.baseZIndex??30));
+    item.overlay.setOptions?.({zIndex:item.type==='barrier'?100:(item.baseZIndex??30)});
     item.overlay.setEditable(true);
     item.overlay.setDraggable?.(true);
   }
