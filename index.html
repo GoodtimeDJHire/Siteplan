@@ -3075,6 +3075,12 @@ function initApp(){
   map.addListener('click',e=>{
     if(pendingObjectType){handleMapClick(e.latLng);return}
     if(drawMode)return;
+    const poly=google.maps.geometry?.poly;
+    if(e?.latLng&&poly?.isLocationOnEdge){
+      const tolerance=30/(256*Math.pow(2,map.getZoom()||18))*360;
+      const nearbyFence=shapes.find(s=>s.type==='barrier'&&s.overlay&&poly.isLocationOnEdge(e.latLng,s.overlay,tolerance));
+      if(nearbyFence){selectItem(nearbyFence);return}
+    }
     clearSelection();
   });
   map.addListener('zoom_changed',()=>requestAnimationFrame(refreshGroundMarkerSizes));
