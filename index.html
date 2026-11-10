@@ -2550,7 +2550,7 @@ function restoreHistoryJSON(json){
   isRestoringPlan=true;
   try{
     clearSelection();
-    markers.forEach(m=>{try{if(m.type==='marquee'){clearMarqueeControls(m);m.marqueeOverlay?.setMap(null);(m.marqueeRoofLines||[]).forEach(l=>l.setMap(null))}else m.marker.map=null}catch(e){}});
+    markers.forEach(m=>{try{if(m.type==='marquee'){clearMarqueeControls(m);m.marqueeLabel?.setMap(null);m.marqueeOverlay?.setMap(null);(m.marqueeRoofLines||[]).forEach(l=>l.setMap(null))}else m.marker.map=null}catch(e){}});
     shapes.forEach(s=>{try{s.overlay.setMap(null)}catch(e){}});
     markers=[];
     shapes=[];
@@ -2646,8 +2646,16 @@ function marqueeRotatePoint(item){
 function marqueeLabelPoint(item){
   const W=Number(item.marqueeWidth)||5;
   const r=Number(item.marqueeRotation)||0;
-  const p=rotateXY(0,-W/2-1.2,r);
+  const p=rotateXY(0,W/2+1.2,r);
   return geoOffset(item.position,p.x,p.y);
+}
+function createMarqueeDimensionLabel(item){
+  if(item.marqueeLabel){item.marqueeLabel.map=map;return}
+  const labelEl=document.createElement('div');
+  labelEl.className='geo-marquee-label';
+  labelEl.textContent=(Number(item.marqueeLength)||10)+' × '+(Number(item.marqueeWidth)||5)+' m';
+  item.marqueeLabelText=labelEl;
+  item.marqueeLabel=new AdvancedMarkerElement({map,position:marqueeLabelPoint(item),content:labelEl,gmpDraggable:false,zIndex:999});
 }
 function updateMarqueeOverlay(item){
   if(!item||item.type!=='marquee')return;
@@ -2669,10 +2677,8 @@ function updateMarqueeOverlay(item){
 function clearMarqueeControls(item){
   (item?.marqueeHandles||[]).forEach(h=>h.map=null);
   if(item?.marqueeRotateHandle)item.marqueeRotateHandle.map=null;
-  if(item?.marqueeLabel)item.marqueeLabel.map=null;
   item.marqueeHandles=[];
   item.marqueeRotateHandle=null;
-  item.marqueeLabel=null;
 }
 function setMarqueeSelected(item,on){
   if(!item||item.type!=='marquee')return;
@@ -2760,15 +2766,6 @@ function buildMarqueeControls(item){
   rh.addListener('dragend',()=>autoSave());
   item.marqueeRotateHandle=rh;
 
-  const labelEl=document.createElement('div');
-  labelEl.className='geo-marquee-label';
-  labelEl.textContent=(Number(item.marqueeLength)||10)+' × '+(Number(item.marqueeWidth)||5)+' m';
-  item.marqueeLabelText=labelEl;
-
-  item.marqueeLabel=new AdvancedMarkerElement({
-    map,position:marqueeLabelPoint(item),content:labelEl,gmpDraggable:false,zIndex:999
-  });
-
   updateMarqueeOverlay(item);
 }
 function addMarquee(position,data={}){
@@ -2808,6 +2805,7 @@ function addMarquee(position,data={}){
   });
 
   item.marqueeOverlay.addListener('click',()=>selectItem(item));
+  createMarqueeDimensionLabel(item);
 
   // Visual-only tent roof cross. click-through so existing marquee interaction is untouched.
   item.marqueeRoofLines=[
@@ -2988,7 +2986,7 @@ function newEvent(){
   const name=prompt('Event name','New Event'); if(name===null)return;
   savePlan(false); const id=crypto.randomUUID().slice(0,8);events.unshift({id,name:name.trim()||'New Event',created:new Date().toISOString(),updated:new Date().toISOString(),plan:null,budget:0});currentEventId=id;localStorage.setItem('siteplan_current_event_id',id);saveEvents();clearVisualPlan();byId('eventName').value=name.trim()||'New Event';switchModule('planner');autoSave();resetHistory();
 }
-function clearVisualPlan(){markers.forEach(m=>{if(m.type==='marquee'){clearMarqueeControls(m);m.marqueeOverlay?.setMap(null);(m.marqueeRoofLines||[]).forEach(l=>l.setMap(null))}else m.marker.map=null});shapes.forEach(s=>s.overlay.setMap(null));markers=[];shapes=[];selected=null;refreshInspector();updateStats()}
+function clearVisualPlan(){markers.forEach(m=>{if(m.type==='marquee'){clearMarqueeControls(m);m.marqueeLabel?.setMap(null);m.marqueeOverlay?.setMap(null);(m.marqueeRoofLines||[]).forEach(l=>l.setMap(null))}else m.marker.map=null});shapes.forEach(s=>s.overlay.setMap(null));markers=[];shapes=[];selected=null;refreshInspector();updateStats()}
 function loadPlanData(d){
   clearVisualPlan();
   if(!d)return;
@@ -3446,6 +3444,7 @@ function deleteSelected(){
   clearSelection();
   if(item.type==='marquee'){
     clearMarqueeControls(item);
+    item.marqueeLabel?.setMap(null);
     item.marqueeOverlay?.setMap(null);
     markers=markers.filter(x=>x!==item);
   }else if(item.marker){
@@ -3591,7 +3590,7 @@ function autoSave(){
 function restorePlan(){ensureCurrentEvent();const e=activeEvent();if(e?.plan){loadPlanData(e.plan);byId('eventName').value=e.name||e.plan.eventName||'Untitled Event';eventBudget=Number(e.budget||0);return}const raw=localStorage.getItem('siteplan_current_plan');if(!raw)return;try{const d=JSON.parse(raw);loadPlanData(d)}catch(e){console.warn(e)}}
 
 function clearPlan(){
-  if(!confirm('Clear all objects and drawings from this plan?'))return;markers.forEach(m=>{if(m.type==='marquee'){clearMarqueeControls(m);m.marqueeOverlay?.setMap(null);(m.marqueeRoofLines||[]).forEach(l=>l.setMap(null))}else m.marker.map=null});shapes.forEach(s=>s.overlay.setMap(null));markers=[];shapes=[];selected=null;refreshInspector();updateStats();autoSave();toast('Plan cleared')
+  if(!confirm('Clear all objects and drawings from this plan?'))return;markers.forEach(m=>{if(m.type==='marquee'){clearMarqueeControls(m);m.marqueeLabel?.setMap(null);m.marqueeOverlay?.setMap(null);(m.marqueeRoofLines||[]).forEach(l=>l.setMap(null))}else m.marker.map=null});shapes.forEach(s=>s.overlay.setMap(null));markers=[];shapes=[];selected=null;refreshInspector();updateStats();autoSave();toast('Plan cleared')
 
 }
 
