@@ -3773,10 +3773,14 @@ function exportMapPdf(){
   });
   google.maps.event.trigger(map,'resize');
   if(found)map.fitBounds(bounds,64);
-  google.maps.event.addListenerOnce(map,'idle',()=>{
+  let printStarted=false;
+  const startPrint=()=>{
+    if(printStarted)return;
+    printStarted=true;
     setTimeout(()=>window.print(),250);
-  });
-  setTimeout(()=>{if(!document.hidden)window.print()},1400);
+  };
+  google.maps.event.addListenerOnce(map,'idle',startPrint);
+  setTimeout(startPrint,1400);
   window.addEventListener('afterprint',()=>{
     document.body.classList.remove('siteplan-print-export');
     map.setOptions({disableDefaultUI:previousDisableUI});
