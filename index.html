@@ -2251,6 +2251,23 @@ body.siteplan-print-export #plannerModule #map{position:absolute!important;inset
   body:has(#plannerModule:not(.hidden)) #plannerModule>.map-wrap,
   body:has(#plannerModule:not(.hidden)) #plannerModule #map{position:absolute!important;inset:0!important;width:100%!important;height:100%!important}
 }
+
+/* Readable tiled map export: each tile prints at a useful scale. */
+body.siteplan-print-export #plannerModule{display:block!important;position:fixed!important;inset:0!important;width:100vw!important;height:100vh!important;min-height:0!important;margin:0!important;padding:0!important;overflow:auto!important;background:#fff!important}
+body.siteplan-print-export #plannerModule>*:not(.siteplan-print-pages){display:none!important}
+body.siteplan-print-export .siteplan-print-pages{display:block!important;width:100%;height:100%;overflow:auto;background:#fff}
+body.siteplan-print-export .siteplan-print-page{position:relative;width:min(100vw,141.428vh);height:min(70.714vw,100vh);margin:0 auto 12px;background:#fff;overflow:hidden}
+body.siteplan-print-export .siteplan-print-map{position:absolute;inset:0;width:100%;height:100%}
+body.siteplan-print-export .siteplan-print-page-number{position:absolute;right:12px;bottom:12px;padding:4px 8px;border-radius:4px;background:rgba(255,255,255,.92);color:#333;font:600 10px/1.2 Arial,sans-serif;z-index:2}
+@media print{
+  @page{size:A4 landscape;margin:0}
+  body.siteplan-print-export,body.siteplan-print-export html{height:auto!important;overflow:visible!important}
+  body.siteplan-print-export #plannerModule{position:static!important;inset:auto!important;width:100%!important;height:auto!important;overflow:visible!important;transform:none!important}
+  body.siteplan-print-export #plannerModule>*:not(.siteplan-print-pages){display:none!important}
+  body.siteplan-print-export .siteplan-print-pages{display:block!important;height:auto!important;overflow:visible!important}
+  body.siteplan-print-export .siteplan-print-page{width:100vw!important;height:100vh!important;margin:0!important;overflow:hidden!important;break-after:page!important;page-break-after:always!important}
+  body.siteplan-print-export .siteplan-print-page:last-child{break-after:auto!important;page-break-after:auto!important}
+}
 </style>
 </head>
 <body>
@@ -3745,15 +3762,6 @@ function wireUI(){
   byId('finishDraw').onclick=finishDrawing;byId('cancelDraw').onclick=()=>cancelDrawing(true);byId('finishDrawTop').onclick=finishDrawing;byId('cancelDrawTop').onclick=()=>cancelDrawing(true);byId('saveBtn').onclick=()=>savePlan(true);byId('clearBtn').onclick=clearPlan;byId('printBtn').onclick=exportMapPdf;
 
 function exportMapPdf(){
-  const previousCenter=map.getCenter();
-  const previousZoom=map.getZoom();
-  const previousSelection=selected;
-  const previousDisableUI=map.get('disableDefaultUI');
-  clearSelection();
-  document.body.classList.add('siteplan-print-export');
-  const p=byId('plannerModule');
-  if(p)p.dataset.printTitle=(byId('eventName')?.value||activeEvent()?.name||'Site Plan')+' · SitePlanNZ';
-  map.setOptions({disableDefaultUI:true});
   const bounds=new google.maps.LatLngBounds();
   let found=false;
   const extend=point=>{
@@ -3763,32 +3771,112 @@ function exportMapPdf(){
     if(Number.isFinite(lat)&&Number.isFinite(lng)){bounds.extend({lat,lng});found=true}
   };
   markers.forEach(item=>{
-    if(item.type==='marquee'&&typeof marqueeCorners==='function')marqueeCorners(item).forEach(extend);
+    if(item.type==='marquee')marqueeCorners(item).forEach(extend);
     else extend(item.marker?.position||item.position);
   });
-  shapes.forEach(item=>{
-    const path=item.overlay?.getPath?.();
-    if(path)path.getArray().forEach(extend);
-    else (item.points||[]).forEach(extend);
-  });
-  google.maps.event.trigger(map,'resize');
-  if(found)map.fitBounds(bounds,64);
+  shapes.forEach(item=>(item.points||[]).forEach(extend));
+  if(!found){toast('Add map items before exporting');return}
+
+  const planner=byId('plannerModule');
+  const pageSheet=document.createElement('div');
+  pageSheet.className='siteplan-print-pages';
+  const pages=[];
+  const printMaps=[];
+  const projection=map.getProjection();
+  if(!projection){toast('Map is still loading. Try exporting again shortly');return}
+  const sw=bounds.getSouthWest(),ne=bounds.getNorthEast();
+  const topLeft=projection.fromLatLngToPoint(ne);
+  const bottomRight=projection.fromLatLngToPoint(sw);
+  const minX=topLeft.x,maxX=bottomRight.x,minY=topLeft.y,maxY=bottomRight.y;
+  const spanX=Math.max(0.000001,maxX-minX),spanY=Math.max(0.000001,maxY-minY);
+  const pageWidth=Math.min(window.innerWidth,window.innerHeight*1.41428);
+  const pageHeight=pageWidth/1.41428;
+  const fitScale=Math.min((pageWidth-120)/(spanX*256),(pageHeight-120)/(spanY*256));
+  const fitZoom=Math.max(1,Math.min(19,Math.floor(Math.log2(Math.max(0.001,fitScale)))));
+  const tileZoom=Math.min(21,fitZoom+2);
+  const worldSize=256*Math.pow(2,tileZoom);
+  const tileW=pageWidth/worldSize,tileH=pageHeight/worldSize,stepRatio=.86;
+  const cols=Math.max(1,Math.ceil(Math.max(0,spanX-tileW)/(tileW*stepRatio))+1);
+  const rows=Math.max(1,Math.ceil(Math.max(0,spanY-tileH)/(tileH*stepRatio))+1);
+  const total=rows*cols;
+  const printName=(byId('eventName')?.value||activeEvent()?.name||'Site Plan').trim();
+
+  for(let row=0;row<rows;row++){
+    for(let col=0;col<cols;col++){
+      const centerPoint=new google.maps.Point(minX+tileW/2+col*tileW*stepRatio,minY+tileH/2+row*tileH*stepRatio);
+      const center=projection.fromPointToLatLng(centerPoint,true);
+      const page=document.createElement('section');
+      page.className='siteplan-print-page';
+      page.setAttribute('aria-label',printName+' map page '+(pages.length+1));
+      const mapNode=document.createElement('div');
+      mapNode.className='siteplan-print-map';
+      const pageNumber=document.createElement('div');
+      pageNumber.className='siteplan-print-page-number';
+      pageNumber.textContent=(pages.length+1)+' / '+total;
+      page.append(mapNode,pageNumber);
+      pageSheet.appendChild(page);
+      pages.push(page);
+      const pageMap=new google.maps.Map(mapNode,{
+        center,zoom:tileZoom,mapTypeId:map.getMapTypeId(),disableDefaultUI:true,
+        clickableIcons:false,gestureHandling:'none',keyboardShortcuts:false,
+        backgroundColor:'#e8ecef',mapTypeControl:false,streetViewControl:false,
+        fullscreenControl:false
+      });
+      printMaps.push(pageMap);
+
+      markers.forEach(item=>{
+        if(item.type==='marquee'){
+          const corners=marqueeCorners(item);
+          new google.maps.Polygon({map:pageMap,paths:corners,fillColor:'#ffffff',fillOpacity:.94,strokeColor:'#111111',strokeOpacity:1,strokeWeight:2,zIndex:80,clickable:false});
+          new google.maps.Polyline({map:pageMap,path:[corners[0],corners[2]],strokeColor:'#111111',strokeOpacity:1,strokeWeight:2,zIndex:81,clickable:false});
+          new google.maps.Polyline({map:pageMap,path:[corners[1],corners[3]],strokeColor:'#111111',strokeOpacity:1,strokeWeight:2,zIndex:81,clickable:false});
+          const label=document.createElement('div');
+          label.className='geo-marquee-label';
+          label.textContent=(Number(item.marqueeLength)||10)+' × '+(Number(item.marqueeWidth)||5)+' m';
+          new AdvancedMarkerElement({map:pageMap,position:marqueeLabelPoint(item),content:label,gmpDraggable:false,zIndex:999});
+          return;
+        }
+        const copy={...item,content:markerContent(item)};
+        applyGroundMarkerSize(copy,pageMap);
+        new AdvancedMarkerElement({map:pageMap,position:item.marker?.position||item.position,content:copy.content,anchorLeft:'-50%',anchorTop:'-50%',title:item.name||''});
+      });
+
+      shapes.forEach(item=>{
+        const color=item.color||'#ff8a00';
+        const fenceKind=fenceKindForShape(item.type,item.name);
+        if(item.type==='zone'){
+          new google.maps.Polygon({map:pageMap,paths:item.points,fillColor:color,fillOpacity:item.fillOpacity??.5,strokeColor:color,strokeOpacity:1,strokeWeight:4,zIndex:20,clickable:false});
+        }else{
+          const icons=item.type==='route'?[{icon:{path:google.maps.SymbolPath.FORWARD_CLOSED_ARROW,scale:3.2,strokeColor:color,fillColor:color,fillOpacity:1,strokeWeight:1},offset:'18%',repeat:'70px'}]:fenceSymbols(fenceKind,color);
+          new google.maps.Polyline({map:pageMap,path:item.points,strokeColor:color,strokeOpacity:1,strokeWeight:fenceKind?2.5:item.type==='barrier'?5:4,zIndex:fenceKind?45:item.type==='route'?35:30,icons,clickable:false});
+        }
+      });
+    }
+  }
+
+  document.body.classList.add('siteplan-print-export');
+  planner.appendChild(pageSheet);
+  toast('Preparing '+total+' readable map pages…');
   let printStarted=false;
   const startPrint=()=>{
     if(printStarted)return;
     printStarted=true;
-    setTimeout(()=>window.print(),250);
+    setTimeout(()=>window.print(),700);
   };
-  google.maps.event.addListenerOnce(map,'idle',startPrint);
-  setTimeout(startPrint,1400);
-  window.addEventListener('afterprint',()=>{
+  const ready=new Set();
+  printMaps.forEach((pageMap,index)=>{
+    google.maps.event.addListenerOnce(pageMap,'idle',()=>{
+      ready.add(index);
+      if(ready.size===printMaps.length)startPrint();
+    });
+  });
+  const cleanup=()=>{
     document.body.classList.remove('siteplan-print-export');
-    map.setOptions({disableDefaultUI:previousDisableUI});
-    google.maps.event.trigger(map,'resize');
-    map.setCenter(previousCenter);
-    map.setZoom(previousZoom);
-    if(previousSelection)selectItem(previousSelection);
-  },{once:true});
+    printMaps.forEach(pageMap=>google.maps.event.clearInstanceListeners(pageMap));
+    pageSheet.remove();
+  };
+  window.addEventListener('afterprint',cleanup,{once:true});
+  setTimeout(startPrint,10000);
 }
   byId('deleteBtn').onclick=deleteSelected;byId('duplicateBtn').onclick=duplicateSelected;
   byId('selName').addEventListener('input',e=>{if(!selected)return;selected.name=e.target.value;if(selected.content){const label=selected.content.querySelector('.ml');if(label)label.textContent=selected.name;const tableNumber=selected.content.querySelector('.table-number');if(tableNumber)tableNumber.textContent=selected.name;selected.marker.title=selected.name}updateStats();autoSave()});
