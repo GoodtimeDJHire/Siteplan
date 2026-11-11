@@ -2252,21 +2252,24 @@ body.siteplan-print-export #plannerModule #map{position:absolute!important;inset
   body:has(#plannerModule:not(.hidden)) #plannerModule #map{position:absolute!important;inset:0!important;width:100%!important;height:100%!important}
 }
 
-/* Readable tiled map export: each tile prints at a useful scale. */
-body.siteplan-print-export #plannerModule{display:block!important;position:fixed!important;inset:0!important;width:100vw!important;height:100vh!important;min-height:0!important;margin:0!important;padding:0!important;overflow:auto!important;background:#fff!important}
+/* One-page print rendering with fixed-size, high-contrast map symbols. */
+body.siteplan-print-export #plannerModule{display:block!important;position:fixed!important;inset:0!important;width:100vw!important;height:100vh!important;min-height:0!important;margin:0!important;padding:0!important;overflow:hidden!important;background:#fff!important;transform:none!important}
 body.siteplan-print-export #plannerModule>*:not(.siteplan-print-pages){display:none!important}
-body.siteplan-print-export .siteplan-print-pages{display:block!important;width:100%;height:100%;overflow:auto;background:#fff}
-body.siteplan-print-export .siteplan-print-page{position:relative;width:min(100vw,141.428vh);height:min(70.714vw,100vh);margin:0 auto 12px;background:#fff;overflow:hidden}
-body.siteplan-print-export .siteplan-print-map{position:absolute;inset:0;width:100%;height:100%}
-body.siteplan-print-export .siteplan-print-page-number{position:absolute;right:12px;bottom:12px;padding:4px 8px;border-radius:4px;background:rgba(255,255,255,.92);color:#333;font:600 10px/1.2 Arial,sans-serif;z-index:2}
+body.siteplan-print-export .siteplan-print-pages{display:block!important;position:absolute!important;inset:0!important;width:100%;height:100%;overflow:hidden;background:#fff}
+body.siteplan-print-export .siteplan-print-page{position:absolute!important;inset:0!important;width:100vw!important;height:100vh!important;margin:0!important;overflow:hidden!important;background:#fff}
+body.siteplan-print-export .siteplan-print-map{position:absolute!important;inset:0!important;width:100%!important;height:100%!important}
+body.siteplan-print-export .print-site-marker{position:relative;background:#fff!important;border:2px solid var(--marker,#222)!important;border-radius:10px!important;box-shadow:0 1px 3px rgba(0,0,0,.55)!important;color:#111!important;filter:drop-shadow(0 1px 1px #0005)}
+body.siteplan-print-export .print-site-marker .mi{color:var(--marker,#222)!important;font-weight:1000!important}
+body.siteplan-print-export .print-site-marker .ml{position:absolute!important;top:100%!important;left:50%!important;transform:translateX(-50%)!important;padding:2px 4px!important;border:1px solid #333!important;border-radius:3px!important;background:#fff!important;color:#111!important;text-align:center!important;line-height:1.1!important;white-space:nowrap!important;z-index:1!important}
+body.siteplan-print-export .print-site-marker.table-marker,.siteplan-print-export .print-site-marker.barleaner-marker{background:transparent!important;border:0!important;box-shadow:none!important}
+body.siteplan-print-export .print-site-marker.table-marker .table-number{color:#111!important;font-size:12px!important;text-shadow:0 0 2px #fff!important}
+body.siteplan-print-export .print-marquee-label{font-size:10px!important;padding:4px 7px!important;box-shadow:0 1px 3px #0008!important}
 @media print{
   @page{size:A4 landscape;margin:0}
-  body.siteplan-print-export,body.siteplan-print-export html{height:auto!important;overflow:visible!important}
-  body.siteplan-print-export #plannerModule{position:static!important;inset:auto!important;width:100%!important;height:auto!important;overflow:visible!important;transform:none!important}
+  body.siteplan-print-export #plannerModule{position:fixed!important;inset:0!important;width:100vw!important;height:100vh!important;overflow:hidden!important}
   body.siteplan-print-export #plannerModule>*:not(.siteplan-print-pages){display:none!important}
-  body.siteplan-print-export .siteplan-print-pages{display:block!important;height:auto!important;overflow:visible!important}
-  body.siteplan-print-export .siteplan-print-page{width:100vw!important;height:100vh!important;margin:0!important;overflow:hidden!important;break-after:page!important;page-break-after:always!important}
-  body.siteplan-print-export .siteplan-print-page:last-child{break-after:auto!important;page-break-after:auto!important}
+  body.siteplan-print-export .siteplan-print-pages,body.siteplan-print-export .siteplan-print-page,body.siteplan-print-export .siteplan-print-map{position:absolute!important;inset:0!important;width:100vw!important;height:100vh!important;overflow:hidden!important}
+  body.siteplan-print-export .print-site-marker .ml{font-size:10px!important}
 }
 </style>
 </head>
@@ -3780,103 +3783,88 @@ function exportMapPdf(){
   const planner=byId('plannerModule');
   const pageSheet=document.createElement('div');
   pageSheet.className='siteplan-print-pages';
-  const pages=[];
-  const printMaps=[];
+  const page=document.createElement('section');
+  page.className='siteplan-print-page';
+  const mapNode=document.createElement('div');
+  mapNode.className='siteplan-print-map';
+  page.appendChild(mapNode);
+  pageSheet.appendChild(page);
+  document.body.classList.add('siteplan-print-export');
+  planner.appendChild(pageSheet);
+
   const projection=map.getProjection();
-  if(!projection){toast('Map is still loading. Try exporting again shortly');return}
+  if(!projection){pageSheet.remove();document.body.classList.remove('siteplan-print-export');toast('Map is still loading. Try exporting again shortly');return}
   const sw=bounds.getSouthWest(),ne=bounds.getNorthEast();
   const topLeft=projection.fromLatLngToPoint(ne);
   const bottomRight=projection.fromLatLngToPoint(sw);
-  const minX=topLeft.x,maxX=bottomRight.x,minY=topLeft.y,maxY=bottomRight.y;
-  const spanX=Math.max(0.000001,maxX-minX),spanY=Math.max(0.000001,maxY-minY);
+  const spanX=Math.max(.000001,bottomRight.x-topLeft.x);
+  const spanY=Math.max(.000001,bottomRight.y-topLeft.y);
   const pageWidth=Math.min(window.innerWidth,window.innerHeight*1.41428);
   const pageHeight=pageWidth/1.41428;
   const fitScale=Math.min((pageWidth-120)/(spanX*256),(pageHeight-120)/(spanY*256));
-  const fitZoom=Math.max(1,Math.min(19,Math.floor(Math.log2(Math.max(0.001,fitScale)))));
-  const tileZoom=Math.min(21,fitZoom+2);
-  const worldSize=256*Math.pow(2,tileZoom);
-  const tileW=pageWidth/worldSize,tileH=pageHeight/worldSize,stepRatio=.86;
-  const cols=Math.max(1,Math.ceil(Math.max(0,spanX-tileW)/(tileW*stepRatio))+1);
-  const rows=Math.max(1,Math.ceil(Math.max(0,spanY-tileH)/(tileH*stepRatio))+1);
-  const total=rows*cols;
-  const printName=(byId('eventName')?.value||activeEvent()?.name||'Site Plan').trim();
+  const zoom=Math.max(1,Math.min(19,Math.floor(Math.log2(Math.max(.001,fitScale)))));
+  const center=projection.fromPointToLatLng(new google.maps.Point((topLeft.x+bottomRight.x)/2,(topLeft.y+bottomRight.y)/2),true);
+  const pageMap=new google.maps.Map(mapNode,{
+    center,zoom,mapTypeId:map.getMapTypeId(),disableDefaultUI:true,
+    clickableIcons:false,gestureHandling:'none',keyboardShortcuts:false,
+    backgroundColor:'#e8ecef',mapTypeControl:false,streetViewControl:false,fullscreenControl:false
+  });
 
-  for(let row=0;row<rows;row++){
-    for(let col=0;col<cols;col++){
-      const centerPoint=new google.maps.Point(minX+tileW/2+col*tileW*stepRatio,minY+tileH/2+row*tileH*stepRatio);
-      const center=projection.fromPointToLatLng(centerPoint,true);
-      const page=document.createElement('section');
-      page.className='siteplan-print-page';
-      page.setAttribute('aria-label',printName+' map page '+(pages.length+1));
-      const mapNode=document.createElement('div');
-      mapNode.className='siteplan-print-map';
-      const pageNumber=document.createElement('div');
-      pageNumber.className='siteplan-print-page-number';
-      pageNumber.textContent='Page '+(pages.length+1)+' of '+total+' · Row '+(row+1)+' of '+rows+', Column '+(col+1)+' of '+cols;
-      page.append(mapNode,pageNumber);
-      pageSheet.appendChild(page);
-      pages.push(page);
-      const pageMap=new google.maps.Map(mapNode,{
-        center,zoom:tileZoom,mapTypeId:map.getMapTypeId(),disableDefaultUI:true,
-        clickableIcons:false,gestureHandling:'none',keyboardShortcuts:false,
-        backgroundColor:'#e8ecef',mapTypeControl:false,streetViewControl:false,
-        fullscreenControl:false
-      });
-      printMaps.push(pageMap);
-
-      markers.forEach(item=>{
-        if(item.type==='marquee'){
-          const corners=marqueeCorners(item);
-          new google.maps.Polygon({map:pageMap,paths:corners,fillColor:'#ffffff',fillOpacity:.94,strokeColor:'#111111',strokeOpacity:1,strokeWeight:2,zIndex:80,clickable:false});
-          new google.maps.Polyline({map:pageMap,path:[corners[0],corners[2]],strokeColor:'#111111',strokeOpacity:1,strokeWeight:2,zIndex:81,clickable:false});
-          new google.maps.Polyline({map:pageMap,path:[corners[1],corners[3]],strokeColor:'#111111',strokeOpacity:1,strokeWeight:2,zIndex:81,clickable:false});
-          const label=document.createElement('div');
-          label.className='geo-marquee-label';
-          label.textContent=(Number(item.marqueeLength)||10)+' × '+(Number(item.marqueeWidth)||5)+' m';
-          new AdvancedMarkerElement({map:pageMap,position:marqueeLabelPoint(item),content:label,gmpDraggable:false,zIndex:999});
-          return;
-        }
-        const copy={...item,content:markerContent(item)};
-        applyGroundMarkerSize(copy,pageMap);
-        new AdvancedMarkerElement({map:pageMap,position:item.marker?.position||item.position,content:copy.content,anchorLeft:'-50%',anchorTop:'-50%',title:item.name||''});
-      });
-
-      shapes.forEach(item=>{
-        const color=item.color||'#ff8a00';
-        const fenceKind=fenceKindForShape(item.type,item.name);
-        if(item.type==='zone'){
-          new google.maps.Polygon({map:pageMap,paths:item.points,fillColor:color,fillOpacity:item.fillOpacity??.5,strokeColor:color,strokeOpacity:1,strokeWeight:4,zIndex:20,clickable:false});
-        }else{
-          const icons=item.type==='route'?[{icon:{path:google.maps.SymbolPath.FORWARD_CLOSED_ARROW,scale:3.2,strokeColor:color,fillColor:color,fillOpacity:1,strokeWeight:1},offset:'18%',repeat:'70px'}]:fenceSymbols(fenceKind,color);
-          new google.maps.Polyline({map:pageMap,path:item.points,strokeColor:color,strokeOpacity:1,strokeWeight:fenceKind?2.5:item.type==='barrier'?5:4,zIndex:fenceKind?45:item.type==='route'?35:30,icons,clickable:false});
-        }
-      });
+  markers.forEach(item=>{
+    if(item.type==='marquee'){
+      const corners=marqueeCorners(item);
+      new google.maps.Polygon({map:pageMap,paths:corners,fillColor:'#ffffff',fillOpacity:.94,strokeColor:'#111111',strokeOpacity:1,strokeWeight:2,zIndex:80,clickable:false});
+      new google.maps.Polyline({map:pageMap,path:[corners[0],corners[2]],strokeColor:'#111111',strokeOpacity:1,strokeWeight:2,zIndex:81,clickable:false});
+      new google.maps.Polyline({map:pageMap,path:[corners[1],corners[3]],strokeColor:'#111111',strokeOpacity:1,strokeWeight:2,zIndex:81,clickable:false});
+      const label=document.createElement('div');
+      label.className='geo-marquee-label print-marquee-label';
+      label.textContent=(Number(item.marqueeLength)||10)+' × '+(Number(item.marqueeWidth)||5)+' m';
+      new AdvancedMarkerElement({map:pageMap,position:marqueeLabelPoint(item),content:label,gmpDraggable:false,zIndex:999});
+      return;
     }
-  }
+    const content=markerContent(item);
+    content.classList.add('print-site-marker');
+    content.style.setProperty('transform','none','important');
+    content.style.setProperty('transform-origin','center center','important');
+    content.style.setProperty('width','42px','important');
+    content.style.setProperty('height','42px','important');
+    content.style.setProperty('min-width','42px','important');
+    const label=content.querySelector('.ml');
+    if(label){
+      label.style.setProperty('font-size','10px','important');
+      label.style.setProperty('max-width','112px','important');
+      label.style.setProperty('overflow','visible','important');
+      label.style.setProperty('text-overflow','clip','important');
+    }
+    const icon=content.querySelector('.mi');
+    if(icon)icon.style.setProperty('font-size','18px','important');
+    new AdvancedMarkerElement({map:pageMap,position:item.marker?.position||item.position,content,anchorLeft:'-50%',anchorTop:'-50%',title:item.name||''});
+  });
 
-  document.body.classList.add('siteplan-print-export');
-  planner.appendChild(pageSheet);
-  toast('Preparing '+total+' readable map pages…');
+  shapes.forEach(item=>{
+    const color=item.color||'#ff8a00';
+    const fenceKind=fenceKindForShape(item.type,item.name);
+    if(item.type==='zone'){
+      new google.maps.Polygon({map:pageMap,paths:item.points,fillColor:color,fillOpacity:item.fillOpacity??.5,strokeColor:color,strokeOpacity:1,strokeWeight:4,zIndex:20,clickable:false});
+    }else{
+      const icons=item.type==='route'?[{icon:{path:google.maps.SymbolPath.FORWARD_CLOSED_ARROW,scale:3.2,strokeColor:color,fillColor:color,fillOpacity:1,strokeWeight:1},offset:'18%',repeat:'70px'}]:fenceSymbols(fenceKind,color);
+      new google.maps.Polyline({map:pageMap,path:item.points,strokeColor:color,strokeOpacity:1,strokeWeight:fenceKind?2.5:item.type==='barrier'?5:4,zIndex:fenceKind?45:item.type==='route'?35:30,icons,clickable:false});
+    }
+  });
+
   let printStarted=false;
   const startPrint=()=>{
     if(printStarted)return;
     printStarted=true;
-    setTimeout(()=>window.print(),700);
+    setTimeout(()=>window.print(),600);
   };
-  const ready=new Set();
-  printMaps.forEach((pageMap,index)=>{
-    google.maps.event.addListenerOnce(pageMap,'idle',()=>{
-      ready.add(index);
-      if(ready.size===printMaps.length)startPrint();
-    });
-  });
   const cleanup=()=>{
     document.body.classList.remove('siteplan-print-export');
-    printMaps.forEach(pageMap=>google.maps.event.clearInstanceListeners(pageMap));
     pageSheet.remove();
   };
   window.addEventListener('afterprint',cleanup,{once:true});
-  setTimeout(startPrint,10000);
+  google.maps.event.addListenerOnce(pageMap,'idle',startPrint);
+  setTimeout(startPrint,5000);
 }
   byId('deleteBtn').onclick=deleteSelected;byId('duplicateBtn').onclick=duplicateSelected;
   byId('selName').addEventListener('input',e=>{if(!selected)return;selected.name=e.target.value;if(selected.content){const label=selected.content.querySelector('.ml');if(label)label.textContent=selected.name;const tableNumber=selected.content.querySelector('.table-number');if(tableNumber)tableNumber.textContent=selected.name;selected.marker.title=selected.name}updateStats();autoSave()});
