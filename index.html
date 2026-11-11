@@ -2562,7 +2562,7 @@ function serialisePlanState(){
     zoom:map?.getZoom?.()||18,
     markers:markers.map(m=>({
       id:m.id,type:m.type,name:m.name,dimensions:m.dimensions||'',iconSize:markerIconSize(m.iconSize),iconSizeZoom:m.iconSizeZoom??19,toiletLayout:isToiletItem(m)?toiletLayout(m.toiletLayout):undefined,
-      marqueeLength:m.marqueeLength||null,marqueeWidth:m.marqueeWidth||null,marqueeRotation:m.marqueeRotation||0,
+      stageStyle:!!m.stageStyle,marqueeLength:m.marqueeLength||null,marqueeWidth:m.marqueeWidth||null,marqueeRotation:m.marqueeRotation||0,
       position:m.position
     })),
     shapes:shapes.map(s=>({
@@ -2728,8 +2728,8 @@ function updateMarqueeOverlay(item){
 
   // V47 visual-only marquee roof detail: diagonal X follows the existing marquee geometry.
   if(item.marqueeRoofLines?.length===2){
-    item.marqueeRoofLines[0].setPath([corners[0],corners[2]]);
-    item.marqueeRoofLines[1].setPath([corners[1],corners[3]]);
+    item.marqueeRoofLines[0].setPath(item.stageStyle?[corners[0],corners[1]]:[corners[0],corners[2]]);
+    item.marqueeRoofLines[1].setPath(item.stageStyle?[corners[0],corners[3]]:[corners[1],corners[3]]);
   }
 
   if(item.marqueeHandles){
@@ -2749,8 +2749,8 @@ function setMarqueeSelected(item,on){
   item.marqueeOverlay?.setOptions({
     strokeColor:on?'#2563eb':'#111111',
     strokeWeight:on?3:2,
-    fillColor:'#ffffff',
-    fillOpacity:.94,
+    fillColor:item.stageStyle?'#333b49':'#ffffff',
+    fillOpacity:item.stageStyle?.88:.94,
     editable:false
   });
   if(on)buildMarqueeControls(item);
@@ -2841,7 +2841,8 @@ function addMarquee(position,data={}){
   const item={
     id:data.id||crypto.randomUUID(),
     type:'marquee',
-    name:data.name||'Marquee',
+    name:data.name||(data.stageStyle?'Stage':'Marquee'),
+    stageStyle:!!data.stageStyle,
     dimensions:data.dimensions||'',
     marqueeLength:Number(data.marqueeLength)||10,
     marqueeWidth:Number(data.marqueeWidth)||5,
@@ -2857,8 +2858,8 @@ function addMarquee(position,data={}){
   item.marqueeOverlay=new google.maps.Polygon({
     map,
     paths:marqueeCorners(item),
-    fillColor:'#ffffff',
-    fillOpacity:.94,
+    fillColor:item.stageStyle?'#333b49':'#ffffff',
+    fillOpacity:item.stageStyle?.88:.94,
     strokeColor:'#111111',
     strokeOpacity:1,
     strokeWeight:2,
@@ -2871,15 +2872,15 @@ function addMarquee(position,data={}){
   item.marqueeOverlay.addListener('click',()=>selectItem(item));
   createMarqueeDimensionLabel(item);
 
-  // Visual-only tent roof cross. click-through so existing marquee interaction is untouched.
+  // Marquee roof X; stage uses a smaller upstage line and two side edges.
   item.marqueeRoofLines=[
     new google.maps.Polyline({
-      map,path:[marqueeCorners(item)[0],marqueeCorners(item)[2]],
+      map,path:item.stageStyle?[marqueeCorners(item)[0],marqueeCorners(item)[1]]:[marqueeCorners(item)[0],marqueeCorners(item)[2]],
       strokeColor:'#111111',strokeOpacity:1,strokeWeight:2,
       clickable:false,zIndex:81
     }),
     new google.maps.Polyline({
-      map,path:[marqueeCorners(item)[1],marqueeCorners(item)[3]],
+      map,path:item.stageStyle?[marqueeCorners(item)[0],marqueeCorners(item)[3]]:[marqueeCorners(item)[1],marqueeCorners(item)[3]],
       strokeColor:'#111111',strokeOpacity:1,strokeWeight:2,
       clickable:false,zIndex:81
     })
@@ -3330,7 +3331,7 @@ function refreshGroundMarkerSizes(){
 
 
 function addMarker(type,position,data={}){
-  if(type==='marquee')return addMarquee(position,data);
+  if(type==='marquee'||type==='stage')return addMarquee(position,{...data,stageStyle:type==='stage'||data.stageStyle});
 
   const meta=OBJECT_TYPES.find(x=>x[0]===type)||[type,'•',type];
   const item={
@@ -3479,7 +3480,7 @@ function fenceSymbols(kind,color){
   const path=kind==='crowd'
     ? 'M-10,-7 L10,-7 L10,5 L-10,5 Z M-14,8 L-10,5 L-6,8 M6,8 L10,5 L14,8'
     : 'M-12,-8 L-12,8 M12,-8 L12,8 M-12,-8 L12,-8 M-12,8 L12,8 M-12,-8 L12,8 M-12,8 L12,-8';
-  return [{icon:{path,scale:1,strokeColor:color,strokeWeight:2.2,fillOpacity:0},offset:'0',repeat:kind==='crowd'?'30px':'32px'}];
+  return [{icon:{path,scale:0.58,strokeColor:color,strokeWeight:2.0,fillOpacity:0},offset:'0',repeat:kind==='crowd'?'24px':'26px'}];
 }
 function renderTempShape(){
   clearTemp(); if(drawPoints.length<1)return;
@@ -3672,6 +3673,7 @@ function pasteCopied(){
       marqueeLength:d.marqueeLength,
       marqueeWidth:d.marqueeWidth,
       marqueeRotation:d.marqueeRotation,
+      stageStyle:d.stageStyle,
       dimensions:d.dimensions
     });
   }else if(copiedElement.kind==='marker'){
@@ -3708,7 +3710,8 @@ function duplicateSelected(){
       name:selected.name,
       marqueeLength:selected.marqueeLength,
       marqueeWidth:selected.marqueeWidth,
-      marqueeRotation:selected.marqueeRotation
+      marqueeRotation:selected.marqueeRotation,
+      stageStyle:selected.stageStyle
     });
     return;
   }
