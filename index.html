@@ -3826,9 +3826,11 @@ function exportMapPdf(){
     content.classList.add('print-site-marker');
     content.style.setProperty('transform','none','important');
     content.style.setProperty('transform-origin','center center','important');
-    content.style.setProperty('width','42px','important');
-    content.style.setProperty('height','42px','important');
-    content.style.setProperty('min-width','42px','important');
+    const exportSize=Math.max(30,Math.min(48,markerIconSize(item.iconSize??34)));
+    content.style.setProperty('width',exportSize+'px','important');
+    content.style.setProperty('height',exportSize+'px','important');
+    content.style.setProperty('min-width',exportSize+'px','important');
+    if(isToiletItem(item))applyToiletLayout({...item,content});
     const label=content.querySelector('.ml');
     if(label){
       label.style.setProperty('font-size','10px','important');
@@ -3838,6 +3840,13 @@ function exportMapPdf(){
     }
     const icon=content.querySelector('.mi');
     if(icon)icon.style.setProperty('font-size','18px','important');
+    const isFurniture=['table','barleaner'].includes(item.type);
+    if(!isFurniture){
+      content.style.setProperty('background','#fff','important');
+      content.style.setProperty('border','2px solid var(--marker,#222)','important');
+      content.style.setProperty('border-radius','9px','important');
+      content.style.setProperty('box-shadow','0 1px 3px #0008','important');
+    }
     new AdvancedMarkerElement({map:pageMap,position:item.marker?.position||item.position,content,anchorLeft:'-50%',anchorTop:'-50%',title:item.name||''});
   });
 
